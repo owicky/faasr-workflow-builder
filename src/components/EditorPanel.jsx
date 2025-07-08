@@ -1,0 +1,35 @@
+import ComputeServersPanel from "./ComputeServers/ComputeServersPanel"
+import DataStoresPanel from "./DataStores/DataStoresPanel"
+import FunctionsPanel from "./Functions/FunctionsPanel"
+import { useWorkflowContext } from "../WorkflowContext"
+import GeneralConfig from "./GeneralConfig";
+export default function EditorPanel(props) {
+    const {workflow} = useWorkflowContext();
+    if (Object.keys(workflow).length !== 0){
+        switch(props.type) {
+            case 'ComputeServers':
+                return(
+                    <ComputeServersPanel/>
+                )
+            case 'DataStores':
+                return(
+                    <DataStoresPanel/>
+                )
+            case 'Functions':
+                return(
+                    <FunctionsPanel createEdge={(a,b) => props.createEdge(a,b)}/>
+                )
+            case 'GeneralConfig':
+                return(
+                    <GeneralConfig/>
+                )
+            default:
+                return(
+                    <h1 style={{color: 'red'}}>No Edit Mode Selected</h1>
+                )
+        }
+    }
+    return(
+        <h1>No Workflow Loaded</h1>
+    )
+}

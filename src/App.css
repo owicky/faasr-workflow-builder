@@ -1,0 +1,59 @@
+  /* .App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+} */
+
+#toolbar{
+  background-color: rgb(151, 229, 229);
+  height: 18vh;
+  display: flex;
+  flex-direction: row;
+}
+
+.editor-panel{
+  width: 30vw;
+}
+
+#workflow-panel{
+  background-color: aqua;
+  width: 70vw;
+}
+
+#jsonview-panel{
+  background-color: aliceblue;
+  overflow:auto;
+}
+#nodes-edges-panel{
+  background-color: rgb(184, 215, 243);
+  overflow:auto;
+}
+#mid-panel{
+  width: 100vw; 
+  height: 95vh;
+  display: flex;
+  flex-direction: row;
+  background-color: antiquewhite;
+}
+
+.function-node{
+  height: 40px;
+  width: 160px;
+  border: 1px solid #000000;
+  padding: 5px;
+  border-radius: 10px;
+  background: white;
+}
+
+.truncate{
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;         
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
