@@ -1,13 +1,14 @@
 import { useWorkflowContext } from "../../WorkflowContext"
 import { useState } from "react";
 import TextInput from "../Utils/TextInput";
+import GenericLabel from "../Utils/GenericLabel";
 
 export default function FunctionEditor(props){
-    const {workflow, setWorkflow, edges, setEdges} = useWorkflowContext();
-    const id = props.id
+    const {workflow, setWorkflow, edges, setEdges, selectedFunctionId, setNodes} = useWorkflowContext();
+    const id = selectedFunctionId
     const [newArg, setNewArg] = useState("")
     const [newInvoke, setNewInvoke] = useState("NONE")
-
+    const [newActionName, setNewActionName] = useState("")
 
     const updateFunction = (updates) => {
         setWorkflow({
@@ -33,13 +34,52 @@ export default function FunctionEditor(props){
         return(
 
             // Function Edit Box
-            <div style={{ backgroundColor: "grey"}}>
-                <h1>Function ID: {id}</h1>
-                <TextInput prompt={"Name"} value={workflow.FunctionList[id].FunctionName} placeholder={"FunctionName"} onChange={(e) => updateFunction({FunctionName : e.target.value})}/>
+            <div style={{ }}>
+                <h1>Action Name : {id}</h1>
 
+                <GenericLabel value={"Duplicate Action"}></GenericLabel>
+                <div style={{display : "flex"}}>
+                    <TextInput value={newActionName} onChange={(e) => setNewActionName( e.target.value)} placeholder={"New Action Name"}></TextInput>
+                    <button onClick={ () => {
+                        // Add new action to workflow
+                        if (!(newActionName in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
+                            setWorkflow({
+                                ...workflow,
+                                FunctionList: {
+                                ...workflow.FunctionList,
+                                [newActionName]: {
+                                    ...workflow.FunctionList[id]
+                                }
+                                }
+                            })
+
+                            // Add new action to graph
+                            const newNode = {
+                                id : newActionName,
+                                type: 'functionNode',
+                                position: ({
+                                x: 0,
+                                y: 0}),
+                                data: { id: newActionName, name : newActionName, direct: 1},
+                                origin: [0.5, 0.0],
+                            };
+                            setNodes((nds) => nds.concat(newNode));
+                        }else{
+                            console.log("Already Exists")
+                            console.log(newActionName + " in " + Object.keys(workflow.FunctionList))
+                        }
+                    }
+                    }> Duplicate Action</button>
+                </div>
+                <br></br>
+
+
+                <GenericLabel size={"20px"} value={"Function Name"}></GenericLabel>
+                <TextInput value={workflow.FunctionList[id].FunctionName} placeholder={"FunctionName"} onChange={(e) => updateFunction({FunctionName : e.target.value})}/>
+                <br></br>
                 {/* Compute Server Selector */}
                 <div>
-                    <button>ComputeServer</button>
+                    <GenericLabel size={"20px"} value={"Compute Server"}></GenericLabel>
                     <select placeholder="FaaSServer" onChange={(e)=>setWorkflow({
                         ...workflow,
                         FunctionList: {
@@ -55,49 +95,40 @@ export default function FunctionEditor(props){
                         <option key={key} value={key}>{key}</option>
                         ))}
                     </select>
+
+                    
                 </div>
+                <br></br>
 
 
                 {/* Arguments Editor */}
-                <div style={{ border: "solid"}}>
-                    <button>Arguments</button>
+                <GenericLabel size={"20px"} value={"Arguments"}></GenericLabel>
+                <div style={{border: "solid"}}>
                     {Object.entries(workflow.FunctionList[id].Arguments).map(([key, val], i) => (
-                        <div style={{ display : "flex", border: "solid", backgroundColor: "cyan"}}>
+                        <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
                             <label className="truncate">{key}</label>
                             <input
                             type="text"
-                            placeholder={key+"Val"}
+                            placeholder={key+" value"}
                             value={val}
                             onChange={(e) =>
                                 updateArgument(key, e.target.value)
-                            //     (e) =>
-                            // setWorkflow({
-                            //     ...workflow,
-                            //     FunctionList: {
-                            //     ...workflow.FunctionList,
-                            //     [id]: {
-                            //         ...workflow.FunctionList[id],
-                            //         Arguments: {
-                            //         ...workflow.FunctionList[id].Arguments,
-                            //         [key]: e.target.value
-                            //         }
-                            //     }
-                            //     }
-                            // })
                             }
                             />
                             <button style={{color:"red"}} onClick={() => {
-                                // const serverToDelete = server
                                 delete workflow.FunctionList[id].Arguments[key]
                                 console.log("Deleting: " + key)
                                 setWorkflow({...workflow})
                             }}>Delete</button>
                     </div>
                     ))}
-                    <button onClick={() =>
+                </div>
+                <input value={newArg} placeholder="NewArgumentName" onChange={ (e) => setNewArg(e.target.value)}></input>
+                <button onClick={() => {
+                    if(newArg !== ""){
                         setWorkflow({
-                            ...workflow,
-                            FunctionList: {
+                        ...workflow,
+                        FunctionList: {
                             ...workflow.FunctionList,
                             [id]: {
                                 ...workflow.FunctionList[id],
@@ -107,19 +138,21 @@ export default function FunctionEditor(props){
                                 }
                             }
                             }
-                        })
-                        }>Add New Argument</button>
-                    <input value={newArg} placeholder="NewArgumentName" onChange={ (e) => setNewArg(e.target.value)}></input>
-                </div>
+                        })}
+                    }
+                    }>Add New Argument</button>
+                <br></br>
+                <br></br>
 
                 {/* InvokeNext Editor */}
-                <div style={{ border: "solid"}}>
-                    <button>InvokeNext</button>
+                <GenericLabel size={"20px"} value={"Next Actions To Invoke"}></GenericLabel>
+                <div style={{border: "solid"}}>
 
                     {/* Iterate Through Current invokes */}
-                    {workflow.FunctionList[id].InvokeNext.map( (val, i) => (
+                    {
+                    workflow.FunctionList[id].InvokeNext.map( (val, i) => (
                         // Choose Invoke
-                        <div key={i} style={{ border: "solid", backgroundColor: "cyan"}}>
+                        <div key={i} style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
                             <select placeholder="funcInvokeNExt" onChange={(e)=> { 
                                 // Updated InvokeNext
                                 const updatedInvokeNext = [...workflow.FunctionList[id].InvokeNext]
@@ -149,7 +182,7 @@ export default function FunctionEditor(props){
                                         InvokeNext : updatedInvokeNext
                                         }
                                     }
-                            })
+                                })
                         
                             // Update Edges in FLow Panel
                     }
@@ -178,8 +211,22 @@ export default function FunctionEditor(props){
                         //Delete Invoke
                     
                     ))}
-                    <button onClick={() => {
 
+                </div>
+                {/* Add New Invoke Button */}
+                <select placeholder="funcInvokeNExt" onChange={(e)=> setNewInvoke(e.target.value)}
+                    type="text" value={newInvoke}>
+                    
+                    <option value={"NONE"}> NONE </option>
+                    
+                    {Object.entries(workflow.FunctionList).map(([key]) => (
+                    
+                    <option key={key} value={key}>{key}</option>
+                    ))}
+                </select>
+                <button onClick={() => {
+
+                    if (newInvoke !== "NONE"){
                         setWorkflow({
                             ...workflow,
                             FunctionList: {
@@ -193,25 +240,17 @@ export default function FunctionEditor(props){
                                 }
                             }
                         })
+                    }
 
-                        props.createEdge(id, newInvoke)
-                    }}>Add New InvokeNext</button>
-                            <select placeholder="funcInvokeNExt" onChange={(e)=> setNewInvoke(e.target.value)
-                        }
-                                type="text" value={newInvoke}>
-                                
-                                <option value={"NONE"}> NONE </option>
-                                
-                                {Object.entries(workflow.FunctionList).map(([key]) => (
-                                
-                                <option key={key} value={key}>{key}</option>
-                                ))}
-                            </select>
-                </div>
+                    props.createEdge(id, newInvoke)
+                }}>Add New InvokeNext</button>
+                <br></br>
+                <br></br>
+                
                 {/* Paths */}
                 <div>
-                    <button>Git PAth</button>
-                    <input style={{ width:"300px" }} type="text" placeholder="GitPath" onChange={(e)=>setWorkflow({
+                    <GenericLabel size={"20px"} value={"Git Path"}></GenericLabel>
+                    <input id={workflow.FunctionList[id].FunctionName+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" onChange={(e)=>setWorkflow({
                         ...workflow,
                         FunctionGitRepo: {
                             ...workflow.FunctionGitRepo,
@@ -219,9 +258,12 @@ export default function FunctionEditor(props){
                         }
                     })}value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName]}/>
                 </div>
+
+                <br></br>
+
                 <div>
-                    <button>Action Container</button>
-                    <input style={{ width:"300px" }} type="text" placeholder="ActionContainer" onChange={(e)=>setWorkflow({
+                    <GenericLabel size={"20px"} value={"Functions Action Container"}></GenericLabel>
+                    <input id={workflow.FunctionList[id].FunctionName+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" onChange={(e)=>setWorkflow({
                         ...workflow,
                         ActionContainers: {
                             ...workflow.ActionContainers,
@@ -229,6 +271,7 @@ export default function FunctionEditor(props){
                         }
                     })}value={workflow.ActionContainers[id]}/>
                 </div>
+                <br></br>
             </div>
 
 

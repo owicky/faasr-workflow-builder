@@ -6,7 +6,7 @@ export default function DataStoreEditor(props){
 
     if(id != null){
         return(
-            <div style={{ backgroundColor: "grey"}}>
+            <div style={{ }}>
                 <h1>Function ID: {id}</h1>
 
                 <div>

@@ -43,7 +43,7 @@ const getLayoutedElements = (nodes, edges, options) => {
 };
 
 function App() {
-  const { edges, setEdges, nodes, setNodes, workflow, setWorkflow } = useWorkflowContext();
+  const { edges, setEdges, nodes, setNodes, workflow, setWorkflow, setSelectedFunctionId } = useWorkflowContext();
   const [editType, setEditType] = useState(null)
   const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
 
@@ -96,8 +96,8 @@ function App() {
 
   // Called when a node is Clicked in the flow panel
   const onNodeClick = (event, object) => {
-    // TO BE IMPLEMENTED
-    // Opensq node editor
+    setEditType("Functions")
+    setSelectedFunctionId(object.id)
   };
 
   // Called when node is deleted in flow panel
@@ -210,12 +210,14 @@ function App() {
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
+              onNodeClick={onNodeClick}
               onConnect={onConnect}
               onNodesDelete={onNodesDelete}
               onEdgesDelete={onEdgesDelete}
-              onNodeClick={onNodeClick}
               nodeTypes={nodeTypes}
-              defaultEdgeOptions={defaultEdgeOptions} 
+              defaultEdgeOptions={defaultEdgeOptions}
+              maxZoom={3}
+              minZoom={.1}
               fitView
             > <Controls/>
 

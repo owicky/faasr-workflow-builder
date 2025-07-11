@@ -9,6 +9,7 @@ export default function FunctionCreator(props){
     return(
         <>
             <button onClick={() => {
+                if (!(newId in Object.keys(workflow.FunctionList)) && (newId !== "")){
                 setWorkflow({
                     ...workflow,
                     FunctionList: {
@@ -32,7 +33,7 @@ export default function FunctionCreator(props){
                     origin: [0.5, 0.0],
                 };
                 setNodes((nds) => nds.concat(newNode));
-            }
+            }}
             }>Create New Function</button>
             <input type="text" placeholder="ActionName" onChange={(e) => setNewId(e.target.value)}/>
         </>

@@ -20,7 +20,7 @@ export default function ComputeServerCreator(props){
                             Namespace:"",
                             UserName:"",
                             ActionRepoName:"",
-                            Branch:{"type":"string"},
+                            Branch: "",
                         }
                     }
             })

@@ -40,28 +40,46 @@ export function UploadWorkflow(props) {
     };
 
     useEffect(() => {
+
         if (shouldBuildGraphRef.current) {
-            shouldBuildGraphRef.current = false; // reset it
+            shouldBuildGraphRef.current = false;
 
-            const functions = workflow.FunctionList || [];
-            let offset = 0;
+        const functions = workflow.FunctionList || {};
+        let offset = 0;
 
-            //Create Node 
-            for (let i in functions) {
-                props.createNode(100 + offset * 100, 100 + offset * 50, functions[i].FunctionName, i);
+
+        const updatedFunctionList = {};
+        for (const key in functions) {
+            const fn = functions[key];
+            updatedFunctionList[key] = {
+                ...fn,
+                InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
+            };
+        }
+
+
+        const updatedWorkflow = {
+            ...workflow,
+            FunctionList: updatedFunctionList
+        };
+
+        setWorkflow(updatedWorkflow);
+
+            //Create Nodes
+            for (let i in updatedFunctionList) {
+                props.createNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i);
                 offset++;
             }
-
             //Connect Edges
-            for (let i in functions) {
-                if (functions[i].InvokeNext != null) {
-                    for (let j of functions[i].InvokeNext) {
+            for (let i in updatedFunctionList) {
+                if (updatedFunctionList[i].InvokeNext !== null) {
+                    for (let j of updatedFunctionList[i].InvokeNext) {
                         props.createEdge(i, j);
                     }
                 }
             }
         }
-    }, [workflow]); // still reacts to workflow, but guarded by your flag
+    }, [workflow]); 
 
     return (
         <>
