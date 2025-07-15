@@ -5,6 +5,8 @@ import { useWorkflowContext } from "../../WorkflowContext"
 export default function FunctionCreator(props){
     const {workflow, setWorkflow, setNodes} = useWorkflowContext();
     const [newId, setNewId] = useState("")
+    const FaaSServerList = Object.keys(workflow.ComputeServers);
+    const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
 
     return(
         <>
@@ -15,7 +17,7 @@ export default function FunctionCreator(props){
                         ...workflow.FunctionList,
                         [newId]: {
                             FunctionName: "",
-                            FaaSServer: "",
+                            FaaSServer: defaultFaaSServer,
                             Arguments: {
                             },
                             InvokeNext: []
@@ -34,7 +36,7 @@ export default function FunctionCreator(props){
                 setNodes((nds) => nds.concat(newNode));
             }
             }>Create New Function</button>
-            <input type="text" placeholder="ActionName" onChange={(e) => setNewId(e.target.value)}/>
+            {/*<input type="text" placeholder="ActionName" onChange={(e) => setNewId(e.target.value)}*/}
         </>
     )
 }

@@ -1,24 +1,64 @@
 import { useState } from "react";
 import { useWorkflowContext } from "../../WorkflowContext"
+// Added react-select for searchable dropdown. https://react-select.com/home
+import CreatableSelect from "react-select/creatable";
 import FunctionEditor from "./FunctionEditor";
 import FunctionCreator from "./FunctionCreator";
 
 export default function FunctionsPanel(props){
-    const {workflow} = useWorkflowContext();
+    const {workflow, setWorkflow, setNodes} = useWorkflowContext();
     const [functionId, setfunctionId] = useState(null)
+    const functionSearchOptions = Object.keys(workflow.FunctionList).map( (functionId) => {
+        return { value: functionId, label: functionId }
+    });
+    const FaaSServerList = Object.keys(workflow.ComputeServers);
+    const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
+    
+
+    const onCreateOption = ( newFunctionId ) => {
+        const newId = newFunctionId;
+        setWorkflow({
+            ...workflow,
+            FunctionList: {
+                ...workflow.FunctionList,
+                [newId]: {
+                    FunctionName: "",
+                    FaaSServer: defaultFaaSServer,
+                    Arguments: {
+                    },
+                    InvokeNext: []
+                }
+            }
+        })
+        const newNode = {
+            id : newId,
+            type: 'functionNode',
+            position: ({
+            x: 0,
+            y: 0}),
+            data: { id: newId, name : newId, direct: 1},
+            origin: [0.5, 0.0],
+        };
+        setNodes((nds) => nds.concat(newNode));
+    };
 
     return(
         <div class="editor-panel">
             <h1>Functions</h1>
-            {Object.entries(workflow.FunctionList).map(([key, val], i) => (
+            {/*Object.entries(workflow.FunctionList).map(([key, val], i) => (
                 <button key={i} onClick={() => setfunctionId(key)}>
                     {key}
                 </button>
-            ))}
-            <div>
-                <FunctionCreator/>
-            </div>
+            ))*/}
+            <CreatableSelect 
+                onChange={(e) => {setfunctionId(e?.value ?? null)}}
+                options={functionSearchOptions} 
+                onCreateOption={onCreateOption}
+                isClearable
+            />
+            {/* Moved the CreateFunction logic into the parent component; Got rid of the button*/}
             <FunctionEditor createEdge={(a,b) => props.createEdge(a,b)} id={functionId}/>  
+
         </div>     
     )
 }
