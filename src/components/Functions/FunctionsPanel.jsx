@@ -6,7 +6,7 @@ import FunctionEditor from "./FunctionEditor";
 import FunctionCreator from "./FunctionCreator";
 
 export default function FunctionsPanel(props){
-    const {workflow, setWorkflow, setNodes} = useWorkflowContext();
+    const {workflow, setWorkflow, setNodes, setSelectedFunctionId} = useWorkflowContext();
     const [functionId, setfunctionId] = useState(null)
     const functionSearchOptions = Object.keys(workflow.FunctionList).map( (functionId) => {
         return { value: functionId, label: functionId }
@@ -17,41 +17,39 @@ export default function FunctionsPanel(props){
 
     const onCreateOption = ( newFunctionId ) => {
         const newId = newFunctionId;
-        setWorkflow({
-            ...workflow,
-            FunctionList: {
-                ...workflow.FunctionList,
-                [newId]: {
-                    FunctionName: "",
-                    FaaSServer: defaultFaaSServer,
-                    Arguments: {
-                    },
-                    InvokeNext: []
+        if (!(newId in Object.keys(workflow.FunctionList)) && (newId !== "")){
+            setWorkflow({
+                ...workflow,
+                FunctionList: {
+                    ...workflow.FunctionList,
+                    [newId]: {
+                        FunctionName: "",
+                        FaaSServer: defaultFaaSServer,
+                        Arguments: {
+                        },
+                        InvokeNext: []
+                    }
                 }
-            }
-        })
-        const newNode = {
-            id : newId,
-            type: 'functionNode',
-            position: ({
-            x: 0,
-            y: 0}),
-            data: { id: newId, name : newId, direct: 1},
-            origin: [0.5, 0.0],
-        };
-        setNodes((nds) => nds.concat(newNode));
-    };
+            })
+            const newNode = {
+                id : newId,
+                type: 'functionNode',
+                position: ({
+                x: 0,
+                y: 0}),
+                data: { id: newId, name : newId, direct: 1},
+                origin: [0.5, 0.0],
+            };
+            setNodes((nds) => nds.concat(newNode));
+        }
+    }
+
 
     return(
         <div class="editor-panel">
             <h1>Functions</h1>
-            {/*Object.entries(workflow.FunctionList).map(([key, val], i) => (
-                <button key={i} onClick={() => setfunctionId(key)}>
-                    {key}
-                </button>
-            ))*/}
             <CreatableSelect 
-                onChange={(e) => {setfunctionId(e?.value ?? null)}}
+                onChange={(e) => {setSelectedFunctionId(e?.value ?? null)}}
                 options={functionSearchOptions} 
                 onCreateOption={onCreateOption}
                 isClearable

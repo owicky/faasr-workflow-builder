@@ -9,7 +9,9 @@ export const WorkflowProvider = ( {children} ) => {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
     
-    const [functions, setFunctions] = useState([]);
+    const [selectedFunctionId, setSelectedFunctionId] = useState(null)
+
+    const [deletedActions, setDeletedActions] = useState([]);
     
     const [workflow, setWorkflow] = useState({
         FunctionList : {},
@@ -30,7 +32,8 @@ export const WorkflowProvider = ( {children} ) => {
         <WorkflowContext.Provider value={{
             nodes, setNodes,
             edges, setEdges,
-            functions, setFunctions,
+            selectedFunctionId, setSelectedFunctionId,
+            deletedActions, setDeletedActions,
             workflow, setWorkflow
         }}>
 

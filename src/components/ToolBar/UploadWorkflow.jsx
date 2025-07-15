@@ -25,7 +25,20 @@ export function UploadWorkflow(props) {
                 shouldBuildGraphRef.current = true;
 
                 // Update workflow (triggers effect)
-                setWorkflow({ ...new_workflow });
+                setWorkflow({ ...new_workflow,
+                            FunctionList : new_workflow.FunctionList || {},
+                            ComputeServers : new_workflow.ComputeServers || {},
+                            DataStores : new_workflow.DataStores || {},
+                            ActionContainers : new_workflow.ActionContainers || {},
+                            FunctionInvoke : new_workflow.FunctionInvoke || "None",
+                            DefaultDataStore : new_workflow.DefaultDataStore || "None",
+                            FunctionGitRepo : new_workflow.FunctionGitRepo || {},
+                            FunctionCRANPackage : new_workflow.FunctionCRANPackage || {},
+                            FunctionGitHubPackage : new_workflow.FunctionGitHubPackage || {},
+                            FaaSrLog : new_workflow.FaaSrLog || "",
+                            LoggingDataStore : new_workflow.LoggingDataStore || "",
+                            InvocationID : new_workflow.InvocationID || ""
+                });
             } catch (err) {
                 console.error("Invalid JSON file", err);
                 alert("Failed to load workflow: Invalid JSON");
@@ -40,28 +53,46 @@ export function UploadWorkflow(props) {
     };
 
     useEffect(() => {
+
         if (shouldBuildGraphRef.current) {
-            shouldBuildGraphRef.current = false; // reset it
+            shouldBuildGraphRef.current = false;
 
-            const functions = workflow.FunctionList || [];
-            let offset = 0;
+        const functions = workflow.FunctionList || {};
+        let offset = 0;
 
-            //Create Node 
-            for (let i in functions) {
-                props.createNode(100 + offset * 100, 100 + offset * 50, functions[i].FunctionName, i);
+
+        const updatedFunctionList = {};
+        for (const key in functions) {
+            const fn = functions[key];
+            updatedFunctionList[key] = {
+                ...fn,
+                InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
+            };
+        }
+
+
+        const updatedWorkflow = {
+            ...workflow,
+            FunctionList: updatedFunctionList
+        };
+
+        setWorkflow(updatedWorkflow);
+
+            //Create Nodes
+            for (let i in updatedFunctionList) {
+                props.createNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i);
                 offset++;
             }
-
             //Connect Edges
-            for (let i in functions) {
-                if (functions[i].InvokeNext != null) {
-                    for (let j of functions[i].InvokeNext) {
+            for (let i in updatedFunctionList) {
+                if (updatedFunctionList[i].InvokeNext !== null) {
+                    for (let j of updatedFunctionList[i].InvokeNext) {
                         props.createEdge(i, j);
                     }
                 }
             }
         }
-    }, [workflow]); // still reacts to workflow, but guarded by your flag
+    }, [workflow]); 
 
     return (
         <>
