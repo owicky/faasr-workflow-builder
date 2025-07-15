@@ -7,6 +7,9 @@ export default function FunctionEditor(props){
     const {workflow, setWorkflow, edges, setEdges, selectedFunctionId, setNodes} = useWorkflowContext();
     const id = selectedFunctionId
     const [newArg, setNewArg] = useState("")
+    const [newGitPackage, setNewGitPackage] = useState("")
+    const [newCranPackage, setNewCranPackage] = useState("")
+
     const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionName, setNewActionName] = useState("")
 
@@ -23,12 +26,15 @@ export default function FunctionEditor(props){
         });
     };
 
+    
+
     const updateArgument = (key, value) => {
         updateFunction({Arguments : {
             ...workflow.FunctionList[id].Arguments,
             [key] : value
         }})
     };
+
 
     if(id != null && workflow.FunctionList?.[id]){
         return(
@@ -249,29 +255,132 @@ export default function FunctionEditor(props){
                 
                 {/* Paths */}
                 <div>
-                    <GenericLabel size={"20px"} value={"Git Path"}></GenericLabel>
-                    <input id={workflow.FunctionList[id].FunctionName+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" onChange={(e)=>setWorkflow({
+                    <GenericLabel size={"20px"} value={"Function's Git Repo/Path"}></GenericLabel>
+                    <input id={id+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" onChange={(e)=>setWorkflow({
                         ...workflow,
                         FunctionGitRepo: {
                             ...workflow.FunctionGitRepo,
                             [workflow.FunctionList[id].FunctionName] : e.target.value
                         }
-                    })}value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName]}/>
+                    })}value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName] || ""}/>
                 </div>
 
                 <br></br>
 
                 <div>
-                    <GenericLabel size={"20px"} value={"Functions Action Container"}></GenericLabel>
-                    <input id={workflow.FunctionList[id].FunctionName+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" onChange={(e)=>setWorkflow({
+                    <GenericLabel size={"20px"} value={"Function's Action Container"}></GenericLabel>
+                    <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" onChange={(e)=>setWorkflow({
                         ...workflow,
                         ActionContainers: {
                             ...workflow.ActionContainers,
                             [id] : e.target.value
                         }
-                    })}value={workflow.ActionContainers[id]}/>
+                    })}value={workflow.ActionContainers[id] || ""}/>
                 </div>
                 <br></br>
+
+                <GenericLabel size={"20px"} value={"GitGub Packages for the Function"}></GenericLabel>
+                <div style={{border: "solid"}}>
+                    { workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] ? 
+                        Object.entries(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
+                            <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
+                                <input
+                                type="text"
+                                placeholder={key+" value"}
+                                value={val}
+                                onChange={(e) =>
+                                    setWorkflow({
+                                        ...workflow,
+                                        FunctionGitHubPackage : {
+                                            ...workflow.FunctionGitHubPackage,
+                                            [workflow.FunctionList[id].FunctionName] :
+                                            workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]
+                                                .map(pkg => pkg === val ? e.target.value : pkg)
+                                        }
+                                    }
+                                    )
+                                }
+                                />
+                                <button style={{color:"red"}} onClick={() => {
+                                    workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] = workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val)
+                                    console.log("Deleting: " + key)
+                                    setWorkflow({...workflow})
+                                }}>Delete</button>
+                        </div>
+                        ))
+                        :
+                        <br></br>
+                    }
+                </div>
+                <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
+                <button onClick={() => {
+                if(newGitPackage.trim() !== ""){
+                    setWorkflow({
+                    ...workflow,
+                    FunctionGitHubPackage: {
+                        ...workflow.FunctionGitHubPackage,
+                        [workflow.FunctionList[id].FunctionName]: [
+                        ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
+                        newGitPackage.trim()
+                        ]
+                    }
+                    });
+                    setNewGitPackage("");
+                }
+                }}>Add Package</button>
+                
+                <br></br>
+                <br></br>
+                
+                <GenericLabel size={"20px"} value={"CRAN Packages for the Function"}></GenericLabel>
+                <div style={{border: "solid"}}>
+                    { workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] ? 
+                        Object.entries(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
+                            <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
+                                <input
+                                type="text"
+                                placeholder={key+" value"}
+                                value={val}
+                                onChange={(e) =>
+                                    setWorkflow({
+                                        ...workflow,
+                                        FunctionCRANPackage : {
+                                            ...workflow.FunctionCRANPackage,
+                                            [workflow.FunctionList[id].FunctionName] :
+                                            workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName]
+                                                .map(pkg => pkg === val ? e.target.value : pkg)
+                                        }
+                                    }
+                                    )
+                                }
+                                />
+                                <button style={{color:"red"}} onClick={() => {
+                                    workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val)
+                                    console.log("Deleting: " + key)
+                                    setWorkflow({...workflow})
+                                }}>Delete</button>
+                        </div>
+                        ))
+                        :
+                        <br></br>
+                    }
+                </div>
+                <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
+                <button onClick={() => {
+                if(newCranPackage.trim() !== ""){
+                    setWorkflow({
+                    ...workflow,
+                    FunctionCRANPackage: {
+                        ...workflow.FunctionCRANPackage,
+                        [workflow.FunctionList[id].FunctionName]: [
+                        ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
+                        newCranPackage.trim()
+                        ]
+                    }
+                    });
+                    setNewCranPackage("");
+                }
+                }}>Add Package</button>
             </div>
 
 

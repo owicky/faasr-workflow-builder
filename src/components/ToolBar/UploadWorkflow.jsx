@@ -25,7 +25,20 @@ export function UploadWorkflow(props) {
                 shouldBuildGraphRef.current = true;
 
                 // Update workflow (triggers effect)
-                setWorkflow({ ...new_workflow });
+                setWorkflow({ ...new_workflow,
+                            FunctionList : new_workflow.FunctionList || {},
+                            ComputeServers : new_workflow.ComputeServers || {},
+                            DataStores : new_workflow.DataStores || {},
+                            ActionContainers : new_workflow.ActionContainers || {},
+                            FunctionInvoke : new_workflow.FunctionInvoke || "None",
+                            DefaultDataStore : new_workflow.DefaultDataStore || "None",
+                            FunctionGitRepo : new_workflow.FunctionGitRepo || {},
+                            FunctionCRANPackage : new_workflow.FunctionCRANPackage || {},
+                            FunctionGitHubPackage : new_workflow.FunctionGitHubPackage || {},
+                            FaaSrLog : new_workflow.FaaSrLog || "",
+                            LoggingDataStore : new_workflow.LoggingDataStore || "",
+                            InvocationID : new_workflow.InvocationID || ""
+                });
             } catch (err) {
                 console.error("Invalid JSON file", err);
                 alert("Failed to load workflow: Invalid JSON");
