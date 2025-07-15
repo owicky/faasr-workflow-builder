@@ -6,10 +6,9 @@ import FunctionEditor from "./FunctionEditor";
 import FunctionCreator from "./FunctionCreator";
 
 export default function FunctionsPanel(props){
-    const {workflow, setWorkflow, setNodes, setSelectedFunctionId} = useWorkflowContext();
-    const [functionId, setfunctionId] = useState(null)
-    const functionSearchOptions = Object.keys(workflow.FunctionList).map( (functionId) => {
-        return { value: functionId, label: functionId }
+    const {workflow, setWorkflow, setNodes, selectedFunctionId, setSelectedFunctionId} = useWorkflowContext();
+    const functionSearchOptions = Object.keys(workflow.FunctionList).map( (id) => {
+        return { value: id, label: id }
     });
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
@@ -55,7 +54,7 @@ export default function FunctionsPanel(props){
                 isClearable
             />
             {/* Moved the CreateFunction logic into the parent component; Got rid of the button*/}
-            <FunctionEditor createEdge={(a,b) => props.createEdge(a,b)} id={functionId}/>  
+            <FunctionEditor createEdge={(a,b) => props.createEdge(a,b)} id={selectedFunctionId}/>  
 
         </div>     
     )
