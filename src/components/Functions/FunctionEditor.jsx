@@ -394,6 +394,7 @@ export default function FunctionEditor(props){
                 <div>
                     <button onClick={ () => {
                         setNodes((nds) => nds.filter( (node) =>node.id !== id)); 
+                        setEdges((edges) => edges.filter( (edge) => edge.source !== id && edge.target !== id));
                     }}>Delete Action from Graph</button>
                 </div>
                 <div>
