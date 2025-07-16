@@ -59,3 +59,18 @@
   text-overflow: ellipsis;
   word-break: break-all;
 }
+
+.popup{
+  position: fixed;
+  display: flex;        
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  z-index: 9999;
+  width: 60vw;
+  height: 40vh;
+  background-color: white;
+  border-radius: 10px;
+  border-style: ridge;
+  padding: 5px;
+}
