@@ -56,7 +56,7 @@ export default function FunctionsPanel(props){
                 createOptionPosition={"first"}
             />
             {/* Moved the CreateFunction logic into the parent component; Got rid of the button*/}
-            <FunctionEditor createEdge={(a,b) => props.createEdge(a,b)} id={selectedFunctionId}/>  
+            <FunctionEditor createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode} id={selectedFunctionId}/>  
 
         </div>     
     )

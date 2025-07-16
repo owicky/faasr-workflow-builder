@@ -4,7 +4,7 @@ import TextInput from "../Utils/TextInput";
 import GenericLabel from "../Utils/GenericLabel";
 
 export default function FunctionEditor(props){
-    const {workflow, setWorkflow, edges, setEdges, selectedFunctionId, setNodes} = useWorkflowContext();
+    const {workflow, setWorkflow, edges, setEdges, selectedFunctionId,nodes, setNodes} = useWorkflowContext();
     const id = selectedFunctionId
     const [newArg, setNewArg] = useState("")
     const [newGitPackage, setNewGitPackage] = useState("")
@@ -381,6 +381,32 @@ export default function FunctionEditor(props){
                     setNewCranPackage("");
                 }
                 }}>Add Package</button>
+                {/* Add/remove from graph & delete permanently*/}
+                <div>
+                    <button onClick={ () => {
+                        if(nodes.some( (node) => node?.id === id )) {
+                            alert("That action is already in the graph. Duplicate it instead to make a copy.");
+                        } else {
+                           props.createNode(0, 0, workflow.FunctionList[id]?.name, id);
+                        }   
+                    }}>Add Action to Graph</button>
+                </div>
+                <div>
+                    <button onClick={ () => {
+                        setNodes((nds) => nds.filter( (node) =>node.id !== id)); 
+                    }}>Delete Action from Graph</button>
+                </div>
+                <div>
+                    <button onClick={ () => {
+                        const { [id]: deletedFunction, ...remainingFunctions } = workflow.FunctionList;
+                        setWorkflow({
+                            ...workflow,
+                            FunctionList: remainingFunctions
+                        });
+                        setNodes((nds) => nds.filter( (node) =>node.id !== id)); 
+                        setEdges((edges) => edges.filter( (edge) => edge.source !== id && edge.target !== id));
+                    }}>Delete Action Permanently</button>
+                </div>
             </div>
 
 

@@ -83,14 +83,14 @@ export function UploadWorkflow(props) {
                 props.createNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i);
                 offset++;
             }
-            //Connect Edges
-            for (let i in updatedFunctionList) {
+            //Connect Edges (now in creatNode)
+            {/*for (let i in updatedFunctionList) {
                 if (updatedFunctionList[i].InvokeNext !== null) {
                     for (let j of updatedFunctionList[i].InvokeNext) {
                         props.createEdge(i, j);
                     }
                 }
-            }
+            }*/}
         }
     }, [workflow]); 
 

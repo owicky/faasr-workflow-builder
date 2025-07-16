@@ -138,6 +138,16 @@ function App() {
         origin: [0.5, 0.0],
     };
     setNodes((nds) => nds.concat(newNode));
+
+    // Attach the edges on creation
+    const workflowAction = workflow.FunctionList[id];
+
+    if (workflowAction && workflowAction.InvokeNext.length > 0) {
+        for (let j of workflowAction.InvokeNext) {
+            createEdge(id, j);
+        }
+    }
+
   }
 
     // Creates a new edge with specified (Source id, Target id)
@@ -202,7 +212,7 @@ function App() {
       <div id="mid-panel">
         <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel createEdge={(a,b) => createEdge(a,b)} type={editType}/>
+        <EditorPanel createEdge={(a,b) => createEdge(a,b)} createNode={createNode} type={editType}/>
 
           <div id="workflow-panel">
             <ReactFlow
