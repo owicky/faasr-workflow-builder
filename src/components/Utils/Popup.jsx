@@ -8,5 +8,5 @@ export default function Popup(props) {
             </div>
             <button style={{ position: "absolute", bottom : "10px", left : "50%", transform : "translateX(-50%)"}} onClick={() => {props.setEnabled(false); if (props.onClose) {props.onClose()}}}>Close</button>
         </div>
-    ) : ""
+    ) : <></>
 }

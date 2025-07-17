@@ -96,7 +96,7 @@ export function UploadWorkflow(props) {
                 accept=".json"
                 ref={fileInputRef}
                 style={{ display: "none" }}
-                onChange={(e) => {handleFileChange(e); props.setChanged(true)}}
+                onChange={handleFileChange}
             />
         </>
     );

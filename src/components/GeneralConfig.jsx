@@ -10,7 +10,7 @@ export default function GeneralConfig(props){
     const exampleUUID = useRef(crypto.randomUUID());
 
     return(
-        <div class="editor-panel">
+        <div className="editor-panel">
             <h1>Data Server Assignment</h1>
 
             {/* Default DataStore */}

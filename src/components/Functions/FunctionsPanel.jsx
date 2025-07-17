@@ -45,7 +45,7 @@ export default function FunctionsPanel(props){
 
 
     return(
-        <div class="editor-panel">
+        <div className="editor-panel">
             <h1>Functions</h1>
             <CreatableSelect 
                 onChange={(e) => {setSelectedFunctionId(e?.value ?? null)}}
