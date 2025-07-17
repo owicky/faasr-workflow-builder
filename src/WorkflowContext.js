@@ -8,7 +8,7 @@ const WorkflowContext = createContext();
 export const WorkflowProvider = ( {children} ) => {
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
-    
+
     const [selectedFunctionId, setSelectedFunctionId] = useState(null)
 
     const [deletedActions, setDeletedActions] = useState([]);
@@ -34,7 +34,7 @@ export const WorkflowProvider = ( {children} ) => {
             edges, setEdges,
             selectedFunctionId, setSelectedFunctionId,
             deletedActions, setDeletedActions,
-            workflow, setWorkflow
+            workflow, setWorkflow,
         }}>
 
             {children}

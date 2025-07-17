@@ -23,7 +23,7 @@ export default function GeneralConfig(props){
                     }
                             type="text" value={workflow.DefaultDataStore}>
                             
-                            <option value={"NONE"}> NONE </option>
+                            <option value={""}> NONE </option>
                             
                             {Object.entries(workflow.DataStores).map(([key]) => (
                             
@@ -43,7 +43,7 @@ export default function GeneralConfig(props){
                     }
                             type="text" value={workflow.LoggingDataStore}>
                             
-                            <option value={"NONE"}> NONE </option>
+                            <option value={""}> NONE </option>
                             
                             {Object.entries(workflow.DataStores).map(([key]) => (
                             
@@ -64,7 +64,7 @@ export default function GeneralConfig(props){
                     }
                             type="text" value={workflow.FunctionInvoke}>
                             
-                            <option value={"NONE"}> NONE </option>
+                            <option value={""}> NONE </option>
                             
                             {Object.entries(workflow.FunctionList).map(([key]) => (
                             

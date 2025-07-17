@@ -18,8 +18,9 @@ export default function ComputeServersPanel(){
                     </button>
                 </>
             ))}
-            <ComputeServerEditor setServer={setServer} server={server}/>
+            <br></br>
             <ComputeServerCreator/>
+            <ComputeServerEditor setServer={setServer} server={server}/>
         </div>
     )
 }

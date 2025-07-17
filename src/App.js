@@ -90,6 +90,7 @@ function App() {
       const layouted = getLayoutedElements(nodes, edges, { direction });
       setNodes([...layouted.nodes]);
       setEdges([...layouted.edges]);
+      console.log([edges])
     },
     [nodes, edges],
   );
@@ -147,7 +148,6 @@ function App() {
             createEdge(id, j);
         }
     }
-
   }
 
     // Creates a new edge with specified (Source id, Target id)
@@ -206,7 +206,7 @@ function App() {
       <div className="App">
 
       <header className="App-header">
-        <Toolbar toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createEdge={ createEdge }></Toolbar>
+        <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createEdge={ createEdge }></Toolbar>
       </header>
 
       <div id="mid-panel">

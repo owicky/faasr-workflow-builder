@@ -2,13 +2,17 @@ import { useWorkflowContext } from "../../WorkflowContext"
 import { useState } from "react";
 import TextInput from "../Utils/TextInput";
 import GenericLabel from "../Utils/GenericLabel";
+import Popup from "../Utils/Popup"
 
 export default function FunctionEditor(props){
     const {workflow, setWorkflow, edges, setEdges, selectedFunctionId,nodes, setNodes} = useWorkflowContext();
     const id = selectedFunctionId
     const [newArg, setNewArg] = useState("")
+    const [newArgVal, setNewArgVal] = useState("")
     const [newGitPackage, setNewGitPackage] = useState("")
     const [newCranPackage, setNewCranPackage] = useState("")
+
+    const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
 
     const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionName, setNewActionName] = useState("")
@@ -96,7 +100,7 @@ export default function FunctionEditor(props){
                             }
                         }
                     })} type="text" value={workflow.FunctionList[id].FaaSServer}>
-                        <option value={"NONE"}> NONE </option>
+                        <option value={""}> NONE </option>
                         {Object.entries(workflow.ComputeServers).map(([key, val], i) => (
                         <option key={key} value={key}>{key}</option>
                         ))}
@@ -129,24 +133,30 @@ export default function FunctionEditor(props){
                     </div>
                     ))}
                 </div>
-                <input value={newArg} placeholder="NewArgumentName" onChange={ (e) => setNewArg(e.target.value)}></input>
-                <button onClick={() => {
-                    if(newArg !== ""){
-                        setWorkflow({
-                        ...workflow,
-                        FunctionList: {
-                            ...workflow.FunctionList,
-                            [id]: {
-                                ...workflow.FunctionList[id],
-                                Arguments: {
-                                ...workflow.FunctionList[id].Arguments,
-                                [newArg]: ""
+                <button onClick={() => setNewArgPopupEnabled(true)}>Add New Arguments</button>
+                <Popup enabled={newArgPopupEnabled} setEnabled={() => setNewArgPopupEnabled()}>
+                    <input value={newArg} placeholder="argument_name" onChange={ (e) => setNewArg(e.target.value)}></input>
+                    <input value={newArgVal} placeholder="argument_value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
+                    <button onClick={() => {
+                        if (!/\s/.test(newArg) && newArg !== "" && !/\s/.test(newArgVal) && newArgVal !== ""){
+                            setWorkflow({
+                            ...workflow,
+                            FunctionList: {
+                                ...workflow.FunctionList,
+                                [id]: {
+                                    ...workflow.FunctionList[id],
+                                    Arguments: {
+                                    ...workflow.FunctionList[id].Arguments,
+                                    [newArg]: newArgVal
+                                    }
                                 }
+                                }
+                            })}else{
+                                alert("New argument name and value must neither be empty nor contain whitespaces.")
                             }
-                            }
-                        })}
-                    }
-                    }>Add New Argument</button>
+                        }
+                        }>Add New Argument</button>
+                </Popup>
                 <br></br>
                 <br></br>
 
@@ -196,7 +206,7 @@ export default function FunctionEditor(props){
                             
                                 type="text" value={val}>
                                 
-                                <option value={"NONE"}> NONE </option>
+                                <option value={""}> NONE </option>
                                 
                                 {Object.entries(workflow.FunctionList).map(([key]) => (
                                 
@@ -223,7 +233,7 @@ export default function FunctionEditor(props){
                 <select placeholder="funcInvokeNExt" onChange={(e)=> setNewInvoke(e.target.value)}
                     type="text" value={newInvoke}>
                     
-                    <option value={"NONE"}> NONE </option>
+                    <option value={""}> NONE </option>
                     
                     {Object.entries(workflow.FunctionList).map(([key]) => (
                     
@@ -232,7 +242,7 @@ export default function FunctionEditor(props){
                 </select>
                 <button onClick={() => {
 
-                    if (newInvoke !== "NONE"){
+                    if (newInvoke !== ""){
                         setWorkflow({
                             ...workflow,
                             FunctionList: {
@@ -387,7 +397,7 @@ export default function FunctionEditor(props){
                         if(nodes.some( (node) => node?.id === id )) {
                             alert("That action is already in the graph. Duplicate it instead to make a copy.");
                         } else {
-                           props.createNode(0, 0, workflow.FunctionList[id]?.name, id);
+                            props.createNode(0, 0, workflow.FunctionList[id]?.name, id);
                         }   
                     }}>Add Action to Graph</button>
                 </div>

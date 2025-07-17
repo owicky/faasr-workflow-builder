@@ -1,31 +1,53 @@
 import { useState } from "react";
 import { useWorkflowContext } from "../../WorkflowContext"
+import Popup from "../Utils/Popup";
 
 
 export default function ComputeServerCreator(props){
     const {workflow, setWorkflow} = useWorkflowContext();
     const [newName, setNewName] = useState("")
-    
+    const [newType, setNewType] = useState("")
+    const [ popupEnabled, setPopupEnabled] = useState(false)
+
     return(
         <>
-            <button onClick={() =>
-                setWorkflow({
-                    ...workflow,
-                    ComputeServers: {
-                        ...workflow.ComputeServers,
-                        [newName]: {
-                            FaaSType: "None",
-                            Region:"",
-                            Endpoint:"",
-                            Namespace:"",
-                            UserName:"",
-                            ActionRepoName:"",
-                            Branch: "",
-                        }
+            <button onClick={() => setPopupEnabled(true)}>Add New Compute Server</button>
+            <Popup enabled={popupEnabled} setEnabled={() => setPopupEnabled()}>
+                <input type="text" placeholder="Compute_server_name" onChange={(e) => setNewName(e.target.value)}/>
+                <select onChange={
+                    (e)=>{
+                        setNewType(e.target.value)
+                    }}>
+                    <option value={"None"}>None</option>
+                    <option value={"GitHubActions"}>GitHubActions</option>
+                    <option value={"OpenWhisk"}>OpenWhisk</option>
+                    <option value={"Lambda"}>Lambda</option>
+                </select>
+                <button onClick={() => {
+
+                    if (!/\s/.test(newName) && newName !== ""){
+                        setWorkflow({
+                        ...workflow,
+                        ComputeServers: {
+                            ...workflow.ComputeServers,
+                            [newName]: {
+                                FaaSType: newType,
+                                    Region:"",
+                                    Endpoint:"",
+                                    Namespace:"",
+                                    UserName:"",
+                                    ActionRepoName:"",
+                                    Branch: "",
+                                }
+                            }
+                        })
                     }
-            })
+                    else{
+                        alert("FaaS server name must neither be empty nor contain whitespaces.")
+                    }
+                }
             }>Create New Compute Server</button>
-            <input type="text" placeholder="ServerName" onChange={(e) => setNewName(e.target.value)}/>
+            </Popup>
         </>
     )
 }

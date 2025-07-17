@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 import { useWorkflowContext } from "../../WorkflowContext";
 
 export function UploadWorkflow(props) {
-    const { setEdges, setNodes, setWorkflow, workflow } = useWorkflowContext();
+    const { setEdges, setNodes, setWorkflow, workflow, nodes, edges} = useWorkflowContext();
     const fileInputRef = useRef(null);
     
     // NEW: This ref tracks whether we want to run the effect
@@ -53,44 +53,38 @@ export function UploadWorkflow(props) {
     };
 
     useEffect(() => {
-
         if (shouldBuildGraphRef.current) {
             shouldBuildGraphRef.current = false;
 
-        const functions = workflow.FunctionList || {};
-        let offset = 0;
+            const functions = workflow.FunctionList || {};
+            let offset = 0;
 
 
-        const updatedFunctionList = {};
-        for (const key in functions) {
-            const fn = functions[key];
-            updatedFunctionList[key] = {
-                ...fn,
-                InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
+            const updatedFunctionList = {};
+            for (const key in functions) {
+                const fn = functions[key];
+                updatedFunctionList[key] = {
+                    ...fn,
+                    InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
+                };
+            }
+
+
+            const updatedWorkflow = {
+                ...workflow,
+                FunctionList: updatedFunctionList
             };
-        }
 
+            setWorkflow(updatedWorkflow);
 
-        const updatedWorkflow = {
-            ...workflow,
-            FunctionList: updatedFunctionList
-        };
-
-        setWorkflow(updatedWorkflow);
-
-            //Create Nodes
+            //Create Graph
             for (let i in updatedFunctionList) {
                 props.createNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i);
                 offset++;
             }
-            //Connect Edges (now in creatNode)
-            {/*for (let i in updatedFunctionList) {
-                if (updatedFunctionList[i].InvokeNext !== null) {
-                    for (let j of updatedFunctionList[i].InvokeNext) {
-                        props.createEdge(i, j);
-                    }
-                }
-            }*/}
+
+        
+    
         }
     }, [workflow]); 
 
@@ -102,7 +96,7 @@ export function UploadWorkflow(props) {
                 accept=".json"
                 ref={fileInputRef}
                 style={{ display: "none" }}
-                onChange={handleFileChange}
+                onChange={(e) => {handleFileChange(e); props.setChanged(true)}}
             />
         </>
     );
