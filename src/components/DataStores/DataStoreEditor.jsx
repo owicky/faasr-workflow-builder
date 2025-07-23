@@ -1,17 +1,19 @@
 import { useWorkflowContext } from "../../WorkflowContext"
+import useUndo from "../Utils/Undo";
 
 export default function DataStoreEditor(props){
-    const {workflow, setWorkflow} = useWorkflowContext();
+    const {workflow } = useWorkflowContext();
     const id = props.id
+    const { updateWorkflow } = useUndo();
 
-    if(id != null){
+    if(id in workflow.DataStores){
         return(
             <div style={{ }}>
                 <h1>Function ID: {id}</h1>
 
                 <div>
                     <button>Endpoint</button>
-                    <input type="text" placeholder="Endpoint" onChange={(e)=>setWorkflow({
+                    <input type="text" placeholder="Endpoint" onChange={(e)=>updateWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -25,7 +27,7 @@ export default function DataStoreEditor(props){
 
                 <div>
                     <button>Bucket</button>
-                    <input type="text" placeholder="Bucket" onChange={(e)=>setWorkflow({
+                    <input type="text" placeholder="Bucket" onChange={(e)=>updateWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -39,7 +41,7 @@ export default function DataStoreEditor(props){
 
                 <div>
                     <button>Region</button>
-                    <input type="text" placeholder="Region" onChange={(e)=>setWorkflow({
+                    <input type="text" placeholder="Region" onChange={(e)=>updateWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -53,7 +55,7 @@ export default function DataStoreEditor(props){
 
                 <div>
                     <button>Writable</button>
-                    <select onChange={(e)=>setWorkflow({
+                    <select onChange={(e)=>updateWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -70,7 +72,9 @@ export default function DataStoreEditor(props){
                 <br></br>
                 <button style={{color:"red"}} onClick={() => {
                     const dataStoreToDelete = id
-                    delete workflow.DataStores[dataStoreToDelete]
+                    let newWorkflow = structuredClone(workflow);
+                    delete newWorkflow.DataStores[dataStoreToDelete];
+                    updateWorkflow(newWorkflow);
                     props.setDataStore(null)
                 }}>Delete Data Store</button>
             </div>

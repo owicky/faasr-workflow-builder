@@ -9,6 +9,8 @@ import { useWorkflowContext } from './WorkflowContext';
 import EditorPanel from './components/EditorPanel';
 import VisibleWorkflow from './components/ToolBar/VisibleWorkflow';
 import VisibleGraph from './components/ToolBar/VisibleGraph';
+import useUndo from './components/Utils/Undo';
+import { IoMdUndo, IoMdRedo } from 'react-icons/io';
 
 const defaultEdgeOptions = { animated: false };
 
@@ -45,11 +47,12 @@ const getLayoutedElements = (nodes, edges, options) => {
 function App() {
   const { edges, setEdges, nodes, setNodes, workflow, setWorkflow, setSelectedFunctionId } = useWorkflowContext();
   const [editType, setEditType] = useState(null)
+  const [isDragging, setIsDragging] = useState(false);
   const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
+  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo } = useUndo();
 
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
 
-  // Updates flow panel to reflect nodes changes
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
     [setNodes],
@@ -57,10 +60,19 @@ function App() {
 
   // Updates flow panel to reflect edges changes
   const onEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    (changes) => {
+        //alert(`Edges changed: ${edges}`);
+        setEdges((eds) => applyEdgeChanges(changes, eds))
+    },
     [setEdges],
   );
 
+  const onNodeDragStart = (event, nodeType) => setIsDragging(true);
+  const onNodeDragStop = (event, nodeType) => {
+      setIsDragging(false);
+      updateLayout(nodes, edges)
+  };
+    
   // Called when two nodes are connected (nodes socket dragged to another nodes socket)
   const onConnect = (params) => {
     const customEdge = {
@@ -76,8 +88,8 @@ function App() {
     
     if (!edges[id]){
 
-      add_edge(params.source, params.target)
-      setEdges((eds) => addEdge(customEdge, eds));
+      // modified add_edge to update both workflow and edges
+      add_edge(params.source, params.target, customEdge);
     }
     
   };
@@ -88,8 +100,7 @@ function App() {
   const onLayout = useCallback(
       (direction) => {
       const layouted = getLayoutedElements(nodes, edges, { direction });
-      setNodes([...layouted.nodes]);
-      setEdges([...layouted.edges]);
+      updateLayout([...layouted.nodes], [...layouted.edges]);
       console.log([edges])
     },
     [nodes, edges],
@@ -98,36 +109,40 @@ function App() {
   // Called when a node is Clicked in the flow panel
   const onNodeClick = (event, object) => {
     setEditType("Functions")
-    setSelectedFunctionId(object.id)
+    updateSelectedFunctionId(object.id)
   };
 
   // Called when node is deleted in flow panel
   const onNodesDelete = useCallback(
     (deleted) => {
       const id = deleted[0].id
+      let newWorkflow = structuredClone(workflow)
       for (let i in workflow.FunctionList){
-        workflow.FunctionList[i].InvokeNext = workflow.FunctionList[i].InvokeNext.filter(
+        newWorkflow.FunctionList[i].InvokeNext = newWorkflow.FunctionList[i].InvokeNext.filter(
           item => item !== id
         )
       }
-      delete workflow.FunctionList[id]
+      delete newWorkflow.FunctionList[id];
+      updateWorkflow(newWorkflow);
     },
   );
 
   // Called when edge is deleted in flow panel
   const onEdgesDelete = useCallback(
     (deleted) => {
-      let  coolEdge = deleted[0]
+      let coolEdge = deleted[0]
       let source = coolEdge.source
       let target = coolEdge.target
-      workflow.FunctionList[source].InvokeNext = workflow.FunctionList[source].InvokeNext.filter(
+      let newWorkflow = structuredClone(workflow);
+      newWorkflow.FunctionList[source].InvokeNext = newWorkflow.FunctionList[source].InvokeNext.filter(
         item => item !== target
       )
+      updateWorkflow(newWorkflow);
     },
   );
 
   // Adds new node given (xpos : num, ypos : num, name : string, id : string) to nodes obj
-  const  createNode = (x, y, name, id) => {
+  const createNewNode = (x, y, name, id) => {
     name = name == null ?  "undefined" : name 
     const newNode = {
         id : id,
@@ -138,20 +153,26 @@ function App() {
         data: { id: id, name : name, direct: 1},
         origin: [0.5, 0.0],
     };
-    setNodes((nds) => nds.concat(newNode));
+    return newNode;
+  }
+
+  const createNode = (x, y, name, id) => {
+    const newNode = createNewNode(x, y, name, id);
 
     // Attach the edges on creation
     const workflowAction = workflow.FunctionList[id];
+    let newEdges = [];
 
     if (workflowAction && workflowAction.InvokeNext.length > 0) {
         for (let j of workflowAction.InvokeNext) {
-            createEdge(id, j);
+            newEdges.push(createNewEdge(id, j));
         }
     }
+    updateLayout(nodes.concat(newNode), edges.concat(newEdges));
   }
 
     // Creates a new edge with specified (Source id, Target id)
-  const createEdge = (id1, id2) => {
+  const createNewEdge = (id1, id2) => {
     const newEdge = {
       animated : false,
       source : id1,
@@ -163,13 +184,19 @@ function App() {
       },
       id : id1+"-"+id2
     };
-    // console.log("New edge" + JSON.stringify(newEdge));
-    setEdges((eds) => eds.concat(newEdge));
+    
+    return newEdge;  
+  }
+
+  // creates a new edge and applies it
+  const createEdge = (id1, id2) => {
+    const newEdge = createNewEdge(id1, id2);
+    updateLayout(nodes, edges.concat(newEdge));
   }
   
-  /* Adds a new edge to the workflow, given a (Source id, Target id)
+  /* Adds a new edge to the workflow and layout given a (Source id, Target id)
   */
-  const add_edge = (sourceId, targetId) => {
+  const add_edge = (sourceId, targetId, customEdge) => {
     // Get the function object for the source
     const sourceFunction = workflow.FunctionList[sourceId];
   
@@ -199,14 +226,22 @@ function App() {
       FunctionList: updatedFunctionList,
     };
   
-    setWorkflow(updatedWorkflow);
+    updateWorkflowAndLayout(updatedWorkflow, nodes, edges.concat(customEdge));
   };
+
+  const handleOnKeyDown = (event) => {
+    if (event.ctrlKey && event.key === 'z') {
+        undo();
+    } else if (event.ctrlKey && event.key === 'y') {
+        redo();
+    }
+  }
 
   return (
       <div className="App">
 
       <header className="App-header">
-        <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createEdge={ createEdge }></Toolbar>
+        <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createNewNode={createNewNode} createEdge={ createEdge } createNewEdge={createNewEdge}></Toolbar>
       </header>
 
       <div id="mid-panel">
@@ -224,7 +259,10 @@ function App() {
               onConnect={onConnect}
               onNodesDelete={onNodesDelete}
               onEdgesDelete={onEdgesDelete}
+              onNodeDragStart={onNodeDragStart}
+              onNodeDragStop={onNodeDragStop}
               nodeTypes={nodeTypes}
+              onKeyDown={handleOnKeyDown}
               defaultEdgeOptions={defaultEdgeOptions}
               maxZoom={3}
               minZoom={.1}
@@ -234,6 +272,8 @@ function App() {
               <Panel position="top-right">
                 <button onClick={() => onLayout('TB')}>vertical layout</button>
                 <button onClick={() => onLayout('LR')}>horizontal layout</button>
+                <button onClick={undo}><IoMdUndo /></button>
+                <button onClick={redo}><IoMdRedo /></button>
               </Panel>
 
             </ReactFlow>

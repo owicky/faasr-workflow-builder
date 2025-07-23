@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useWorkflowContext } from "../../WorkflowContext"
 import Popup from "../Utils/Popup";
+import useUndo from "../Utils/Undo";
 
 
 export default function DataStoreCreator(props){
     const {workflow, setWorkflow} = useWorkflowContext();
     const [newName, setNewName] = useState("")
     const [ popupEnabled, setPopupEnabled] = useState(false)
+    const { updateWorkflow } = useUndo();
 
     return(
         <>
@@ -16,7 +18,7 @@ export default function DataStoreCreator(props){
                 <button onClick={() => {
 
                     if (!/\s/.test(newName) && newName !== ""){
-                        setWorkflow({
+                        updateWorkflow({
                             ...workflow,
                             DataStores: {
                                 ...workflow.DataStores,
