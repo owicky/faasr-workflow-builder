@@ -22,10 +22,11 @@ const useUndo = () => {
         undoHistory, setUndoHistory
     } = useWorkflowContext();
 
-    
+    /* for testing
     useEffect(() => {
         alert(`History changed: , ${history.length}\n undoHistory: ${undoHistory.length} `);
     }, [history]);
+    */
     
 
     const updateWorkflow = (newWorkflow) => {
