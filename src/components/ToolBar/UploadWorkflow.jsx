@@ -1,8 +1,10 @@
 import { useRef, useEffect } from "react";
 import { useWorkflowContext } from "../../WorkflowContext";
+import useUndo from "../Utils/Undo";
 
 export function UploadWorkflow(props) {
     const { setEdges, setNodes, setWorkflow, workflow, nodes, edges} = useWorkflowContext();
+    const { updateWorkflow, updateWorkflowAndLayout } = useUndo()
     const fileInputRef = useRef(null);
     
     // NEW: This ref tracks whether we want to run the effect
@@ -17,15 +19,11 @@ export function UploadWorkflow(props) {
             try {
                 const new_workflow = JSON.parse(e.target.result);
 
-                // Clear current states
-                setNodes([]);
-                setEdges([]);
-                
                 // Set flag before updating state
                 shouldBuildGraphRef.current = true;
 
                 // Update workflow (triggers effect)
-                setWorkflow({ ...new_workflow,
+                buildGraph({ ...new_workflow,
                             FunctionList : new_workflow.FunctionList || {},
                             ComputeServers : new_workflow.ComputeServers || {},
                             DataStores : new_workflow.DataStores || {},
@@ -41,7 +39,7 @@ export function UploadWorkflow(props) {
                 });
             } catch (err) {
                 console.error("Invalid JSON file", err);
-                alert("Failed to load workflow: Invalid JSON");
+                alert(`Failed to load workflow: Invalid JSON ${err}`);
             }
         };
 
@@ -52,11 +50,12 @@ export function UploadWorkflow(props) {
         fileInputRef.current.click();
     };
 
-    useEffect(() => {
+    // I changed the useEffect to a function, now it just gets called when file changes
+    const buildGraph = (newWorkflow) => {
         if (shouldBuildGraphRef.current) {
             shouldBuildGraphRef.current = false;
 
-            const functions = workflow.FunctionList || {};
+            const functions = newWorkflow.FunctionList || {};
             let offset = 0;
 
 
@@ -71,22 +70,27 @@ export function UploadWorkflow(props) {
 
 
             const updatedWorkflow = {
-                ...workflow,
+                ...newWorkflow,
                 FunctionList: updatedFunctionList
             };
 
-            setWorkflow(updatedWorkflow);
 
             //Create Graph
+            let newNodes = [];
+            let newEdges = [];
             for (let i in updatedFunctionList) {
-                props.createNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i);
+                newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i));
+                updatedFunctionList[i].InvokeNext.forEach( (id) => {
+                    newEdges.push(props.createNewEdge(i, id));
+                });
                 offset++;
             }
+            updateWorkflowAndLayout(updatedWorkflow, newNodes, newEdges);
 
         
     
         }
-    }, [workflow]); 
+    }; 
 
     return (
         <>

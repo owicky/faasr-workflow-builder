@@ -1,9 +1,11 @@
 import { useRef, useEffect } from "react";
 import { useWorkflowContext } from "../../WorkflowContext";
+import useUndo from "../Utils/Undo";
 
 export function UploadLayout(props) {
     const { setEdges, setNodes, edges, nodes} = useWorkflowContext();
     const fileInputRef = useRef(null);
+    const { updateLayout } = useUndo();
     
     const shouldBuildGraphRef = useRef(false);
 
@@ -17,8 +19,7 @@ export function UploadLayout(props) {
                 const new_layout = JSON.parse(e.target.result);
 
                 // Clear current states
-                setNodes([...new_layout.nodes]);
-                setEdges([...new_layout.edges]);
+                updateLayout([...new_layout.nodes],[...new_layout.edges]);
                 
                 // Set flag before updating state
                 shouldBuildGraphRef.current = true;
@@ -35,6 +36,7 @@ export function UploadLayout(props) {
         fileInputRef.current.click();
     };
 
+    /*
     useEffect(() => {
 
         if (shouldBuildGraphRef.current) {
@@ -76,6 +78,7 @@ export function UploadLayout(props) {
         //     }
         }
     }, [edges, nodes]); 
+    */
 
     return (
         <>

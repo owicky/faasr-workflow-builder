@@ -3,6 +3,8 @@ import { useState } from "react";
 import TextInput from "../Utils/TextInput";
 import GenericLabel from "../Utils/GenericLabel";
 import Popup from "../Utils/Popup"
+import useUndo from "../Utils/Undo";
+import useCreateNewFunction from "./FunctionCreator"
 
 export default function FunctionEditor(props){
     const {workflow, setWorkflow, edges, setEdges, selectedFunctionId,nodes, setNodes} = useWorkflowContext();
@@ -16,9 +18,11 @@ export default function FunctionEditor(props){
 
     const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionName, setNewActionName] = useState("")
+    const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
+    const createNewFunction = useCreateNewFunction();
 
     const updateFunction = (updates) => {
-        setWorkflow({
+        updateWorkflow({
             ...workflow,
             FunctionList: {
                 ...workflow.FunctionList,
@@ -53,27 +57,7 @@ export default function FunctionEditor(props){
                     <button onClick={ () => {
                         // Add new action to workflow
                         if (!(newActionName in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
-                            setWorkflow({
-                                ...workflow,
-                                FunctionList: {
-                                ...workflow.FunctionList,
-                                [newActionName]: {
-                                    ...workflow.FunctionList[id]
-                                }
-                                }
-                            })
-
-                            // Add new action to graph
-                            const newNode = {
-                                id : newActionName,
-                                type: 'functionNode',
-                                position: ({
-                                x: 0,
-                                y: 0}),
-                                data: { id: newActionName, name : newActionName, direct: 1},
-                                origin: [0.5, 0.0],
-                            };
-                            setNodes((nds) => nds.concat(newNode));
+                            createNewFunction(id, newActionName);   
                         }else{
                             console.log("Already Exists")
                             console.log(newActionName + " in " + Object.keys(workflow.FunctionList))
@@ -90,7 +74,7 @@ export default function FunctionEditor(props){
                 {/* Compute Server Selector */}
                 <div>
                     <GenericLabel size={"20px"} value={"Compute Server"}></GenericLabel>
-                    <select placeholder="FaaSServer" onChange={(e)=>setWorkflow({
+                    <select placeholder="FaaSServer" onChange={(e)=>updateWorkflow({
                         ...workflow,
                         FunctionList: {
                             ...workflow.FunctionList,
@@ -128,7 +112,7 @@ export default function FunctionEditor(props){
                             <button style={{color:"red"}} onClick={() => {
                                 delete workflow.FunctionList[id].Arguments[key]
                                 console.log("Deleting: " + key)
-                                setWorkflow({...workflow})
+                                updateWorkflow({...workflow})
                             }}>Delete</button>
                     </div>
                     ))}
@@ -139,7 +123,7 @@ export default function FunctionEditor(props){
                     <input value={newArgVal} placeholder="argument_value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
                     <button onClick={() => {
                         if (!/\s/.test(newArg) && newArg !== "" && !/\s/.test(newArgVal) && newArgVal !== ""){
-                            setWorkflow({
+                            updateWorkflow({
                             ...workflow,
                             FunctionList: {
                                 ...workflow.FunctionList,
@@ -186,10 +170,8 @@ export default function FunctionEditor(props){
                                 return edge; // no change
                                 });
 
-                                //Replace Old Edge
-                                setEdges(updatedEdges)
                                 // Update Workflow With New InvokeNext
-                                setWorkflow({
+                                updateWorkflowAndLayout({
                                     ...workflow,
                                     FunctionList: {
                                         ...workflow.FunctionList,
@@ -198,7 +180,7 @@ export default function FunctionEditor(props){
                                         InvokeNext : updatedInvokeNext
                                         }
                                     }
-                                })
+                                }, nodes, updatedEdges);
                         
                             // Update Edges in FLow Panel
                     }
@@ -214,12 +196,11 @@ export default function FunctionEditor(props){
                                 ))}
                             </select>
                             <button style={{color:"red"}} onClick={() => {
-                                workflow.FunctionList[id].InvokeNext = workflow.FunctionList[id].InvokeNext.filter(value => value !== val)
-                                setWorkflow({...workflow})
+                                let newWorkflow = structuredClone(workflow)
+                                newWorkflow.FunctionList[id].InvokeNext = newWorkflow.FunctionList[id].InvokeNext.filter(value => value !== val)
                                 
-                                //Updated Edges
                                 const updatedEdges = edges.filter(e => e.source !== id || e.target !== val)
-                                setEdges(updatedEdges)
+                                updateWorkflowAndLayout(newWorkflow, nodes, updatedEdges)
 
                             }}>Delete</button>
                         </div>
@@ -228,38 +209,39 @@ export default function FunctionEditor(props){
                     
                     ))}
 
-                    {/* Add New Invoke Button */}
-                    <select placeholder="funcInvokeNExt" onChange={(e)=> setNewInvoke(e.target.value)}
-                        type="text" value={newInvoke}>
-                        
-                        <option value={""}> NONE </option>
-                        
-                        {Object.entries(workflow.FunctionList).map(([key]) => (
-                        
-                        <option key={key} value={key}>{key}</option>
-                        ))}
-                    </select>
-                    <button onClick={() => {
+                </div>
+                {/* Add New Invoke Button */}
+                <select placeholder="funcInvokeNext" onChange={(e)=> setNewInvoke(e.target.value)}
+                    type="text" value={newInvoke}>
+                    
+                    <option value={""}> NONE </option>
+                    
+                    {Object.entries(workflow.FunctionList).map(([key]) => (
+                    
+                    <option key={key} value={key}>{key}</option>
+                    ))}
+                </select>
+                <button onClick={() => {
 
-                        if (newInvoke !== ""){
-                            setWorkflow({
-                                ...workflow,
-                                FunctionList: {
-                                    ...workflow.FunctionList,
-                                    [id]: {
-                                        ...workflow.FunctionList[id],
-                                        InvokeNext: [
-                                            ...workflow.FunctionList[id].InvokeNext,
-                                            newInvoke
-                                        ]
-                                    }
+                    if (newInvoke !== ""){
+                        updateWorkflow({
+                            ...workflow,
+                            FunctionList: {
+                                ...workflow.FunctionList,
+                                [id]: {
+                                    ...workflow.FunctionList[id],
+                                    InvokeNext: [
+                                        ...workflow.FunctionList[id].InvokeNext,
+                                        newInvoke
+                                    ]
                                 }
-                            })
-                        }
-
+                        
+                        }})
+                    }
+                        
                         props.createEdge(id, newInvoke)
                     }}>Add New InvokeNext</button>
-                </div>
+
                 <br></br>
                 <br></br>
                 
@@ -299,7 +281,7 @@ export default function FunctionEditor(props){
                                 placeholder={key+" value"}
                                 value={val}
                                 onChange={(e) =>
-                                    setWorkflow({
+                                    updateWorkflow({
                                         ...workflow,
                                         FunctionGitHubPackage : {
                                             ...workflow.FunctionGitHubPackage,
@@ -314,7 +296,7 @@ export default function FunctionEditor(props){
                                 <button style={{color:"red"}} onClick={() => {
                                     workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] = workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val)
                                     console.log("Deleting: " + key)
-                                    setWorkflow({...workflow})
+                                    updateWorkflow({...workflow})
                                 }}>Delete</button>
                         </div>
                         ))
@@ -338,6 +320,22 @@ export default function FunctionEditor(props){
                     }
                     }}>Add Package</button>
                 </div>
+                <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
+                <button onClick={() => {
+                if(newGitPackage.trim() !== ""){
+                    updateWorkflow({
+                    ...workflow,
+                    FunctionGitHubPackage: {
+                        ...workflow.FunctionGitHubPackage,
+                        [workflow.FunctionList[id].FunctionName]: [
+                        ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
+                        newGitPackage.trim()
+                        ]
+                    }
+                    });
+                    setNewGitPackage("");
+                }
+                }}>Add Package</button>
                 
                 <br></br>
                 <br></br>
@@ -353,7 +351,7 @@ export default function FunctionEditor(props){
                                 placeholder={key+" value"}
                                 value={val}
                                 onChange={(e) =>
-                                    setWorkflow({
+                                    updateWorkflow({
                                         ...workflow,
                                         FunctionCRANPackage : {
                                             ...workflow.FunctionCRANPackage,
@@ -368,7 +366,7 @@ export default function FunctionEditor(props){
                                 <button style={{color:"red"}} onClick={() => {
                                     workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val)
                                     console.log("Deleting: " + key)
-                                    setWorkflow({...workflow})
+                                    updateWorkflow({...workflow})
                                 }}>Delete</button>
                         </div>
                         ))
@@ -391,15 +389,29 @@ export default function FunctionEditor(props){
                     }
                     }}>Add Package</button>
                 </div>
-
-
+                <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
+                <button onClick={() => {
+                if(newCranPackage.trim() !== ""){
+                    updateWorkflow({
+                    ...workflow,
+                    FunctionCRANPackage: {
+                        ...workflow.FunctionCRANPackage,
+                        [workflow.FunctionList[id].FunctionName]: [
+                        ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
+                        newCranPackage.trim()
+                        ]
+                    }
+                    });
+                    setNewCranPackage("");
+                }
+                }}>Add Package</button>
                 {/* Add/remove from graph & delete permanently*/}
                 <div>
                     <button onClick={ () => {
                         if(nodes.some( (node) => node?.id === id )) {
                             alert("That action is already in the graph. Duplicate it instead to make a copy.");
                         } else {
-                            props.createNode(0, 0, workflow.FunctionList[id]?.name, id);
+                            createNewFunction(workflow.FunctionList[id]?.name, id);
                         }   
                     }}>Add Action to Graph</button>
                 </div>
@@ -407,21 +419,23 @@ export default function FunctionEditor(props){
                 {/* button to delete action from graph */}
                 <div>
                     <button onClick={ () => {
-                        setNodes((nds) => nds.filter( (node) =>node.id !== id)); 
-                        setEdges((edges) => edges.filter( (edge) => edge.source !== id && edge.target !== id));
+                        updateLayout( 
+                            nodes.filter( (node) =>node.id !== id),
+                            edges.filter( (edge) => edge.source !== id && edge.target !== id)
+                        ); 
                     }}>Delete Action from Graph</button>
                 </div>
 
                 {/* Button to delete action permanently */}
                 <div>
                     <button onClick={ () => {
-                        const { [id]: deletedFunction, ...remainingFunctions } = workflow.FunctionList;
-                        setWorkflow({
-                            ...workflow,
-                            FunctionList: remainingFunctions
-                        });
-                        setNodes((nds) => nds.filter( (node) =>node.id !== id)); 
-                        setEdges((edges) => edges.filter( (edge) => edge.source !== id && edge.target !== id));
+                        const newWorkflow = structuredClone(workflow);
+                        delete newWorkflow.FunctionList[id];
+                        updateWorkflowAndLayout(
+                            newWorkflow,
+                            nodes.filter( (node) =>node.id !== id),
+                            edges.filter( (edge) => edge.source !== id && edge.target !== id)
+                        );
                     }}>Delete Action Permanently</button>
                 </div>
             </div>

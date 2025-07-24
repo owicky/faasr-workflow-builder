@@ -93,7 +93,7 @@ export default function Toolbar(props) {
 
             <button onClick={() => setUploadPopupEnabled(true)}>Upload</button>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
-                <UploadWorkflow setLayout={() => props.setLayout()} createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template}/>
+                <UploadWorkflow setLayout={() => props.setLayout()} createNewEdge={ props.createNewEdge } createNewNode={props.createNewNode} workflow_template={props.workflow_template}/>
                 <UploadLayout createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template} />
             </Popup>
 

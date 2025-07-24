@@ -1,10 +1,12 @@
 import { useWorkflowContext } from "../../WorkflowContext"
+import useUndo from "../Utils/Undo";
 
 export default function ComputeServerEditor(props){
     const {workflow, setWorkflow, setNodes, nodes} = useWorkflowContext();
     const server = props.server
+    const { updateWorkflow } = useUndo();
 
-    if(server != null){
+    if(server in workflow.ComputeServers){
         switch (workflow.ComputeServers[server].FaaSType){
             case "GitHubActions":
                 return(
@@ -18,7 +20,7 @@ export default function ComputeServerEditor(props){
                                     const newType = e.target.value
                                         switch (newType){
                                             case "Lambda":
-                                                setWorkflow({
+                                                updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
                                                         ...workflow.ComputeServers,
@@ -31,7 +33,7 @@ export default function ComputeServerEditor(props){
                                                     }
                                                 })
                                             case "OpenWhisk": 
-                                                setWorkflow({
+                                                updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
                                                         ...workflow.ComputeServers,
@@ -97,9 +99,10 @@ export default function ComputeServerEditor(props){
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
                             const serverToDelete = server
-                            delete workflow.ComputeServers[serverToDelete]
+                            let newWorkflow = structuredClone(workflow);
+                            delete newWorkflow.ComputeServers[serverToDelete]
                             props.setServer(null)
-                            setNodes([...nodes])
+                            updateWorkflow(newWorkflow);
                         }}>Delete Compute Server</button>
                     </div>
                 )
@@ -115,7 +118,7 @@ export default function ComputeServerEditor(props){
                                     const newType = e.target.value
                                         switch (newType){
                                             case "GitHubActions":
-                                                setWorkflow({
+                                                updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
                                                         ...workflow.ComputeServers,
@@ -129,7 +132,7 @@ export default function ComputeServerEditor(props){
                                                     }
                                                 })
                                             case "OpenWhisk": 
-                                                setWorkflow({
+                                                updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
                                                         ...workflow.ComputeServers,
@@ -195,9 +198,10 @@ export default function ComputeServerEditor(props){
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
                             const serverToDelete = server
-                            delete workflow.ComputeServers[serverToDelete]
+                            let newWorkflow = structuredClone(workflow);
+                            delete newWorkflow.ComputeServers[serverToDelete]
                             props.setServer(null)
-                            setNodes([...nodes])
+                            updateWorkflow(newWorkflow);
                         }}>Delete Compute Server</button>
                     </div>
                 )
@@ -213,7 +217,7 @@ export default function ComputeServerEditor(props){
                                     const newType = e.target.value
                                         switch (newType){
                                             case "GitHubActions":
-                                                setWorkflow({
+                                                updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
                                                         ...workflow.ComputeServers,
@@ -227,7 +231,7 @@ export default function ComputeServerEditor(props){
                                                     }
                                                 })
                                             case "Lambda":
-                                                setWorkflow({
+                                                updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
                                                         ...workflow.ComputeServers,
@@ -264,9 +268,10 @@ export default function ComputeServerEditor(props){
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
                             const serverToDelete = server
-                            delete workflow.ComputeServers[serverToDelete]
+                            let newWorkflow = structuredClone(workflow);
+                            delete newWorkflow.ComputeServers[serverToDelete]
                             props.setServer(null)
-                            setNodes([...nodes])
+                            updateWorkflow(newWorkflow);
                         }}>Delete Compute Server</button>
                     </div>
                 )
@@ -292,6 +297,8 @@ export default function ComputeServerEditor(props){
                     </div>
                 )
         }
+    }else{
+        props.setServer(null);
     }
     return(
         <h1>NO COMPUTE SERVER SELECTED</h1>

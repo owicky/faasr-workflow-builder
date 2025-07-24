@@ -15,6 +15,7 @@ export const WorkflowProvider = ( {children} ) => {
     const [selectedFunctionId, setSelectedFunctionId] = useState(null)
 
     const [deletedActions, setDeletedActions] = useState([]);
+
     
     const [workflow, setWorkflow] = useState({
         FunctionList : {},
@@ -31,6 +32,15 @@ export const WorkflowProvider = ( {children} ) => {
         InvocationID : ""
     });
 
+    const [history, setHistory] = useState([{
+        nodes: [],
+        edges: [],
+        selectedFunctionId: null,
+        deletedActions: [],
+        workflow: structuredClone(workflow)
+    }]);
+    const [undoHistory, setUndoHistory] = useState([]);
+
     return(
         <WorkflowContext.Provider value={{
             nodes, setNodes,
@@ -38,6 +48,8 @@ export const WorkflowProvider = ( {children} ) => {
             selectedFunctionId, setSelectedFunctionId,
             deletedActions, setDeletedActions,
             workflow, setWorkflow,
+            history, setHistory,
+            undoHistory, setUndoHistory
         }}>
 
             {children}

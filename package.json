@@ -13,6 +13,7 @@
     "is-my-json-valid": "^2.20.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
     "react-scripts": "5.0.1",
     "react-select": "^5.10.2",
     "util": "^0.12.5",
