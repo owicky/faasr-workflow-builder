@@ -132,8 +132,8 @@ export default function FunctionEditor(props){
                             }}>Delete</button>
                     </div>
                     ))}
-                </div>
                 <button onClick={() => setNewArgPopupEnabled(true)}>Add New Arguments</button>
+                </div>
                 <Popup enabled={newArgPopupEnabled} setEnabled={() => setNewArgPopupEnabled()}>
                     <input value={newArg} placeholder="argument_name" onChange={ (e) => setNewArg(e.target.value)}></input>
                     <input value={newArgVal} placeholder="argument_value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
@@ -228,38 +228,38 @@ export default function FunctionEditor(props){
                     
                     ))}
 
-                </div>
-                {/* Add New Invoke Button */}
-                <select placeholder="funcInvokeNExt" onChange={(e)=> setNewInvoke(e.target.value)}
-                    type="text" value={newInvoke}>
-                    
-                    <option value={""}> NONE </option>
-                    
-                    {Object.entries(workflow.FunctionList).map(([key]) => (
-                    
-                    <option key={key} value={key}>{key}</option>
-                    ))}
-                </select>
-                <button onClick={() => {
+                    {/* Add New Invoke Button */}
+                    <select placeholder="funcInvokeNExt" onChange={(e)=> setNewInvoke(e.target.value)}
+                        type="text" value={newInvoke}>
+                        
+                        <option value={""}> NONE </option>
+                        
+                        {Object.entries(workflow.FunctionList).map(([key]) => (
+                        
+                        <option key={key} value={key}>{key}</option>
+                        ))}
+                    </select>
+                    <button onClick={() => {
 
-                    if (newInvoke !== ""){
-                        setWorkflow({
-                            ...workflow,
-                            FunctionList: {
-                                ...workflow.FunctionList,
-                                [id]: {
-                                    ...workflow.FunctionList[id],
-                                    InvokeNext: [
-                                        ...workflow.FunctionList[id].InvokeNext,
-                                        newInvoke
-                                    ]
+                        if (newInvoke !== ""){
+                            setWorkflow({
+                                ...workflow,
+                                FunctionList: {
+                                    ...workflow.FunctionList,
+                                    [id]: {
+                                        ...workflow.FunctionList[id],
+                                        InvokeNext: [
+                                            ...workflow.FunctionList[id].InvokeNext,
+                                            newInvoke
+                                        ]
+                                    }
                                 }
-                            }
-                        })
-                    }
+                            })
+                        }
 
-                    props.createEdge(id, newInvoke)
-                }}>Add New InvokeNext</button>
+                        props.createEdge(id, newInvoke)
+                    }}>Add New InvokeNext</button>
+                </div>
                 <br></br>
                 <br></br>
                 
@@ -318,30 +318,31 @@ export default function FunctionEditor(props){
                                 }}>Delete</button>
                         </div>
                         ))
-                        :
-                        <br></br>
+                        : ""
                     }
+
+                    <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
+                    <button onClick={() => {
+                    if(newGitPackage.trim() !== ""){
+                        setWorkflow({
+                        ...workflow,
+                        FunctionGitHubPackage: {
+                            ...workflow.FunctionGitHubPackage,
+                            [workflow.FunctionList[id].FunctionName]: [
+                            ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
+                            newGitPackage.trim()
+                            ]
+                        }
+                        });
+                        setNewGitPackage("");
+                    }
+                    }}>Add Package</button>
                 </div>
-                <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
-                <button onClick={() => {
-                if(newGitPackage.trim() !== ""){
-                    setWorkflow({
-                    ...workflow,
-                    FunctionGitHubPackage: {
-                        ...workflow.FunctionGitHubPackage,
-                        [workflow.FunctionList[id].FunctionName]: [
-                        ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
-                        newGitPackage.trim()
-                        ]
-                    }
-                    });
-                    setNewGitPackage("");
-                }
-                }}>Add Package</button>
                 
                 <br></br>
                 <br></br>
                 
+                {/* Cran Package Handling */}
                 <GenericLabel size={"20px"} value={"CRAN Packages for the Function"}></GenericLabel>
                 <div style={{border: "solid"}}>
                     { workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] ? 
@@ -371,26 +372,27 @@ export default function FunctionEditor(props){
                                 }}>Delete</button>
                         </div>
                         ))
-                        :
-                        <br></br>
+                        : ""
                     }
+                    <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
+                    <button onClick={() => {
+                    if(newCranPackage.trim() !== ""){
+                        setWorkflow({
+                        ...workflow,
+                        FunctionCRANPackage: {
+                            ...workflow.FunctionCRANPackage,
+                            [workflow.FunctionList[id].FunctionName]: [
+                            ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
+                            newCranPackage.trim()
+                            ]
+                        }
+                        });
+                        setNewCranPackage("");
+                    }
+                    }}>Add Package</button>
                 </div>
-                <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
-                <button onClick={() => {
-                if(newCranPackage.trim() !== ""){
-                    setWorkflow({
-                    ...workflow,
-                    FunctionCRANPackage: {
-                        ...workflow.FunctionCRANPackage,
-                        [workflow.FunctionList[id].FunctionName]: [
-                        ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
-                        newCranPackage.trim()
-                        ]
-                    }
-                    });
-                    setNewCranPackage("");
-                }
-                }}>Add Package</button>
+
+
                 {/* Add/remove from graph & delete permanently*/}
                 <div>
                     <button onClick={ () => {
@@ -401,12 +403,16 @@ export default function FunctionEditor(props){
                         }   
                     }}>Add Action to Graph</button>
                 </div>
+
+                {/* button to delete action from graph */}
                 <div>
                     <button onClick={ () => {
                         setNodes((nds) => nds.filter( (node) =>node.id !== id)); 
                         setEdges((edges) => edges.filter( (edge) => edge.source !== id && edge.target !== id));
                     }}>Delete Action from Graph</button>
                 </div>
+
+                {/* Button to delete action permanently */}
                 <div>
                     <button onClick={ () => {
                         const { [id]: deletedFunction, ...remainingFunctions } = workflow.FunctionList;

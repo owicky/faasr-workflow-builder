@@ -19,7 +19,7 @@
 .editor-panel{
   width: 30vw;
   height: 100%;
-  overflow-y: auto
+  overflow-y: auto;
 }
 
 #workflow-panel{

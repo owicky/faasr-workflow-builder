@@ -87,10 +87,9 @@ export default function Toolbar(props) {
         URL.revokeObjectURL(url);
     };
 
-
     return(
         <div id="toolbar" style={{ width: '100vw', height: '5vh'}}>
-            {/* <button onClick={() => validateWithSchema()}>TEST BUTTON</button> */}
+            {/* <button onClick={() => cycleDetection()}>TEST BUTTON</button> */}
 
             <button onClick={() => setUploadPopupEnabled(true)}>Upload</button>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
@@ -105,11 +104,11 @@ export default function Toolbar(props) {
                 <button onClick={() => downloadWorkflowJson(workflowName)}>Download Workflow JSON</button>
                 <button onClick={() => downloadLayoutJson(workflowName)}>Download Layout JSON</button>
             </Popup>
-            <button onClick={() => props.setEditType("DataStores")}>EditDataStores</button>
+            <button onClick={() => props.setEditType("DataStores")}>Edit Data Stores</button>
 
-            <button onClick={() => props.setEditType("ComputeServers")}>EditComputeServers</button>
+            <button onClick={() => props.setEditType("ComputeServers")}>Edit Compute Servers</button>
 
-            <button onClick={() => props.setEditType("Functions")}>EditFunctions</button>
+            <button onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</button>
 
             <button onClick={() => props.setEditType("GeneralConfig")}>GeneralConfig</button>
 

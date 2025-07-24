@@ -3,9 +3,12 @@ import {createContext, useContext, useState} from "react";
 const WorkflowContext = createContext();
 
 
-
 //  Provides the Workflow, Edges, and Nodes to children wrapped within
 export const WorkflowProvider = ( {children} ) => {
+
+    
+
+
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
 

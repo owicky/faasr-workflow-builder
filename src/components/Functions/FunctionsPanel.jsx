@@ -46,16 +46,16 @@ export default function FunctionsPanel(props){
 
     return(
         <div className="editor-panel">
-            <h1>Functions</h1>
+            <h1>Actions</h1>
             <CreatableSelect 
                 onChange={(e) => {setSelectedFunctionId(e?.value ?? null)}}
                 options={functionSearchOptions} 
                 onCreateOption={onCreateOption}
                 isClearable
-                placeholder={"Start typing to create a new function..."}
+                placeholder={"Start typing to create a new action..."}
                 createOptionPosition={"first"}
             />
-            {/* Moved the CreateFunction logic into the parent component; Got rid of the button*/}
+            
             <FunctionEditor createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode} id={selectedFunctionId}/>  
 
         </div>     
