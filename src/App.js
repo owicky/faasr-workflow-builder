@@ -176,7 +176,7 @@ function App() {
 
         const dfsEdges = eds.map( (edge) => [nds.findIndex( (node) => (node.id === edge.source) ), nds.findIndex( (node) => (node.id === edge.target) )])
 
-        return(isCyclic(V, dfsEdges)); // Output: true
+        return(isCyclic(V, dfsEdges)); 
     }
 
     
@@ -333,7 +333,7 @@ function App() {
       <div id="mid-panel">
         <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel createEdge={(a,b) => createEdge(a,b)} createNode={createNode} type={editType}/>
+        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b) => createEdge(a,b)} createNode={createNode} type={editType}/>
 
           <div id="workflow-panel">
             <ReactFlow

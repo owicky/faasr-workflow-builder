@@ -154,38 +154,41 @@ export default function FunctionEditor(props){
                         // Choose Invoke
                         <div key={i} style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
                             <select placeholder="funcInvokeNExt" onChange={(e)=> { 
+
+
                                 // Updated InvokeNext
                                 const updatedInvokeNext = [...workflow.FunctionList[id].InvokeNext]
                                 updatedInvokeNext[i] = e.target.value
 
-                                //Updated Edges
-                                const updatedEdges = edges.map((edge) => {
-                                if (edge.source === id && edge.target === val) {
-                                    return {
-                                    ...edge,
-                                    target: e.target.value,
-                                    id: `${edge.source}-${e.target.value}` // update ID if you're using source-target based IDs
-                                    };
-                                }
-                                return edge; // no change
-                                });
-
-                                // Update Workflow With New InvokeNext
-                                updateWorkflowAndLayout({
-                                    ...workflow,
-                                    FunctionList: {
-                                        ...workflow.FunctionList,
-                                        [id]: {
-                                        ...workflow.FunctionList[id],
-                                        InvokeNext : updatedInvokeNext
-                                        }
+                                if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: e.target.value}, edges))) {
+                                    //Updated Edges
+                                    const updatedEdges = edges.map((edge) => {
+                                    if (edge.source === id && edge.target === val) {
+                                        return {
+                                        ...edge,
+                                        target: e.target.value,
+                                        id: `${edge.source}-${e.target.value}` // update ID if you're using source-target based IDs
+                                        };
                                     }
-                                }, nodes, updatedEdges);
+                                    return edge; // no change
+                                    });
+
+                                    // Update Workflow With New InvokeNext
+                                    updateWorkflowAndLayout({
+                                        ...workflow,
+                                        FunctionList: {
+                                            ...workflow.FunctionList,
+                                            [id]: {
+                                            ...workflow.FunctionList[id],
+                                            InvokeNext : updatedInvokeNext
+                                            }
+                                        }
+                                    }, nodes, updatedEdges);
+                                }else{
+                                    alert("Cycle Detected!")
+                                }
                         
-                            // Update Edges in FLow Panel
-                    }
-                        }
-                            
+                        }}
                                 type="text" value={val}>
                                 
                                 <option value={""}> NONE </option>
@@ -195,6 +198,7 @@ export default function FunctionEditor(props){
                                 <option key={key} value={key}>{key}</option>
                                 ))}
                             </select>
+
                             <button style={{color:"red"}} onClick={() => {
                                 let newWorkflow = structuredClone(workflow)
                                 newWorkflow.FunctionList[id].InvokeNext = newWorkflow.FunctionList[id].InvokeNext.filter(value => value !== val)
@@ -204,8 +208,6 @@ export default function FunctionEditor(props){
 
                             }}>Delete</button>
                         </div>
-
-                        //Delete Invoke
                     
                     ))}
 
@@ -222,25 +224,27 @@ export default function FunctionEditor(props){
                     ))}
                 </select>
                 <button onClick={() => {
-
-                    if (newInvoke !== ""){
-                        updateWorkflow({
-                            ...workflow,
-                            FunctionList: {
-                                ...workflow.FunctionList,
-                                [id]: {
-                                    ...workflow.FunctionList[id],
-                                    InvokeNext: [
-                                        ...workflow.FunctionList[id].InvokeNext,
-                                        newInvoke
-                                    ]
-                                }
-                        
-                        }})
+                    if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: newInvoke}, edges))) {                    
+                        if (newInvoke !== ""){
+                            updateWorkflow({
+                                ...workflow,
+                                FunctionList: {
+                                    ...workflow.FunctionList,
+                                    [id]: {
+                                        ...workflow.FunctionList[id],
+                                        InvokeNext: [
+                                            ...workflow.FunctionList[id].InvokeNext,
+                                            newInvoke
+                                        ]
+                                    }
+                            
+                            }})
+                        }
+                            props.createEdge(id, newInvoke)
+                    }else{
+                        alert("Cycle Detected!")
                     }
-                        
-                        props.createEdge(id, newInvoke)
-                    }}>Add New InvokeNext</button>
+                }}>Add New InvokeNext</button>
 
                 <br></br>
                 <br></br>
