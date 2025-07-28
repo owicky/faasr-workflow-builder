@@ -28,6 +28,14 @@ export default function FunctionsPanel(props){
                 isClearable
                 placeholder={"Start typing to create a new action..."}
                 createOptionPosition={"first"}
+                styles={{
+                    control: (baseStyles, state) => ({
+                        ...baseStyles,
+                        borderColor: state.isFocused ? 'grey' : 'red',
+                        width: "90%",
+                    }),
+                }}
+
             />
             
             <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) }createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode} id={selectedFunctionId}/>  

@@ -19,7 +19,7 @@ export default function FunctionEditor(props){
     const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionName, setNewActionName] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
-    const createNewFunction = useCreateNewFunction();
+    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
 
     const updateFunction = (updates) => {
         updateWorkflow({
@@ -275,7 +275,7 @@ export default function FunctionEditor(props){
                 </div>
                 <br></br>
 
-                <GenericLabel size={"20px"} value={"GitGub Packages for the Function"}></GenericLabel>
+                <GenericLabel size={"20px"} value={"GitHub Packages for the Function"}></GenericLabel>
                 <div style={{border: "solid"}}>
                     { workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] ? 
                         Object.entries(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
@@ -415,7 +415,7 @@ export default function FunctionEditor(props){
                         if(nodes.some( (node) => node?.id === id )) {
                             alert("That action is already in the graph. Duplicate it instead to make a copy.");
                         } else {
-                            createNewFunction(workflow.FunctionList[id]?.name, id);
+                            createNewFunctionNode(id);
                         }   
                     }}>Add Action to Graph</button>
                 </div>
