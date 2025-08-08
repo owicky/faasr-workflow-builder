@@ -7,30 +7,31 @@ export const useCreateNewFunction = () => {
     const { updateWorkflowAndLayout } = useUndo();
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
-    const createNewFunction = ( newFunctionId, newActionName = "" ) => {
+    const createNewFunction = ( newAction = "", newFunction) => {
+        console.log(newFunction + " -- " + newAction)
 
-        const newId = newFunctionId;
-        if (!(newId in Object.keys(workflow.FunctionList)) && (newId !== "")){
+        if (!(newAction in Object.keys(workflow.FunctionList)) && (newAction !== "")){
+            console.log("is fresh")
             const newWorkflow = {
                 ...workflow,
                 FunctionList: {
                     ...workflow.FunctionList,
-                    [newId]: {
-                        FunctionName: newActionName,
+                    [newAction]: {
+                        FunctionName: newFunction,
                         FaaSServer: defaultFaaSServer,
                         Arguments: {
                         },
-                        InvokeNext: []
+                        InvokeNext: [{}, []]
                     }
                 }
             };
             const newNode = {
-                id : newId,
+                id : newAction,
                 type: 'functionNode',
                 position: ({
                 x: 0,
                 y: 0}),
-                data: { id: newId, name : newId, direct: 1},
+                data: { id: newAction, name : newAction, direct: 1},
                 origin: [0.5, 0.0],
             };
             updateWorkflowAndLayout(newWorkflow, nodes.concat(newNode), edges)
@@ -57,7 +58,7 @@ export function FunctionCreator(props){
                                 FaaSServer: "",
                                 Arguments: {
                                 },
-                                InvokeNext: []
+                                InvokeNext: [{}, []]
                             }
                         }
                     })

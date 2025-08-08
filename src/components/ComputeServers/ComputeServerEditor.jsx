@@ -131,7 +131,7 @@ export default function ComputeServerEditor(props){
                                                         }
                                                     }
                                                 })
-                                            case "OpenWhisk": 
+                                            case "Lambda":
                                                 updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
@@ -140,8 +140,7 @@ export default function ComputeServerEditor(props){
                                                         ...workflow.ComputeServers[server],
                                                         
                                                             FaaSType: e.target.value,
-                                                            Endpoint: workflow.ComputeServers[server].Endpoint ? workflow.ComputeServers[server].Endpoint : "",
-                                                            Namespace: workflow.ComputeServers[server].Namespace ? workflow.ComputeServers[server].Namespace : ""
+                                                            Region: workflow.ComputeServers[server].Region ? workflow.ComputeServers[server].Region : "" 
                                                         }
                                                     }
                                                 })
@@ -230,7 +229,7 @@ export default function ComputeServerEditor(props){
                                                         }
                                                     }
                                                 })
-                                            case "Lambda":
+                                            case "OpenWhisk": 
                                                 updateWorkflow({
                                                     ...workflow,
                                                     ComputeServers: {
@@ -239,7 +238,8 @@ export default function ComputeServerEditor(props){
                                                         ...workflow.ComputeServers[server],
                                                         
                                                             FaaSType: e.target.value,
-                                                            Region: workflow.ComputeServers[server].Region ? workflow.ComputeServers[server].Region : "" 
+                                                            Endpoint: workflow.ComputeServers[server].Endpoint ? workflow.ComputeServers[server].Endpoint : "",
+                                                            Namespace: workflow.ComputeServers[server].Namespace ? workflow.ComputeServers[server].Namespace : ""
                                                         }
                                                     }
                                                 })

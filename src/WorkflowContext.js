@@ -29,7 +29,8 @@ export const WorkflowProvider = ( {children} ) => {
         FunctionGitHubPackage : {},
         FaaSrLog : "",
         LoggingDataStore : "",
-        InvocationID : ""
+        InvocationID : "",
+        WorkflowName : "unnamed-workflow"
     });
 
     const [history, setHistory] = useState([{

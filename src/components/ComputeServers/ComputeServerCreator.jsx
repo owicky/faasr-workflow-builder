@@ -15,7 +15,7 @@ export default function ComputeServerCreator(props){
         <>
             <button onClick={() => setPopupEnabled(true)}>Add New Compute Server</button>
             <Popup enabled={popupEnabled} setEnabled={() => setPopupEnabled()}>
-                <input type="text" placeholder="Compute_server_name" onChange={(e) => setNewName(e.target.value)}/>
+                <input type="text" placeholder="Compute-server-name" onChange={(e) => setNewName(e.target.value)}/>
                 <select onChange={
                     (e)=>{
                         setNewType(e.target.value)

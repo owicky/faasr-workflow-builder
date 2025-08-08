@@ -11,6 +11,7 @@ import VisibleWorkflow from './components/ToolBar/VisibleWorkflow';
 import VisibleGraph from './components/ToolBar/VisibleGraph';
 import useUndo from './components/Utils/Undo';
 import { IoMdUndo, IoMdRedo } from 'react-icons/io';
+import useFunctionUtils from './components/Functions/FunctionsUtils';
 
 const defaultEdgeOptions = { animated: false };
 
@@ -47,11 +48,12 @@ const getLayoutedElements = (nodes, edges, options) => {
 
 
 function App() {
-  const { edges, setEdges, nodes, setNodes, workflow, setWorkflow, setSelectedFunctionId } = useWorkflowContext();
+  const { edges, setEdges, nodes, setNodes, workflow } = useWorkflowContext();
   const [editType, setEditType] = useState(null)
-  const [isDragging, setIsDragging] = useState(false);
+  const [ isDragging, setIsDragging] = useState(false);
   const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
   const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo } = useUndo();
+  const {parseInvoke, listInvokeNext, isValidNewRankedEdge} = useFunctionUtils()
 
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
 
@@ -81,18 +83,19 @@ function App() {
       ...params,
       id: `${params.source}-${params.target}`,
       markerEnd: {
-        width: 20,
-        height: 20,
+        width: 10,
+        height: 10,
         type: MarkerType.ArrowClosed,
+        color: "#000000"
       },
+      style : {
+        strokeWidth : 2,
+        stroke : "#000000"
+      }
     };
     const id = params.source+ "-"+ params.target
     
-    if (cycleDetection(nodes, addEdge(customEdge, edges))) {
-      alert("Cycle Detected!")
-    }
-    else if (!edges[id]){
-
+    if (isValidNewRankedEdge(params.source, params.target, 1) && !cycleDetection(nodes, addEdge(customEdge, edges)) && (!edges[id])){
       // modified add_edge to update both workflow and edges
       add_edge(params.source, params.target, customEdge);
     }
@@ -126,6 +129,7 @@ function App() {
         // Recur for all neighbors of the current node
         for (let v of adj[u]) {
             if (isCyclicUtil(adj, v, visited, recStack)){
+                
                 
                 return true; // If any path leads to a cycle,
                                 // return true
@@ -163,20 +167,21 @@ function App() {
         // Check each vertex (for disconnected components)
         for (let i = 0; i < V; i++) {
             if (!visited[i] && isCyclicUtil(adj, i, visited, recStack))
-                return true; // Cycle found
+              return true; // Cycle found
         }
 
         return false; // No cycle detected
     }
 
-    // Cycle detection and edge recoloration to reflect presence of cycles
+    // Cycle detection 
     const cycleDetection = (nds, eds) => {
 
         const V = nds.length
 
         const dfsEdges = eds.map( (edge) => [nds.findIndex( (node) => (node.id === edge.source) ), nds.findIndex( (node) => (node.id === edge.target) )])
-
-        return(isCyclic(V, dfsEdges)); 
+        const cycleDetected = isCyclic(V, dfsEdges)
+        if (cycleDetected) alert("Cycle Detected!")
+        return(cycleDetected); 
     }
 
     
@@ -187,9 +192,8 @@ function App() {
       (direction) => {
       const layouted = getLayoutedElements(nodes, edges, { direction });
       updateLayout([...layouted.nodes], [...layouted.edges]);
-      console.log([edges])
     },
-    [nodes, edges],
+    [nodes, edges, updateLayout],
   );
 
   // Called when a node is Clicked in the flow panel
@@ -199,33 +203,65 @@ function App() {
   };
 
   // Called when node is deleted in flow panel
-  const onNodesDelete = useCallback(
+  const onNodesDelete = 
     (deleted) => {
-      const id = deleted[0].id
+      const id = deleted[0].id // Deleted Node/Action id
       let newWorkflow = structuredClone(workflow)
-      for (let i in workflow.FunctionList){
-        newWorkflow.FunctionList[i].InvokeNext = newWorkflow.FunctionList[i].InvokeNext.filter(
-          item => item !== id
+      let newNodes = structuredClone(nodes)
+
+
+
+      for (let i in workflow.FunctionList){ // Remove each invokeNext which pointed to deleted action
+        newWorkflow.FunctionList[i].InvokeNext[1] = newWorkflow.FunctionList[i].InvokeNext[1].filter(
+          item => (item.includes("(")) ?  item.substring(0, item.indexOf("(")) !== id : item !== id
         )
       }
-      delete newWorkflow.FunctionList[id];
-      updateWorkflow(newWorkflow);
-    },
-  );
+
+      listInvokeNext(id).forEach( invoke => {
+        const {id, rank} = parseInvoke(invoke)
+        if (rank > 1 ) {
+          newNodes = newNodes.map( node => {
+            if (node.id === id) {
+              return {
+                  ...node,
+                  data : {
+                      ...node.data,
+                      rank : 1
+                  }
+              }
+            }else{
+              return node
+            }
+          })
+        }
+      })
+      const newEdges = edges.filter( (edge) => !(edge.source === id || edge.target === id))
+      
+
+      delete newWorkflow.FunctionList[id]; // Delete action from workflow
+      updateWorkflowAndLayout(newWorkflow, newNodes, newEdges);
+    };
 
   // Called when edge is deleted in flow panel
-  const onEdgesDelete = useCallback(
+  const onEdgesDelete = 
     (deleted) => {
       let coolEdge = deleted[0]
       let source = coolEdge.source
       let target = coolEdge.target
       let newWorkflow = structuredClone(workflow);
-      newWorkflow.FunctionList[source].InvokeNext = newWorkflow.FunctionList[source].InvokeNext.filter(
-        item => item !== target
+
+      if(coolEdge.label ? coolEdge.label > 1 : false){
+        const updatedNodes = [...nodes]
+        const nodeIndex = nodes.findIndex( (node) => node.id === (target))
+        updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : 1}}
+        updateLayout(updatedNodes, edges)
+      }
+      
+      newWorkflow.FunctionList[source].InvokeNext[1] = newWorkflow.FunctionList[source].InvokeNext[1].filter(
+        item => (item.indexOf("(") !== -1) ?  item.substring(0, item.indexOf("(")) !== target : item !== target
       )
       updateWorkflow(newWorkflow);
-    },
-  );
+    };
 
   // Adds new node given (xpos : num, ypos : num, name : string, id : string) to nodes obj
   const createNewNode = (x, y, name, id) => {
@@ -236,7 +272,7 @@ function App() {
         position: ({
         x: x,
         y: y}),
-        data: { id: id, name : name, direct: 1},
+        data: { id: id, name : name, direct: 1, rank: 1},
         origin: [0.5, 0.0],
     };
     return newNode;
@@ -250,7 +286,7 @@ function App() {
     let newEdges = [];
 
     if (workflowAction && workflowAction.InvokeNext.length > 0) {
-        for (let j of workflowAction.InvokeNext) {
+        for (let j of workflowAction.InvokeNext[1]) {
             newEdges.push(createNewEdge(id, j));
         }
     }
@@ -259,15 +295,21 @@ function App() {
 
     // Creates a new edge with specified (Source id, Target id)
   const createNewEdge = (id1, id2) => {
+
     const newEdge = {
       animated : false,
       source : id1,
       target : id2,
       markerEnd: {
-        width: 20,
-        height: 20,
+        width: 10,
+        height: 10,
         type: MarkerType.ArrowClosed,
+        color: "#000000",
       },
+      style: {
+        stroke: "#000000",
+        strokeWidth : 2
+      }, 
       id : id1+"-"+id2
     };
     
@@ -275,9 +317,44 @@ function App() {
   }
 
   // creates a new edge and applies it
-  const createEdge = (id1, id2) => {
-    const newEdge = createNewEdge(id1, id2);
-    updateLayout(nodes, edges.concat(newEdge));
+  const createEdge = (id1, id2, rank, condition) => {
+
+    let colorc = ""
+    const updatedNodes = [...nodes]
+
+
+    switch(condition) {
+      case "false":
+        colorc = "#F52F16"; 
+        break;
+      case "true":
+        colorc = "#1BF23D";
+        break;
+      default:
+        colorc = "#000000";
+      }
+    if ( rank !== ""  ) {
+      if (nodes.some( (node) => (node.data.rank > 1 && node.data.id === id2))) alert("target Already Has Rank Specified")
+      else{
+          const nodeIndex = nodes.findIndex( (node) => node.id === (id2))
+          updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}}
+      }
+    }
+
+  const newEdge = createNewEdge(id1, id2);
+    updateLayout(updatedNodes, edges.concat({
+      ...newEdge,
+      markerEnd: {
+        ...newEdge.markerEnd,
+        color : colorc,
+        height : rank > 1 ? 8 : 10,
+        width : rank > 1 ? 8 : 10
+      },
+      style: {
+        stroke: colorc,
+        strokeWidth : rank > 1 ? 4 : 2
+      }, 
+      label : rank }));
   }
   
   /* Adds a new edge to the workflow and layout given a (Source id, Target id)
@@ -285,19 +362,19 @@ function App() {
   const add_edge = (sourceId, targetId, customEdge) => {
     // Get the function object for the source
     const sourceFunction = workflow.FunctionList[sourceId];
-  
+    
     if (!sourceFunction) {
       console.error(`Source function '${sourceId}' not found.`);
       return;
     }
   
     // Update the InvokeNext array
-    const updatedInvokeNext = [...(sourceFunction.InvokeNext || []), targetId];
+    const updatedInvokeNext = [...(sourceFunction.InvokeNext[1] || []), targetId];
   
     // Create updated source function with new InvokeNext
     const updatedSourceFunction = {
       ...sourceFunction,
-      InvokeNext: updatedInvokeNext,
+      InvokeNext: [ {true : [], false : []}, updatedInvokeNext],
     };
   
     // Build new FunctionList with updated source function
@@ -333,7 +410,7 @@ function App() {
       <div id="mid-panel">
         <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b) => createEdge(a,b)} createNode={createNode} type={editType}/>
+        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} type={editType}/>
 
           <div id="workflow-panel">
             <ReactFlow

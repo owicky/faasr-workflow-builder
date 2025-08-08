@@ -17,7 +17,7 @@ export default function EditorPanel(props) {
                 )
             case 'Functions':
                 return(
-                    <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode}/>
+                    <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b,c, d)} createNode={props.createNode}/>
                 )
             case 'GeneralConfig':
                 return(

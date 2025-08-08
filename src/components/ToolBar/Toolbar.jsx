@@ -5,12 +5,12 @@ import Popup from "../Utils/Popup";
 import GenericLabel from "../Utils/GenericLabel";
 import { UploadLayout } from "./UploadLayout";
 import schema from "../../assets/webui-workflow-schema.json"
+// import schema from "../../assets/webui-workflow-schema-new.json"
 
 export default function Toolbar(props) {
-    const {workflow, edges, nodes} = useWorkflowContext();
+    const {workflow, edges, nodes, } = useWorkflowContext();
     const [ downloadPopupEnabled, setDownloadPopupEnabled ] = useState(false)
     const [ uploadPopupEnabled, setUploadPopupEnabled ] = useState(false)
-    const [ workflowName, setWorkflowName ] = useState("")
 
     var validator = require('is-my-json-valid')
     var validate = validator(schema, {
@@ -18,8 +18,8 @@ export default function Toolbar(props) {
     })
 
     const downloadWorkflowJson = (name) => {
-        const cleanedWorkflow = cleanObject({...workflow})
 
+        const cleanedWorkflow = cleanObject({...workflow})
         if (!validate(cleanedWorkflow, { verbose: true})){ // If violates Schema
             // console.log(validate.errors)
             const errorMsg = validate.errors.map((error, i) => {
@@ -30,7 +30,8 @@ export default function Toolbar(props) {
             alert("The workflow is incomplete:\n\n" + errorMsg);
             return
         }
-        
+    
+
         const blob = new Blob([JSON.stringify(workflow, null, 2)], {
             type: 'application/json',
         });
@@ -87,9 +88,11 @@ export default function Toolbar(props) {
         URL.revokeObjectURL(url);
     };
 
+
+
     return(
         <div id="toolbar" style={{ width: '100vw', height: '5vh'}}>
-            {/* <button onClick={() => cycleDetection()}>TEST BUTTON</button> */}
+            {/* <button onClick={() => testFunc()}>TEST BUTTON</button> */}
 
             <button onClick={() => setUploadPopupEnabled(true)}>Upload</button>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
@@ -99,22 +102,34 @@ export default function Toolbar(props) {
 
             <button onClick={() => setDownloadPopupEnabled(true)}>Download</button>
             <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabled()}>
-                <GenericLabel value={"Name Your Workflow"} size="20px"></GenericLabel>
-                <input placeholder="workflow-name" type="text" onChange={ (e) => setWorkflowName( e.target.value)} value={ workflowName}/>
-                <button onClick={() => downloadWorkflowJson(workflowName)}>Download Workflow JSON</button>
-                <button onClick={() => downloadLayoutJson(workflowName)}>Download Layout JSON</button>
-            </Popup>
-            <button onClick={() => props.setEditType("DataStores")}>Edit Data Stores</button>
+                <GenericLabel value={"Download Options for Workflow: "+workflow.WorkflowName} size="20px"></GenericLabel>
 
+                <button onClick={() => downloadWorkflowJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}.json</button>
+                <button onClick={() => downloadLayoutJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}-layout.json</button>
+            </Popup>
+            <div style={{width : 5}}></div>
+            <button onClick={() => props.setEditType("DataStores")}>Edit Data Stores</button>
             <button onClick={() => props.setEditType("ComputeServers")}>Edit Compute Servers</button>
 
             <button onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</button>
-
-            <button onClick={() => props.setEditType("GeneralConfig")}>GeneralConfig</button>
-
+            <div style={{width : 5}}></div>
+            <button onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</button>
+            <div style={{width : 5}}></div>
             <button onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</button>
 
             <button onClick={() => props.toggleGraphVisible()}>Toggle Graph</button>
+
+            {/* Workflow Name Banner */}
+            <span style={{
+                        position: 'absolute',
+                        top: 5,
+                        right: 10,
+                        background: '#eee',
+                        borderRadius: '4px',
+                        fontSize: '1rem',
+                        padding: '2px 5px',
+                        color: '#333',
+            }}>{"Workflow Name: " + (workflow.WorkflowName)}</span>
         </div>
     )
 }

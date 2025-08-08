@@ -30,7 +30,7 @@ export default function FunctionsPanel(props){
                 createOptionPosition={"first"}
             />
             
-            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) }createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode} id={selectedFunctionId}/>  
+            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNode={props.createNode} id={selectedFunctionId}/>  
 
         </div>     
     )

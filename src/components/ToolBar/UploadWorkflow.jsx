@@ -1,10 +1,8 @@
-import { useRef, useEffect } from "react";
-import { useWorkflowContext } from "../../WorkflowContext";
+import { useRef } from "react";
 import useUndo from "../Utils/Undo";
 
 export function UploadWorkflow(props) {
-    const { setEdges, setNodes, setWorkflow, workflow, nodes, edges} = useWorkflowContext();
-    const { updateWorkflow, updateWorkflowAndLayout } = useUndo()
+    const { updateWorkflowAndLayout } = useUndo()
     const fileInputRef = useRef(null);
     
     // NEW: This ref tracks whether we want to run the effect
@@ -35,7 +33,8 @@ export function UploadWorkflow(props) {
                             FunctionGitHubPackage : new_workflow.FunctionGitHubPackage || {},
                             FaaSrLog : new_workflow.FaaSrLog || "",
                             LoggingDataStore : new_workflow.LoggingDataStore || "",
-                            InvocationID : new_workflow.InvocationID || ""
+                            InvocationID : new_workflow.InvocationID || "",
+                            WorkflowName : new_workflow.WorkflowName || "unnamed-workflow"
                 });
             } catch (err) {
                 console.error("Invalid JSON file", err);
@@ -64,7 +63,7 @@ export function UploadWorkflow(props) {
                 const fn = functions[key];
                 updatedFunctionList[key] = {
                     ...fn,
-                    InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
+                    InvokeNext: Array.isArray(fn.InvokeNext[1]) ? fn.InvokeNext : [{true : [], false: []}, fn.InvokeNext]
                 };
             }
 
@@ -80,7 +79,7 @@ export function UploadWorkflow(props) {
             let newEdges = [];
             for (let i in updatedFunctionList) {
                 newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i));
-                updatedFunctionList[i].InvokeNext.forEach( (id) => {
+                updatedFunctionList[i].InvokeNext[1].forEach( (id) => {
                     newEdges.push(props.createNewEdge(i, id));
                 });
                 offset++;

@@ -54,6 +54,16 @@ export default function GeneralConfig(props){
 
             <h1>Other</h1>
 
+            {/* Workflow Name */}
+            <div>
+                <button>Workflow Name</button>
+                <input type="text" placeholder="workflow" onChange={(e)=>setWorkflow({
+                    ...workflow,
+                    WorkflowName : e.target.value
+                    
+                })} value={workflow.WorkflowName}/>
+            </div>
+
             {/* Function Invoke */}
             <div>
                 <button>First Function to Execute</button>

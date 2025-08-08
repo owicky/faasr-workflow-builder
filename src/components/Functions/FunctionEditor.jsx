@@ -5,9 +5,10 @@ import GenericLabel from "../Utils/GenericLabel";
 import Popup from "../Utils/Popup"
 import useUndo from "../Utils/Undo";
 import useCreateNewFunction from "./FunctionCreator"
+import useFunctionUtils from "./FunctionsUtils";
 
 export default function FunctionEditor(props){
-    const {workflow, setWorkflow, edges, setEdges, selectedFunctionId,nodes, setNodes} = useWorkflowContext();
+    const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
     const id = selectedFunctionId
     const [newArg, setNewArg] = useState("")
     const [newArgVal, setNewArgVal] = useState("")
@@ -19,6 +20,7 @@ export default function FunctionEditor(props){
     const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionName, setNewActionName] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
+    const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
     const createNewFunction = useCreateNewFunction();
 
     const updateFunction = (updates) => {
@@ -34,7 +36,42 @@ export default function FunctionEditor(props){
         });
     };
 
+    // const updateInvokeNext = (index, value) => {
+    //     const updatedInvokeNext = [...workflow.FunctionList[id].InvokeNext]
+
+    //     updatedInvokeNext[1][index] = value
+
+    //     updateFunction({InvokeNext : [...updatedInvokeNext]})
+    // } 
     
+    // const updateInvokeNextRank = (i, rank) => {
+    //     const invoke = workflow.FunctionList[id].InvokeNext[1][i]
+    //     const invokeName = (invoke.indexOf("(") !== -1) ? invoke.substring(0, invoke.indexOf("(")) : invoke
+    //     const rankHolder = edges.find( (edge) => edge.target === invokeName && edge.label !== undefined && edge.label !== "")
+    //     if ( rankHolder === undefined || rankHolder.source === id){
+    //         let rankString = ""
+    
+    //         if ( rank > 1 ) {
+    //             rankString = "(" + rank + ")"
+    //         }
+    //         updateInvokeNext(i, invokeName + rankString)
+            
+    //         const edgeIndex = edges.findIndex( (edge) => edge.id === (id + "-" + invokeName))
+    //         const updatedEdges = [...edges]
+    //         updatedEdges[edgeIndex] = {...updatedEdges[edgeIndex], label : (rank > 1) ? rank : ""}
+    
+    //         const nodeIndex = nodes.findIndex( (node) => node.id === (invokeName))
+    //         const updatedNodes = [...nodes]
+    //         updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}}
+            
+    //         updateLayout(updatedNodes, updatedEdges)
+    //     }else{
+    //         alert( rankHolder.source + " already invokes " + rankHolder.target + " with rank: " + rankHolder.label )
+    //     }
+
+    // }
+
+
 
     const updateArgument = (key, value) => {
         updateFunction({Arguments : {
@@ -48,16 +85,53 @@ export default function FunctionEditor(props){
         return(
 
             // Function Edit Box
-            <div style={{ }}>
+            <div >
                 <h1>Action Name : {id}</h1>
 
+                <br></br>
+                {/* Add/remove from graph & delete permanently*/}
+                <div>
+                    <button onClick={ () => {
+                        if(nodes.some( (node) => node?.id === id )) {
+                            alert("That action is already in the graph. Duplicate it instead to make a copy.");
+                        } else {
+                            createNewFunction(workflow.FunctionList[id]?.name, id);
+                        }   
+                    }}>Add Action to Graph</button>
+                </div>
+
+                {/* button to delete action from graph */}
+                <div>
+                    <button onClick={ () => {
+                        updateLayout( 
+                            nodes.filter( (node) =>node.id !== id),
+                            edges.filter( (edge) => edge.source !== id && edge.target !== id)
+                        ); 
+                    }}>Delete Action from Graph</button>
+                </div>
+
+                {/* Button to delete action permanently */}
+                <div>
+                    <button onClick={ () => {
+                        const newWorkflow = structuredClone(workflow);
+                        delete newWorkflow.FunctionList[id];
+                        updateWorkflowAndLayout(
+                            newWorkflow,
+                            nodes.filter( (node) =>node.id !== id),
+                            edges.filter( (edge) => edge.source !== id && edge.target !== id)
+                        );
+                    }}>Delete Action Permanently</button>
+                </div>
+                <br></br>
+
+                {/* Duplicate Action Div */}
                 <GenericLabel value={"Duplicate Action"}></GenericLabel>
                 <div style={{display : "flex"}}>
                     <TextInput value={newActionName} onChange={(e) => setNewActionName( e.target.value)} placeholder={"New Action Name"}></TextInput>
                     <button onClick={ () => {
                         // Add new action to workflow
                         if (!(newActionName in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
-                            createNewFunction(id, newActionName);   
+                            createNewFunction(newActionName, id);   
                         }else{
                             console.log("Already Exists")
                             console.log(newActionName + " in " + Object.keys(workflow.FunctionList))
@@ -65,12 +139,12 @@ export default function FunctionEditor(props){
                     }
                     }> Duplicate Action</button>
                 </div>
-                <br></br>
 
-
+                {/* Function Name Input */}
                 <GenericLabel size={"20px"} value={"Function Name"}></GenericLabel>
                 <TextInput value={workflow.FunctionList[id].FunctionName} placeholder={"FunctionName"} onChange={(e) => updateFunction({FunctionName : e.target.value})}/>
                 <br></br>
+
                 {/* Compute Server Selector */}
                 <div>
                     <GenericLabel size={"20px"} value={"Compute Server"}></GenericLabel>
@@ -119,8 +193,8 @@ export default function FunctionEditor(props){
                 <button onClick={() => setNewArgPopupEnabled(true)}>Add New Arguments</button>
                 </div>
                 <Popup enabled={newArgPopupEnabled} setEnabled={() => setNewArgPopupEnabled()}>
-                    <input value={newArg} placeholder="argument_name" onChange={ (e) => setNewArg(e.target.value)}></input>
-                    <input value={newArgVal} placeholder="argument_value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
+                    <input value={newArg} placeholder="argument-name" onChange={ (e) => setNewArg(e.target.value)}></input>
+                    <input value={newArgVal} placeholder="argument-value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
                     <button onClick={() => {
                         if (!/\s/.test(newArg) && newArg !== "" && !/\s/.test(newArgVal) && newArgVal !== ""){
                             updateWorkflow({
@@ -148,48 +222,27 @@ export default function FunctionEditor(props){
                 <GenericLabel size={"20px"} value={"Next Actions To Invoke"}></GenericLabel>
                 <div style={{border: "solid"}}>
 
-                    {/* Iterate Through Current invokes */}
-                    {
-                    workflow.FunctionList[id].InvokeNext.map( (val, i) => (
-                        // Choose Invoke
-                        <div key={i} style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
-                            <select placeholder="funcInvokeNExt" onChange={(e)=> { 
+                    {/* For each action in nonconditional Invokenext */}
 
+                    
 
-                                // Updated InvokeNext
-                                const updatedInvokeNext = [...workflow.FunctionList[id].InvokeNext]
-                                updatedInvokeNext[i] = e.target.value
+                    {listInvokeNext(id).map( (invoke) => {
+
+                        const { id : invId, rank} = parseInvoke(invoke)
+                        const condition = getInvokeCondition(id, invoke)
+                        return (
+                        // Per Invoke Div
+                        <div key={invId} style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
+                            {/* Change Invoke Target Id */}
+                            <select placeholder="funcInvokeNext" 
+                            onChange={(e)=> { 
 
                                 if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: e.target.value}, edges))) {
-                                    //Updated Edges
-                                    const updatedEdges = edges.map((edge) => {
-                                    if (edge.source === id && edge.target === val) {
-                                        return {
-                                        ...edge,
-                                        target: e.target.value,
-                                        id: `${edge.source}-${e.target.value}` // update ID if you're using source-target based IDs
-                                        };
-                                    }
-                                    return edge; // no change
-                                    });
-
-                                    // Update Workflow With New InvokeNext
-                                    updateWorkflowAndLayout({
-                                        ...workflow,
-                                        FunctionList: {
-                                            ...workflow.FunctionList,
-                                            [id]: {
-                                            ...workflow.FunctionList[id],
-                                            InvokeNext : updatedInvokeNext
-                                            }
-                                        }
-                                    }, nodes, updatedEdges);
-                                }else{
-                                    alert("Cycle Detected!")
+                                    updateInvoke(id, invoke, e.target.value, rank, condition)
                                 }
                         
                         }}
-                                type="text" value={val}>
+                                type="text" value={invId}>
                                 
                                 <option value={""}> NONE </option>
                                 
@@ -199,19 +252,36 @@ export default function FunctionEditor(props){
                                 ))}
                             </select>
 
-                            <button style={{color:"red"}} onClick={() => {
-                                let newWorkflow = structuredClone(workflow)
-                                newWorkflow.FunctionList[id].InvokeNext = newWorkflow.FunctionList[id].InvokeNext.filter(value => value !== val)
-                                
-                                const updatedEdges = edges.filter(e => e.source !== id || e.target !== val)
-                                updateWorkflowAndLayout(newWorkflow, nodes, updatedEdges)
+                            {/* Change Rank */}
+                            <input value={rank} id={invId+"--"+rank} type="number" min="1" step="1" placeholder="rank"
+                                onChange={
+                                    (e) => {
+                                        updateInvoke(id, invoke, invId, e.target.value, condition)
+                                    }
+                                }>
+                            </input>
 
+                            {/* Change Condition */}
+                            <select  value={condition} id={invoke+"cond"} type="text" onChange={ (e) => {
+                                updateInvoke(id, invoke, invId, rank, e.target.value)
+                            }}>
+                                <option value={""}> Unconditional </option>
+                                <option value={false}> false </option>
+                                <option value={true}> true </option>
+                            </select>
+
+                            {/* Delete InvokeNext Button */}
+                            <button style={{color:"red"}} onClick={() => {
+                                deleteInvoke(id, invoke)
                             }}>Delete</button>
+                            
                         </div>
-                    
-                    ))}
+
+                        
+                    )})}
 
                 </div>
+
                 {/* Add New Invoke Button */}
                 <select placeholder="funcInvokeNext" onChange={(e)=> setNewInvoke(e.target.value)}
                     type="text" value={newInvoke}>
@@ -223,29 +293,57 @@ export default function FunctionEditor(props){
                     <option key={key} value={key}>{key}</option>
                     ))}
                 </select>
+
+                <input type="number" id="rankInput" min="1" step="1" placeholder="rank"></input>
+                <select id="conditionInput" type="text">
+                    
+                    <option value={""}> Unconditional </option>
+                    <option value={false}> False </option>
+                    <option value={true}> True </option>
+                </select>
+
                 <button onClick={() => {
-                    if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: newInvoke}, edges))) {                    
-                        if (newInvoke !== ""){
-                            updateWorkflow({
+                    if(!edges.some( (edge) => edge.id === id+"-"+newInvoke)){
+                        const newrank = document.getElementById("rankInput").value
+                        const condition = document.getElementById("conditionInput").value
+                        const rankString = (newrank > 1) ? "(" +newrank + ")" : ""
+                        if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: newInvoke}, edges)) && isValidNewRankedEdge(id, newInvoke, newrank)) {                    
+                            if (newInvoke !== ""){
+                                updateWorkflow({
                                 ...workflow,
                                 FunctionList: {
                                     ...workflow.FunctionList,
                                     [id]: {
-                                        ...workflow.FunctionList[id],
-                                        InvokeNext: [
-                                            ...workflow.FunctionList[id].InvokeNext,
-                                            newInvoke
+                                    ...workflow.FunctionList[id],
+                                    InvokeNext: condition === ""
+                                        ? [
+                                            workflow.FunctionList[id].InvokeNext[0], // keep conditionals
+                                            [
+                                            ...workflow.FunctionList[id].InvokeNext[1],
+                                            newInvoke + rankString
+                                            ] // update unconditional
+                                        ]
+                                        : [
+                                            {
+                                            ...workflow.FunctionList[id].InvokeNext[0],
+                                            [condition]: [
+                                                ...workflow.FunctionList[id].InvokeNext[0][condition],
+                                                newInvoke + rankString
+                                            ]
+                                            },
+                                            workflow.FunctionList[id].InvokeNext[1] // keep unconditionals
                                         ]
                                     }
-                            
-                            }})
-                        }
-                            props.createEdge(id, newInvoke)
-                    }else{
-                        alert("Cycle Detected!")
-                    }
-                }}>Add New InvokeNext</button>
+                                }
+                                })
 
+                                }
+                                props.createEdge(id, newInvoke, newrank, condition)
+                                
+                            }
+                        } 
+                    }}>Add New InvokeNext</button>
+                        
                 <br></br>
                 <br></br>
                 
@@ -309,37 +407,22 @@ export default function FunctionEditor(props){
 
                     <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
                     <button onClick={() => {
-                    if(newGitPackage.trim() !== ""){
-                        setWorkflow({
-                        ...workflow,
-                        FunctionGitHubPackage: {
-                            ...workflow.FunctionGitHubPackage,
-                            [workflow.FunctionList[id].FunctionName]: [
-                            ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
-                            newGitPackage.trim()
-                            ]
+                        const newPackageName = newGitPackage.trim()
+                        if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
+                            setWorkflow({
+                                ...workflow,
+                                FunctionGitHubPackage: {
+                                    ...workflow.FunctionGitHubPackage,
+                                    [workflow.FunctionList[id].FunctionName]: [
+                                        ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
+                                        newPackageName
+                                    ]
+                                }
+                            });
+                            setNewGitPackage("");
                         }
-                        });
-                        setNewGitPackage("");
-                    }
                     }}>Add Package</button>
                 </div>
-                <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
-                <button onClick={() => {
-                if(newGitPackage.trim() !== ""){
-                    updateWorkflow({
-                    ...workflow,
-                    FunctionGitHubPackage: {
-                        ...workflow.FunctionGitHubPackage,
-                        [workflow.FunctionList[id].FunctionName]: [
-                        ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
-                        newGitPackage.trim()
-                        ]
-                    }
-                    });
-                    setNewGitPackage("");
-                }
-                }}>Add Package</button>
                 
                 <br></br>
                 <br></br>
@@ -378,70 +461,23 @@ export default function FunctionEditor(props){
                     }
                     <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
                     <button onClick={() => {
-                    if(newCranPackage.trim() !== ""){
-                        setWorkflow({
-                        ...workflow,
-                        FunctionCRANPackage: {
-                            ...workflow.FunctionCRANPackage,
-                            [workflow.FunctionList[id].FunctionName]: [
-                            ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
-                            newCranPackage.trim()
-                            ]
+                        const newPackageName = newCranPackage.trim()
+                        if(newPackageName !== "" && (!workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
+                            setWorkflow({
+                                ...workflow,
+                                FunctionCRANPackage: {
+                                    ...workflow.FunctionCRANPackage,
+                                    [workflow.FunctionList[id].FunctionName]: [
+                                        ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
+                                        newPackageName
+                                    ]
+                                }
+                            });
+                            setNewCranPackage("");
                         }
-                        });
-                        setNewCranPackage("");
-                    }
                     }}>Add Package</button>
                 </div>
-                <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
-                <button onClick={() => {
-                if(newCranPackage.trim() !== ""){
-                    updateWorkflow({
-                    ...workflow,
-                    FunctionCRANPackage: {
-                        ...workflow.FunctionCRANPackage,
-                        [workflow.FunctionList[id].FunctionName]: [
-                        ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
-                        newCranPackage.trim()
-                        ]
-                    }
-                    });
-                    setNewCranPackage("");
-                }
-                }}>Add Package</button>
-                {/* Add/remove from graph & delete permanently*/}
-                <div>
-                    <button onClick={ () => {
-                        if(nodes.some( (node) => node?.id === id )) {
-                            alert("That action is already in the graph. Duplicate it instead to make a copy.");
-                        } else {
-                            createNewFunction(workflow.FunctionList[id]?.name, id);
-                        }   
-                    }}>Add Action to Graph</button>
-                </div>
-
-                {/* button to delete action from graph */}
-                <div>
-                    <button onClick={ () => {
-                        updateLayout( 
-                            nodes.filter( (node) =>node.id !== id),
-                            edges.filter( (edge) => edge.source !== id && edge.target !== id)
-                        ); 
-                    }}>Delete Action from Graph</button>
-                </div>
-
-                {/* Button to delete action permanently */}
-                <div>
-                    <button onClick={ () => {
-                        const newWorkflow = structuredClone(workflow);
-                        delete newWorkflow.FunctionList[id];
-                        updateWorkflowAndLayout(
-                            newWorkflow,
-                            nodes.filter( (node) =>node.id !== id),
-                            edges.filter( (edge) => edge.source !== id && edge.target !== id)
-                        );
-                    }}>Delete Action Permanently</button>
-                </div>
+                
             </div>
 
 
