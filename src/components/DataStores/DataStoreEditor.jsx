@@ -55,7 +55,9 @@ export default function DataStoreEditor(props){
 
                 <div>
                     <button>Writable</button>
-                    <select onChange={(e)=>updateWorkflow({
+                    <select 
+                        value={workflow.DataStores[id].Writable}
+                        onChange={(e)=>updateWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,

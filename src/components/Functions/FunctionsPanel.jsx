@@ -14,7 +14,7 @@ export default function FunctionsPanel(props){
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
     const {updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId } = useUndo();
-    const createNewFunction = useCreateNewFunction();
+    const { createNewFunction } = useCreateNewFunction();
     const onCreateOption = (newActionId) => createNewFunction(newActionId);
     
 
@@ -28,9 +28,17 @@ export default function FunctionsPanel(props){
                 isClearable
                 placeholder={"Start typing to create a new action..."}
                 createOptionPosition={"first"}
+                styles={{
+                    control: (baseStyles, state) => ({
+                        ...baseStyles,
+                        borderColor: state.isFocused ? 'grey' : 'red',
+                        width: "90%",
+                    }),
+                }}
+
             />
             
-            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNode={props.createNode} id={selectedFunctionId}/>  
+            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNewEdge={props.createNewEdge} createNode={props.createNode} id={selectedFunctionId}/>  
 
         </div>     
     )

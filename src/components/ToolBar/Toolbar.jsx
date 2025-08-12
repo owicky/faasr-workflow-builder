@@ -19,7 +19,13 @@ export default function Toolbar(props) {
 
     const downloadWorkflowJson = (name) => {
 
-        const cleanedWorkflow = cleanObject({...workflow})
+        const strippedWorkflow = stripRemovedActions(workflow)
+        const cleanedWorkflow = cleanObject({...strippedWorkflow})
+
+        if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.FunctionList)) {
+            alert(`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`);
+            return
+        }
         if (!validate(cleanedWorkflow, { verbose: true})){ // If violates Schema
             // console.log(validate.errors)
             const errorMsg = validate.errors.map((error, i) => {
@@ -43,6 +49,23 @@ export default function Toolbar(props) {
         URL.revokeObjectURL(url);
 
     };
+
+    function stripRemovedActions(workflow) {
+        let newWorkflow = structuredClone(workflow)
+        Object.values(newWorkflow.FunctionList).forEach( (key, value) => {
+
+            if (!nodes.some( (node) => node.id === key)) {
+                delete newWorkflow.FunctionList[key];
+            }else{
+                // remove edges to nodes not in layout
+                newWorkflow.FunctionList[key].InvokeNext = newWorkflow.FunctionList[key].InvokeNext.filter(
+                    ( (id) => nodes.some( (node) => node.id === id))
+                );
+            }
+
+        });
+        return newWorkflow;
+    }
 
     function cleanObject(object) {
         // Type matched object or array to be poppulated and returned
@@ -96,8 +119,8 @@ export default function Toolbar(props) {
 
             <button onClick={() => setUploadPopupEnabled(true)}>Upload</button>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
-                <UploadWorkflow setLayout={() => props.setLayout()} createNewEdge={ props.createNewEdge } createNewNode={props.createNewNode} workflow_template={props.workflow_template}/>
-                <UploadLayout createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template} />
+                <UploadWorkflow setLayout={() => props.setLayout()} createNewEdge={ props.createNewEdge } createNewNode={props.createNewNode} workflow_template={props.workflow_template} updateWorkflowAndLayout={props.updateWorkflowAndLayout} setUploadPopupEnabled={setUploadPopupEnabled}/>
+                <UploadLayout createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template} setUploadPopupEnabled={setUploadPopupEnabled} />
             </Popup>
 
             <button onClick={() => setDownloadPopupEnabled(true)}>Download</button>

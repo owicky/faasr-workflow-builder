@@ -67,7 +67,7 @@ export default function GeneralConfig(props){
             {/* Function Invoke */}
             <div>
                 <button>First Function to Execute</button>
-                <select placeholder="funcInvokeNExt" onChange={(e)=> setWorkflow({
+                <select placeholder="funcInvokeNext" onChange={(e)=> setWorkflow({
                     ...workflow,
                     FunctionInvoke : e.target.value
                     })

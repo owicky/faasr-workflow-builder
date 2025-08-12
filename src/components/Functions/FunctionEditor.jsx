@@ -1,5 +1,5 @@
 import { useWorkflowContext } from "../../WorkflowContext"
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import TextInput from "../Utils/TextInput";
 import GenericLabel from "../Utils/GenericLabel";
 import Popup from "../Utils/Popup"
@@ -21,8 +21,7 @@ export default function FunctionEditor(props){
     const [newActionName, setNewActionName] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
     const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
-    const createNewFunction = useCreateNewFunction();
-
+    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
     const updateFunction = (updates) => {
         updateWorkflow({
             ...workflow,
@@ -79,6 +78,11 @@ export default function FunctionEditor(props){
             [key] : value
         }})
     };
+
+    const handleBlur = (e) => {
+        updateWorkflow(workflow);
+    };
+    
 
 
     if(id != null && workflow.FunctionList?.[id]){
@@ -142,7 +146,23 @@ export default function FunctionEditor(props){
 
                 {/* Function Name Input */}
                 <GenericLabel size={"20px"} value={"Function Name"}></GenericLabel>
-                <TextInput value={workflow.FunctionList[id].FunctionName} placeholder={"FunctionName"} onChange={(e) => updateFunction({FunctionName : e.target.value})}/>
+                {/* set workflow onChange, but only update history on blur*/}
+                <TextInput 
+                    value={workflow.FunctionList[id].FunctionName} 
+                    placeholder={"FunctionName"} 
+                    onChange={(e) => setWorkflow({
+                        ...workflow,
+                        FunctionList:{
+                            ...workflow.FunctionList,
+                            [id]: {
+                                ...workflow.FunctionList[id],
+                                FunctionName: e.target.value
+                            }
+                        }
+                    })}
+                    onBlur={handleBlur}
+                />
+                
                 <br></br>
 
                 {/* Compute Server Selector */}
@@ -184,9 +204,10 @@ export default function FunctionEditor(props){
                             }
                             />
                             <button style={{color:"red"}} onClick={() => {
-                                delete workflow.FunctionList[id].Arguments[key]
+                                const newWorkflow = structuredClone(workflow);
+                                delete newWorkflow.FunctionList[id].Arguments[key]
                                 console.log("Deleting: " + key)
-                                updateWorkflow({...workflow})
+                                updateWorkflow(newWorkflow)
                             }}>Delete</button>
                     </div>
                     ))}
@@ -350,30 +371,38 @@ export default function FunctionEditor(props){
                 {/* Paths */}
                 <div>
                     <GenericLabel size={"20px"} value={"Function's Git Repo/Path"}></GenericLabel>
-                    <input id={id+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" onChange={(e)=>setWorkflow({
-                        ...workflow,
-                        FunctionGitRepo: {
-                            ...workflow.FunctionGitRepo,
-                            [workflow.FunctionList[id].FunctionName] : e.target.value
-                        }
-                    })}value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName] || ""}/>
+                    <input id={id+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" 
+                        onChange={(e)=>setWorkflow({
+                            ...workflow,
+                            FunctionGitRepo: {
+                                ...workflow.FunctionGitRepo,
+                                [workflow.FunctionList[id].FunctionName] : e.target.value
+                            }
+                        })}
+                        value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName] || ""}
+                        onBlur={handleBlur}
+                    />
                 </div>
 
                 <br></br>
 
                 <div>
                     <GenericLabel size={"20px"} value={"Function's Action Container"}></GenericLabel>
-                    <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" onChange={(e)=>setWorkflow({
-                        ...workflow,
-                        ActionContainers: {
-                            ...workflow.ActionContainers,
-                            [id] : e.target.value
-                        }
-                    })}value={workflow.ActionContainers[id] || ""}/>
+                    <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
+                        onChange={(e)=>setWorkflow({
+                            ...workflow,
+                            ActionContainers: {
+                                ...workflow.ActionContainers,
+                                [id] : e.target.value
+                            }
+                        })}
+                        value={workflow.ActionContainers[id] || ""}
+                        onBlur={handleBlur}
+                    />
                 </div>
                 <br></br>
 
-                <GenericLabel size={"20px"} value={"GitGub Packages for the Function"}></GenericLabel>
+                <GenericLabel size={"20px"} value={"GitHub Packages for the Function"}></GenericLabel>
                 <div style={{border: "solid"}}>
                     { workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] ? 
                         Object.entries(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
@@ -383,7 +412,7 @@ export default function FunctionEditor(props){
                                 placeholder={key+" value"}
                                 value={val}
                                 onChange={(e) =>
-                                    updateWorkflow({
+                                    setWorkflow({
                                         ...workflow,
                                         FunctionGitHubPackage : {
                                             ...workflow.FunctionGitHubPackage,
@@ -394,11 +423,12 @@ export default function FunctionEditor(props){
                                     }
                                     )
                                 }
+                                onBlur={handleBlur} 
                                 />
                                 <button style={{color:"red"}} onClick={() => {
-                                    workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] = workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val)
-                                    console.log("Deleting: " + key)
-                                    updateWorkflow({...workflow})
+                                    const newWorkflow = structuredClone(workflow);
+                                    newWorkflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] = newWorkflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val);
+                                    updateWorkflow(newWorkflow);
                                 }}>Delete</button>
                         </div>
                         ))
@@ -438,7 +468,7 @@ export default function FunctionEditor(props){
                                 placeholder={key+" value"}
                                 value={val}
                                 onChange={(e) =>
-                                    updateWorkflow({
+                                    setWorkflow({
                                         ...workflow,
                                         FunctionCRANPackage : {
                                             ...workflow.FunctionCRANPackage,
@@ -451,9 +481,9 @@ export default function FunctionEditor(props){
                                 }
                                 />
                                 <button style={{color:"red"}} onClick={() => {
-                                    workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val)
-                                    console.log("Deleting: " + key)
-                                    updateWorkflow({...workflow})
+                                    const newWorkflow = structuredClone(workflow);
+                                    newWorkflow.FunctionCRANPackage[newWorkflow.FunctionList[id].FunctionName] = newWorkflow.FunctionCRANPackage[newWorkflow.FunctionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val);
+                                    updateWorkflow(newWorkflow);
                                 }}>Delete</button>
                         </div>
                         ))

@@ -1,5 +1,6 @@
 import { useRef } from "react";
 import useUndo from "../Utils/Undo";
+import { flushSync } from 'react-dom';
 
 export function UploadWorkflow(props) {
     const { updateWorkflowAndLayout } = useUndo()
@@ -7,6 +8,8 @@ export function UploadWorkflow(props) {
     
     // NEW: This ref tracks whether we want to run the effect
     const shouldBuildGraphRef = useRef(false);
+
+    const setUploadPopupEnabled = props.setUploadPopupEnabled;
 
     const handleFileChange = async (event) => {
         const file = event.target.files[0];
@@ -20,7 +23,7 @@ export function UploadWorkflow(props) {
                 // Set flag before updating state
                 shouldBuildGraphRef.current = true;
 
-                // Update workflow (triggers effect)
+                // Update workflow 
                 buildGraph({ ...new_workflow,
                             FunctionList : new_workflow.FunctionList || {},
                             ComputeServers : new_workflow.ComputeServers || {},
@@ -36,6 +39,7 @@ export function UploadWorkflow(props) {
                             InvocationID : new_workflow.InvocationID || "",
                             WorkflowName : new_workflow.WorkflowName || "unnamed-workflow"
                 });
+                setUploadPopupEnabled(false)
             } catch (err) {
                 console.error("Invalid JSON file", err);
                 alert(`Failed to load workflow: Invalid JSON ${err}`);
@@ -84,7 +88,8 @@ export function UploadWorkflow(props) {
                 });
                 offset++;
             }
-            updateWorkflowAndLayout(updatedWorkflow, newNodes, newEdges);
+
+            props.updateWorkflowAndLayout(updatedWorkflow, newNodes, newEdges);
 
         
     

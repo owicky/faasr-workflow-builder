@@ -52,7 +52,7 @@ function App() {
   const [editType, setEditType] = useState(null)
   const [ isDragging, setIsDragging] = useState(false);
   const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
-  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo } = useUndo();
+  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo, canUndo, canRedo } = useUndo();
   const {parseInvoke, listInvokeNext, isValidNewRankedEdge} = useFunctionUtils()
 
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
@@ -205,7 +205,8 @@ function App() {
   // Called when node is deleted in flow panel
   const onNodesDelete = 
     (deleted) => {
-      const id = deleted[0].id // Deleted Node/Action id
+      alert("node delete");
+      const id = deleted[0].id
       let newWorkflow = structuredClone(workflow)
       let newNodes = structuredClone(nodes)
 
@@ -245,6 +246,7 @@ function App() {
   // Called when edge is deleted in flow panel
   const onEdgesDelete = 
     (deleted) => {
+      alert("Edge delete")
       let coolEdge = deleted[0]
       let source = coolEdge.source
       let target = coolEdge.target
@@ -404,13 +406,13 @@ function App() {
       <div className="App">
 
       <header className="App-header">
-        <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createNewNode={createNewNode} createEdge={ createEdge } createNewEdge={createNewEdge}></Toolbar>
+        <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createNewNode={createNewNode} createEdge={ createEdge } createNewEdge={createNewEdge} updateWorkflowAndLayout={updateWorkflowAndLayout}></Toolbar>
       </header>
 
       <div id="mid-panel">
         <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} type={editType}/>
+        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
 
           <div id="workflow-panel">
             <ReactFlow
@@ -435,8 +437,8 @@ function App() {
               <Panel position="top-right">
                 <button onClick={() => onLayout('TB')}>vertical layout</button>
                 <button onClick={() => onLayout('LR')}>horizontal layout</button>
-                <button onClick={undo}><IoMdUndo /></button>
-                <button onClick={redo}><IoMdRedo /></button>
+                <button onClick={undo} disabled={!canUndo}><IoMdUndo /></button>
+                <button onClick={redo} disabled={!canRedo}><IoMdRedo /></button>
               </Panel>
 
             </ReactFlow>
