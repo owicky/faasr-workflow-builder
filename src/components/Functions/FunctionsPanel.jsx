@@ -14,7 +14,7 @@ export default function FunctionsPanel(props){
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
     const {updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId } = useUndo();
-    const createNewFunction = useCreateNewFunction();
+    const { createNewFunction } = useCreateNewFunction();
     const onCreateOption = (newActionId) => createNewFunction(newActionId);
     
 
@@ -38,7 +38,7 @@ export default function FunctionsPanel(props){
 
             />
             
-            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) }createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode} id={selectedFunctionId}/>  
+            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) }createEdge={(a,b) => props.createEdge(a,b)} createNode={props.createNode} id={selectedFunctionId} createNewEdge={props.createNewEdge}/>  
 
         </div>     
     )

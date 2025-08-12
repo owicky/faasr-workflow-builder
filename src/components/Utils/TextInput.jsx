@@ -1,6 +1,6 @@
 import GenericLabel from "./GenericLabel";
 
-export default function TextInput({ value, onChange, placeholder }) {
+export default function TextInput({ value, onChange, placeholder, ...otherProps }) {
     return (
         <div>
             <input 
@@ -8,6 +8,7 @@ export default function TextInput({ value, onChange, placeholder }) {
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
+                {...otherProps}
             />
         </div>
     );

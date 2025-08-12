@@ -201,6 +201,7 @@ function App() {
   // Called when node is deleted in flow panel
   const onNodesDelete = useCallback(
     (deleted) => {
+      alert("node delete");
       const id = deleted[0].id
       let newWorkflow = structuredClone(workflow)
       for (let i in workflow.FunctionList){
@@ -215,11 +216,13 @@ function App() {
         edges.filter((edge) => edge.source !== id && edge.target !== id)
       );
     },
+    [updateWorkflowAndLayout]
   );
 
   // Called when edge is deleted in flow panel
   const onEdgesDelete = useCallback(
     (deleted) => {
+      alert("Edge delete")
       let coolEdge = deleted[0]
       let source = coolEdge.source
       let target = coolEdge.target
@@ -231,6 +234,7 @@ function App() {
         (edge) => edge.source !== source && edge.target !== target
       ));
     },
+    [updateWorkflowAndLayout]
   );
 
   // Adds new node given (xpos : num, ypos : num, name : string, id : string) to nodes obj
@@ -339,7 +343,7 @@ function App() {
       <div id="mid-panel">
         <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b) => createEdge(a,b)} createNode={createNode} type={editType}/>
+        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b) => createEdge(a,b)} createNode={createNode} type={editType} createNewEdge={createNewEdge}/>
 
           <div id="workflow-panel">
             <ReactFlow
