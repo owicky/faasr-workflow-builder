@@ -25,17 +25,22 @@ export const useCreateNewFunction = () => {
 
     const createNewEdge = (id1, id2) => {
         const newEdge = {
-            animated : false,
-            source : id1,
-            target : id2,
-            markerEnd: {
-                width: 20,
-                height: 20,
-                type: MarkerType.ArrowClosed,
-            },
-            id : id1+"-"+id2
+        animated : false,
+        source : id1,
+        target : id2,
+        markerEnd: {
+            width: 10,
+            height: 10,
+            type: MarkerType.ArrowClosed,
+            color: "#000000",
+        },
+        style: {
+            stroke: "#000000",
+            strokeWidth : 2
+        }, 
+        id : id1+"-"+id2
         };
-
+        
         return newEdge;  
     }
     // Used to create layout node for existing function
@@ -43,7 +48,7 @@ export const useCreateNewFunction = () => {
 
         const newNode = createNewNode(functionId);
         let newEdges = [];
-        workflow.FunctionList[functionId].InvokeNext.forEach( (target) => {
+        workflow.FunctionList[functionId].InvokeNext[1].forEach( (target) => {
             if (!edges.some( (edge) => edge.source === functionId && edge.target === target )) {
                 newEdges.push(createNewEdge(functionId, target));
             }
@@ -51,16 +56,16 @@ export const useCreateNewFunction = () => {
         updateLayout(nodes.concat(newNode), edges.concat(newEdges));
 
     }
-    const createNewFunction = ( newFunctionId, newActionName = "" ) => {
+    const createNewFunction = ( newActionId, newActionName = "" ) => {
 
-        if (!(newAction in Object.keys(workflow.FunctionList)) && (newAction !== "")){
+        if (!(newActionId in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
             console.log("is fresh")
             const newWorkflow = {
                 ...workflow,
                 FunctionList: {
                     ...workflow.FunctionList,
-                    [newAction]: {
-                        FunctionName: newFunction,
+                    [newActionId]: {
+                        FunctionName: newActionName,
                         FaaSServer: defaultFaaSServer,
                         Arguments: {
                         },
@@ -68,7 +73,7 @@ export const useCreateNewFunction = () => {
                     }
                 }
             };
-            const newNode = createNewNode(newId);
+            const newNode = createNewNode(newActionId);
             updateWorkflowAndLayout(newWorkflow, nodes.concat(newNode), edges)
         }
     };

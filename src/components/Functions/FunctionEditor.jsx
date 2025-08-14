@@ -99,7 +99,7 @@ export default function FunctionEditor(props){
                         if(nodes.some( (node) => node?.id === id )) {
                             alert("That action is already in the graph. Duplicate it instead to make a copy.");
                         } else {
-                            createNewFunction(workflow.FunctionList[id]?.name, id);
+                            createNewFunctionNode(id);
                         }   
                     }}>Add Action to Graph</button>
                 </div>
@@ -135,7 +135,7 @@ export default function FunctionEditor(props){
                     <button onClick={ () => {
                         // Add new action to workflow
                         if (!(newActionName in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
-                            createNewFunction(newActionName, id);   
+                            createNewFunction(newActionName, `${workflow.FunctionList[id].FunctionName}_copy`);   
                         }else{
                             console.log("Already Exists")
                             console.log(newActionName + " in " + Object.keys(workflow.FunctionList))
@@ -439,7 +439,7 @@ export default function FunctionEditor(props){
                     <button onClick={() => {
                         const newPackageName = newGitPackage.trim()
                         if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
-                            setWorkflow({
+                            updateWorkflow({
                                 ...workflow,
                                 FunctionGitHubPackage: {
                                     ...workflow.FunctionGitHubPackage,
@@ -493,7 +493,7 @@ export default function FunctionEditor(props){
                     <button onClick={() => {
                         const newPackageName = newCranPackage.trim()
                         if(newPackageName !== "" && (!workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
-                            setWorkflow({
+                            updateWorkflow({
                                 ...workflow,
                                 FunctionCRANPackage: {
                                     ...workflow.FunctionCRANPackage,
