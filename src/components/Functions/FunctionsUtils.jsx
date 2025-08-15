@@ -23,8 +23,8 @@ const useFunctionUtils = () => {
         const invokes = []
         const invokeNext = workflow.FunctionList[id].InvokeNext
 
-        const trueInvokes = invokeNext[0]["true"]
-        const falseInvokes = invokeNext[0]["false"]
+        const trueInvokes = invokeNext[0]["True"]
+        const falseInvokes = invokeNext[0]["False"]
         const unconditionalInvokes = invokeNext[1]
 
         return invokes.concat(trueInvokes, falseInvokes, unconditionalInvokes)
@@ -50,39 +50,39 @@ const useFunctionUtils = () => {
     // Find true/false/unconditional value of invoke
     const getInvokeCondition = (funcId, invoke) => {
         const invokeNext = workflow.FunctionList[funcId].InvokeNext
-        if ( invokeNext[0].true.includes(invoke)) return "true"
-        else if ( invokeNext[0].false.includes(invoke)) return "false"
+        if ( invokeNext[0].True.includes(invoke)) return "True"
+        else if ( invokeNext[0].False.includes(invoke)) return "False"
         else if (invokeNext[1].includes(invoke)) return "unclassified"
         return ""
     }
 
     // Remove an invoke from functions InvokeNext and delete corresponding Edge
     const deleteInvoke = (funcId, invoke) => {
-        let newInvokeNext = [workflow.FunctionList[funcId].InvokeNext]
+        let newInvokeNext = workflow.FunctionList[funcId].InvokeNext
         const {id} = parseInvoke(invoke)
         const condition = getInvokeCondition(funcId, invoke)
 
         switch (condition){
-            case "true":
+            case "True":
                 newInvokeNext = [
                     {
                         ...newInvokeNext[0],
-                        true: [...newInvokeNext[0].true.filter( (inv) => inv !== invoke )]
+                        True: [...newInvokeNext[0].True.filter( (inv) => inv !== invoke )]
                     },
                     newInvokeNext[1]
                 ];
                 break;
-            case "false":
+            case "False":
                 
                 newInvokeNext = [
                     {
                         ...newInvokeNext[0],
-                        false: [...newInvokeNext[0].false.filter( (inv) => inv !== invoke )]
+                        False: [...newInvokeNext[0].False.filter( (inv) => inv !== invoke )]
                     },
                     newInvokeNext[1]
                 ];
                 break;
-            case "unclassified":
+            case "Unclassified":
                 newInvokeNext = [
                     newInvokeNext[0],
                     [...newInvokeNext[1].filter( (inv) => inv !== invoke ) ]
@@ -94,10 +94,18 @@ const useFunctionUtils = () => {
 
         const updatedEdges = edges.filter( (edge) => !(edge.source === funcId && edge.target === id))
         const updatedNodes = nodes.map( (node) => {
+            // Set target rank to 1
             if (node.id === id){
-                return undefined
+                return {
+                    ...node,
+                    data : {
+                        ...node.data,
+                        rank : 1
+                    }
+                }
+            }else{
+                return node
             }
-            return node
         })
         const updatedWorkflow = {
             ...workflow,
@@ -123,20 +131,20 @@ const useFunctionUtils = () => {
         const newInvoke = rank > 1 ? id+"("+rank+")" : id
 
         switch (condition) {
-            case "true":
+            case "True":
                 newInvokeNext = [
                 {
                     ...newInvokeNext[0],
-                    true: [...newInvokeNext[0].true, newInvoke]
+                    True: [...newInvokeNext[0].True, newInvoke]
                 },
                 newInvokeNext[1]
                 ];
                 break;
-            case "false":
+            case "False":
                 newInvokeNext = [
                 {
                     ...newInvokeNext[0],
-                    false: [...newInvokeNext[0].false, newInvoke]
+                    False: [...newInvokeNext[0].False, newInvoke]
                 },
                 newInvokeNext[1]
                 ];
@@ -222,10 +230,10 @@ const useFunctionUtils = () => {
 
 
         switch(condition) {
-        case "false":
+        case "False":
             colorc = "#F52F16"; 
             break;
-        case "true":
+        case "True":
             colorc = "#1BF23D";
             break;
         default:
@@ -270,21 +278,21 @@ const useFunctionUtils = () => {
         
         const newInvoke = newRank > 1 ? newId +"("+newRank+")" : newId
 
-        if ( newInvokeNext[0].true.includes(invoke) ){
+        if ( newInvokeNext[0].True.includes(invoke) ){
             newInvokeNext = [
                 {
                     ...newInvokeNext[0],
-                    true: [...newInvokeNext[0].true.filter( (inv) => inv !== invoke )]
+                    True: [...newInvokeNext[0].True.filter( (inv) => inv !== invoke )]
                 },
                 newInvokeNext[1]
             ];
         }
-        else if ( newInvokeNext[0].false.includes(invoke) ){
+        else if ( newInvokeNext[0].False.includes(invoke) ){
 
             newInvokeNext = [
                 {
                     ...newInvokeNext[0],
-                    false: [...newInvokeNext[0].false.filter( (inv) => inv !== invoke )]
+                    False: [...newInvokeNext[0].False.filter( (inv) => inv !== invoke )]
                 },
                 newInvokeNext[1]
             ];
@@ -297,20 +305,20 @@ const useFunctionUtils = () => {
         }
 
         switch (newCondition) {
-            case "true":
+            case "True":
                 newInvokeNext = [
                 {
                     ...newInvokeNext[0],
-                    true: [...newInvokeNext[0].true, newInvoke]
+                    True: [...newInvokeNext[0].True, newInvoke]
                 },
                 newInvokeNext[1]
                 ];
                 break;
-            case "false":
+            case "False":
                 newInvokeNext = [
                 {
                     ...newInvokeNext[0],
-                    false: [...newInvokeNext[0].false, newInvoke]
+                    False: [...newInvokeNext[0].False, newInvoke]
                 },
                 newInvokeNext[1]
                 ];

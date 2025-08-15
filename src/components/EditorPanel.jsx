@@ -9,23 +9,33 @@ export default function EditorPanel(props) {
         switch(props.type) {
             case 'ComputeServers':
                 return(
-                    <ComputeServersPanel/>
+                    <div className="editor-panel-outer">
+                        <ComputeServersPanel/>
+                    </div>
                 )
             case 'DataStores':
                 return(
-                    <DataStoresPanel/>
+                    <div className="editor-panel-outer">
+                        <DataStoresPanel/>
+                    </div>
                 )
             case 'Functions':
                 return(
-                    <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b,c, d) } createNode={props.createNode} createNewEdge={props.createNewEdge}/>
+                    <div className="editor-panel-outer">
+                        <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b,c, d) } createNode={props.createNode} createNewEdge={props.createNewEdge}/>
+                    </div>
                 )
             case 'GeneralConfig':
                 return(
-                    <GeneralConfig/>
+                    <div className="editor-panel-outer">
+                        <GeneralConfig/>
+                    </div>
                 )
             default:
                 return(
-                    <h1 style={{color: 'red'}}>No Edit Mode Selected</h1>
+                    <div className="editor-panel-outer">
+                        <h1 style={{color: 'red'}}>No Edit Mode Selected</h1>
+                    </div>
                 )
         }
     }

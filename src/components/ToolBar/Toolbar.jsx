@@ -4,30 +4,44 @@ import { useState } from "react";
 import Popup from "../Utils/Popup";
 import GenericLabel from "../Utils/GenericLabel";
 import { UploadLayout } from "./UploadLayout";
-import schema from "../../assets/webui-workflow-schema.json"
-// import schema from "../../assets/webui-workflow-schema-new.json"
+import schemaOld from "../../assets/webui-workflow-schema.json"
+import schemaNew from "../../assets/webui-workflow-schema-new.json"
+import GenericButton from "../Utils/GenericButton";
+import { IoMdSettings } from "react-icons/io";
+import { FaDownload, FaUpload } from "react-icons/fa6";
+import { FaDatabase  } from "react-icons/fa";
+import { FaServer  } from "react-icons/fa6";
+import { FaSitemap } from "react-icons/fa"
+
 
 export default function Toolbar(props) {
     const {workflow, edges, nodes, } = useWorkflowContext();
     const [ downloadPopupEnabled, setDownloadPopupEnabled ] = useState(false)
     const [ uploadPopupEnabled, setUploadPopupEnabled ] = useState(false)
 
-    var validator = require('is-my-json-valid')
-    var validate = validator(schema, {
-        greedy : true
-    })
+    const downloadWorkflowJson = (name, newSchema) => {
 
-    const downloadWorkflowJson = (name) => {
+        const validator = require('is-my-json-valid')
+            const validate = validator(newSchema ? schemaNew : schemaOld, {
+            greedy : true
+        })
 
         const strippedWorkflow = stripRemovedActions(workflow)
         const cleanedWorkflow = cleanObject({...strippedWorkflow})
+
 
         if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.FunctionList)) {
             alert(`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`);
             return
         }
+
+
+        if (newSchema) {
+            cleanedWorkflow.ActionList = cleanedWorkflow.FunctionList
+            delete cleanedWorkflow.FunctionList
+        }
+
         if (!validate(cleanedWorkflow, { verbose: true})){ // If violates Schema
-            // console.log(validate.errors)
             const errorMsg = validate.errors.map((error, i) => {
                 const fieldName = error.field;
                 return `• ${fieldName}: ${error.message}`;
@@ -115,32 +129,34 @@ export default function Toolbar(props) {
 
     return(
         <div id="toolbar" style={{ width: '100vw', height: '5vh'}}>
-            {/* <button onClick={() => testFunc()}>TEST BUTTON</button> */}
+            {/* <GenericButton onClick={() => alert("test")}>test</GenericButton> */}
 
-            <button onClick={() => setUploadPopupEnabled(true)}>Upload</button>
+            <GenericButton icon={<FaUpload/>} onClick={() => setUploadPopupEnabled(true)}>Upload</GenericButton>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
                 <UploadWorkflow setLayout={() => props.setLayout()} createNewEdge={ props.createNewEdge } createNewNode={props.createNewNode} workflow_template={props.workflow_template} updateWorkflowAndLayout={props.updateWorkflowAndLayout} setUploadPopupEnabled={setUploadPopupEnabled}/>
                 <UploadLayout createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template} setUploadPopupEnabled={setUploadPopupEnabled} />
             </Popup>
 
-            <button onClick={() => setDownloadPopupEnabled(true)}>Download</button>
+            <GenericButton icon={<FaDownload/>} onClick={() => setDownloadPopupEnabled(true)}>Download</GenericButton>
             <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabled()}>
                 <GenericLabel value={"Download Options for Workflow: "+workflow.WorkflowName} size="20px"></GenericLabel>
-
-                <button onClick={() => downloadWorkflowJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}.json</button>
+                <select id="schema-select">
+                    <option value={"false"}>Validate using old schema</option>
+                    <option value={"true"}>Validate using new schema</option>
+                </select>
+                <br></br>
+                <br></br>
+                <button onClick={() => downloadWorkflowJson(workflow.WorkflowName, document.getElementById("schema-select").value === "true")}>Download {workflow.WorkflowName}.json</button>
                 <button onClick={() => downloadLayoutJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}-layout.json</button>
             </Popup>
-            <div style={{width : 5}}></div>
-            <button onClick={() => props.setEditType("DataStores")}>Edit Data Stores</button>
-            <button onClick={() => props.setEditType("ComputeServers")}>Edit Compute Servers</button>
+            <GenericButton icon={<FaDatabase/>} onClick={() => props.setEditType("DataStores")}>Edit Data Stores</GenericButton>
+            <GenericButton icon={<FaServer/>} onClick={() => props.setEditType("ComputeServers")}>Edit Compute Servers</GenericButton>
 
-            <button onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</button>
-            <div style={{width : 5}}></div>
-            <button onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</button>
-            <div style={{width : 5}}></div>
-            <button onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</button>
+            <GenericButton icon={<FaSitemap/>} onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</GenericButton>
+            <GenericButton icon={<IoMdSettings/>} onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</GenericButton>
+            <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
 
-            <button onClick={() => props.toggleGraphVisible()}>Toggle Graph</button>
+            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton>
 
             {/* Workflow Name Banner */}
             <span style={{

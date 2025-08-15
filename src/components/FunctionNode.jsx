@@ -54,7 +54,7 @@ const FunctionNode = ({ data }) => {
                 <Handle type="target" position={( data.direct  === 0) ? Position.Left : Position.Top} />
                     <div style={{display : "flex", alignItems : "baseline"}}>
                         <img alt="" src={logos[FaasType]}style={{ width: '30px', height: '30px'}}/>
-                        <label className='truncate'>{data.id}</label>
+                        <label style={{paddingLeft: "2px"}} className='truncate'>{data.id}</label>
                         <br></br>
                     </div>
                 <Handle type="source" position={( data.direct === 0) ? Position.Right : Position.Bottom} id="a"/>

@@ -1,39 +1,78 @@
 
 #toolbar{
-  background-color: rgb(151, 229, 229);
-  height: 18vh;
+  background-color: white;
   display: flex;
-  flex-direction: row;
+  box-sizing: border-box;
+  border: 2px solid black;
+  padding: 2px;
+  padding-bottom: 2px;
+  width: 100%;
+}
+
+.generic-button{
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  outline: 1px solid black;
+  background-color: #f2f2f2;
+  cursor: pointer;
+  padding-right: 4px;
+  padding-left: 4px;
 }
 
 .editor-panel{
   width: 30vw;
   height: 100%;
   overflow-y: auto;
+  box-sizing: border-box;
+  padding: 3px;
 }
 
 #workflow-panel{
-  background-color: aqua;
+  /* background-color: aqua; */
+  background-color: #f2f2f2;
   width: 70vw;
+}
+
+.App{
+  height: 100vh;
+  width: 100vw;  
+}
+
+#mid-panel{
+  width: 100%; 
+  height: 95vh;
+  display: flex;
+  flex-direction: row;
+  /* background-color: antiquewhite; */
+  background-color: white;
+}
+
+.editor-panel-outer{
+  border-right: 2px solid black;
 }
 
 #jsonview-panel{
   background-color: aliceblue;
   overflow:auto;
 }
+
 #nodes-edges-panel{
   background-color: rgb(184, 215, 243);
   overflow:auto;
 }
-#mid-panel{
-  width: 100%; 
-  height: 95vh;
-  display: flex;
-  flex-direction: row;
-  background-color: antiquewhite;
-}
 
-.function-node{
+
+/* .function-node{
+  height: 40px;
+  width: 160px;
+  border: 1px solid #000000;
+  padding: 5px;
+  border-radius: 10px;
+  background: white;
+} */
+
+.react-flow.light .function-node{
   height: 40px;
   width: 160px;
   border: 1px solid #000000;
@@ -41,6 +80,26 @@
   border-radius: 10px;
   background: white;
 }
+
+.react-flow.dark .function-node{
+  color: white;
+  height: 40px;
+  width: 160px;
+  border: 1px solid white;
+  padding: 5px;
+  border-radius: 10px;
+  background: #000000;
+}
+
+.react-flow.dark .custom-edge path {
+  stroke: white;
+}
+
+.react-flow.light .custom-edge path {
+  stroke: #000000;
+}
+
+
 
 .truncate{
   display: block;

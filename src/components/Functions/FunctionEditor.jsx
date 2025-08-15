@@ -6,6 +6,14 @@ import Popup from "../Utils/Popup"
 import useUndo from "../Utils/Undo";
 import useCreateNewFunction from "./FunctionCreator"
 import useFunctionUtils from "./FunctionsUtils";
+import ComputeServerSelector from "./EditorComponents/ComputeServerSelector"
+import ArgumentsEditor from "./EditorComponents/ArgumentsEditor"
+import InvokeNextEditor from "./EditorComponents/InvokeNextEditor"
+import CranPackageEditor from "./EditorComponents/CranPackageEditor";
+import GitPackageEditor from "./EditorComponents/GitPackageEditor";
+import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
+import GenericButton from "../Utils/GenericButton";
+
 
 export default function FunctionEditor(props){
     const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
@@ -22,18 +30,19 @@ export default function FunctionEditor(props){
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
     const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
     const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
-    const updateFunction = (updates) => {
-        updateWorkflow({
-            ...workflow,
-            FunctionList: {
-                ...workflow.FunctionList,
-                [id]: {
-                    ...workflow.FunctionList[id],
-                    ...updates
-                }
-            }
-        });
-    };
+
+    // const updateFunction = (updates) => {
+    //     updateWorkflow({
+    //         ...workflow,
+    //         FunctionList: {
+    //             ...workflow.FunctionList,
+    //             [id]: {
+    //                 ...workflow.FunctionList[id],
+    //                 ...updates
+    //             }
+    //         }
+    //     });
+    // };
 
     // const updateInvokeNext = (index, value) => {
     //     const updatedInvokeNext = [...workflow.FunctionList[id].InvokeNext]
@@ -72,12 +81,12 @@ export default function FunctionEditor(props){
 
 
 
-    const updateArgument = (key, value) => {
-        updateFunction({Arguments : {
-            ...workflow.FunctionList[id].Arguments,
-            [key] : value
-        }})
-    };
+    // const updateArgument = (key, value) => {
+    //     updateFunction({Arguments : {
+    //         ...workflow.FunctionList[id].Arguments,
+    //         [key] : value
+    //     }})
+    // };
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);
@@ -166,223 +175,27 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Compute Server Selector */}
-                <div>
-                    <GenericLabel size={"20px"} value={"Compute Server"}></GenericLabel>
-                    <select placeholder="FaaSServer" onChange={(e)=>updateWorkflow({
-                        ...workflow,
-                        FunctionList: {
-                            ...workflow.FunctionList,
-                            [id]: {
-                            ...workflow.FunctionList[id],
-                            FaaSServer: e.target.value
-                            }
-                        }
-                    })} type="text" value={workflow.FunctionList[id].FaaSServer}>
-                        <option value={""}> NONE </option>
-                        {Object.entries(workflow.ComputeServers).map(([key, val], i) => (
-                        <option key={key} value={key}>{key}</option>
-                        ))}
-                    </select>
-
+                <ComputeServerSelector id={id}></ComputeServerSelector>
                     
-                </div>
                 <br></br>
 
 
                 {/* Arguments Editor */}
-                <GenericLabel size={"20px"} value={"Arguments"}></GenericLabel>
-                <div style={{border: "solid"}}>
-                    {Object.entries(workflow.FunctionList[id].Arguments).map(([key, val], i) => (
-                        <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
-                            <label className="truncate">{key}</label>
-                            <input
-                            type="text"
-                            placeholder={key+" value"}
-                            value={val}
-                            onChange={(e) =>
-                                updateArgument(key, e.target.value)
-                            }
-                            />
-                            <button style={{color:"red"}} onClick={() => {
-                                const newWorkflow = structuredClone(workflow);
-                                delete newWorkflow.FunctionList[id].Arguments[key]
-                                console.log("Deleting: " + key)
-                                updateWorkflow(newWorkflow)
-                            }}>Delete</button>
-                    </div>
-                    ))}
-                <button onClick={() => setNewArgPopupEnabled(true)}>Add New Arguments</button>
-                </div>
-                <Popup enabled={newArgPopupEnabled} setEnabled={() => setNewArgPopupEnabled()}>
-                    <input value={newArg} placeholder="argument-name" onChange={ (e) => setNewArg(e.target.value)}></input>
-                    <input value={newArgVal} placeholder="argument-value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
-                    <button onClick={() => {
-                        if (!/\s/.test(newArg) && newArg !== "" && !/\s/.test(newArgVal) && newArgVal !== ""){
-                            updateWorkflow({
-                            ...workflow,
-                            FunctionList: {
-                                ...workflow.FunctionList,
-                                [id]: {
-                                    ...workflow.FunctionList[id],
-                                    Arguments: {
-                                    ...workflow.FunctionList[id].Arguments,
-                                    [newArg]: newArgVal
-                                    }
-                                }
-                                }
-                            })}else{
-                                alert("New argument name and value must neither be empty nor contain whitespaces.")
-                            }
-                        }
-                        }>Add New Argument</button>
-                </Popup>
+                <ArgumentsEditor id={id}></ArgumentsEditor>
                 <br></br>
                 <br></br>
+
 
                 {/* InvokeNext Editor */}
-                <GenericLabel size={"20px"} value={"Next Actions To Invoke"}></GenericLabel>
-                <div style={{border: "solid"}}>
+                <InvokeNextEditor createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id}></InvokeNextEditor>
+                
 
-                    {/* For each action in nonconditional Invokenext */}
-
-                    
-
-                    {listInvokeNext(id).map( (invoke) => {
-
-                        const { id : invId, rank} = parseInvoke(invoke)
-                        const condition = getInvokeCondition(id, invoke)
-                        return (
-                        // Per Invoke Div
-                        <div key={invId} style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
-                            {/* Change Invoke Target Id */}
-                            <select placeholder="funcInvokeNext" 
-                            onChange={(e)=> { 
-
-                                if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: e.target.value}, edges))) {
-                                    updateInvoke(id, invoke, e.target.value, rank, condition)
-                                }
-                        
-                        }}
-                                type="text" value={invId}>
-                                
-                                <option value={""}> NONE </option>
-                                
-                                {Object.entries(workflow.FunctionList).map(([key]) => (
-                                
-                                <option key={key} value={key}>{key}</option>
-                                ))}
-                            </select>
-
-                            {/* Change Rank */}
-                            <input value={rank} id={invId+"--"+rank} type="number" min="1" step="1" placeholder="rank"
-                                onChange={
-                                    (e) => {
-                                        updateInvoke(id, invoke, invId, e.target.value, condition)
-                                    }
-                                }>
-                            </input>
-
-                            {/* Change Condition */}
-                            <select  value={condition} id={invoke+"cond"} type="text" onChange={ (e) => {
-                                updateInvoke(id, invoke, invId, rank, e.target.value)
-                            }}>
-                                <option value={""}> Unconditional </option>
-                                <option value={false}> false </option>
-                                <option value={true}> true </option>
-                            </select>
-
-                            {/* Delete InvokeNext Button */}
-                            <button style={{color:"red"}} onClick={() => {
-                                deleteInvoke(id, invoke)
-                            }}>Delete</button>
-                            
-                        </div>
-
-                        
-                    )})}
-
-                </div>
-
-                {/* Add New Invoke Button */}
-                <select placeholder="funcInvokeNext" onChange={(e)=> setNewInvoke(e.target.value)}
-                    type="text" value={newInvoke}>
-                    
-                    <option value={""}> NONE </option>
-                    
-                    {Object.entries(workflow.FunctionList).map(([key]) => (
-                    
-                    <option key={key} value={key}>{key}</option>
-                    ))}
-                </select>
-
-                <input type="number" id="rankInput" min="1" step="1" placeholder="rank"></input>
-                <select id="conditionInput" type="text">
-                    
-                    <option value={""}> Unconditional </option>
-                    <option value={false}> False </option>
-                    <option value={true}> True </option>
-                </select>
-
-                <button onClick={() => {
-                    if(!edges.some( (edge) => edge.id === id+"-"+newInvoke)){
-                        const newrank = document.getElementById("rankInput").value
-                        const condition = document.getElementById("conditionInput").value
-                        const rankString = (newrank > 1) ? "(" +newrank + ")" : ""
-                        if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: newInvoke}, edges)) && isValidNewRankedEdge(id, newInvoke, newrank)) {                    
-                            if (newInvoke !== ""){
-                                updateWorkflow({
-                                ...workflow,
-                                FunctionList: {
-                                    ...workflow.FunctionList,
-                                    [id]: {
-                                    ...workflow.FunctionList[id],
-                                    InvokeNext: condition === ""
-                                        ? [
-                                            workflow.FunctionList[id].InvokeNext[0], // keep conditionals
-                                            [
-                                            ...workflow.FunctionList[id].InvokeNext[1],
-                                            newInvoke + rankString
-                                            ] // update unconditional
-                                        ]
-                                        : [
-                                            {
-                                            ...workflow.FunctionList[id].InvokeNext[0],
-                                            [condition]: [
-                                                ...workflow.FunctionList[id].InvokeNext[0][condition],
-                                                newInvoke + rankString
-                                            ]
-                                            },
-                                            workflow.FunctionList[id].InvokeNext[1] // keep unconditionals
-                                        ]
-                                    }
-                                }
-                                })
-
-                                }
-                                props.createEdge(id, newInvoke, newrank, condition)
-                                
-                            }
-                        } 
-                    }}>Add New InvokeNext</button>
                         
                 <br></br>
                 <br></br>
                 
                 {/* Paths */}
-                <div>
-                    <GenericLabel size={"20px"} value={"Function's Git Repo/Path"}></GenericLabel>
-                    <input id={id+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" 
-                        onChange={(e)=>setWorkflow({
-                            ...workflow,
-                            FunctionGitRepo: {
-                                ...workflow.FunctionGitRepo,
-                                [workflow.FunctionList[id].FunctionName] : e.target.value
-                            }
-                        })}
-                        value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName] || ""}
-                        onBlur={handleBlur}
-                    />
-                </div>
+                <GitRepoPathEditor onBlur={handleBlur} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></GitRepoPathEditor>
 
                 <br></br>
 
@@ -401,112 +214,11 @@ export default function FunctionEditor(props){
                     />
                 </div>
                 <br></br>
-
-                <GenericLabel size={"20px"} value={"GitHub Packages for the Function"}></GenericLabel>
-                <div style={{border: "solid"}}>
-                    { workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] ? 
-                        Object.entries(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
-                            <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
-                                <input
-                                type="text"
-                                placeholder={key+" value"}
-                                value={val}
-                                onChange={(e) =>
-                                    setWorkflow({
-                                        ...workflow,
-                                        FunctionGitHubPackage : {
-                                            ...workflow.FunctionGitHubPackage,
-                                            [workflow.FunctionList[id].FunctionName] :
-                                            workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]
-                                                .map(pkg => pkg === val ? e.target.value : pkg)
-                                        }
-                                    }
-                                    )
-                                }
-                                onBlur={handleBlur} 
-                                />
-                                <button style={{color:"red"}} onClick={() => {
-                                    const newWorkflow = structuredClone(workflow);
-                                    newWorkflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] = newWorkflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val);
-                                    updateWorkflow(newWorkflow);
-                                }}>Delete</button>
-                        </div>
-                        ))
-                        : ""
-                    }
-
-                    <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
-                    <button onClick={() => {
-                        const newPackageName = newGitPackage.trim()
-                        if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
-                            setWorkflow({
-                                ...workflow,
-                                FunctionGitHubPackage: {
-                                    ...workflow.FunctionGitHubPackage,
-                                    [workflow.FunctionList[id].FunctionName]: [
-                                        ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
-                                        newPackageName
-                                    ]
-                                }
-                            });
-                            setNewGitPackage("");
-                        }
-                    }}>Add Package</button>
-                </div>
-                
-                <br></br>
+                <GitPackageEditor onBlur={handleBlur} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></GitPackageEditor>
                 <br></br>
                 
                 {/* Cran Package Handling */}
-                <GenericLabel size={"20px"} value={"CRAN Packages for the Function"}></GenericLabel>
-                <div style={{border: "solid"}}>
-                    { workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] ? 
-                        Object.entries(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
-                            <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
-                                <input
-                                type="text"
-                                placeholder={key+" value"}
-                                value={val}
-                                onChange={(e) =>
-                                    setWorkflow({
-                                        ...workflow,
-                                        FunctionCRANPackage : {
-                                            ...workflow.FunctionCRANPackage,
-                                            [workflow.FunctionList[id].FunctionName] :
-                                            workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName]
-                                                .map(pkg => pkg === val ? e.target.value : pkg)
-                                        }
-                                    }
-                                    )
-                                }
-                                />
-                                <button style={{color:"red"}} onClick={() => {
-                                    const newWorkflow = structuredClone(workflow);
-                                    newWorkflow.FunctionCRANPackage[newWorkflow.FunctionList[id].FunctionName] = newWorkflow.FunctionCRANPackage[newWorkflow.FunctionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val);
-                                    updateWorkflow(newWorkflow);
-                                }}>Delete</button>
-                        </div>
-                        ))
-                        : ""
-                    }
-                    <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
-                    <button onClick={() => {
-                        const newPackageName = newCranPackage.trim()
-                        if(newPackageName !== "" && (!workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
-                            setWorkflow({
-                                ...workflow,
-                                FunctionCRANPackage: {
-                                    ...workflow.FunctionCRANPackage,
-                                    [workflow.FunctionList[id].FunctionName]: [
-                                        ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
-                                        newPackageName
-                                    ]
-                                }
-                            });
-                            setNewCranPackage("");
-                        }
-                    }}>Add Package</button>
-                </div>
+                <CranPackageEditor createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></CranPackageEditor>
                 
             </div>
 

@@ -67,7 +67,7 @@ export function UploadWorkflow(props) {
                 const fn = functions[key];
                 updatedFunctionList[key] = {
                     ...fn,
-                    InvokeNext: Array.isArray(fn.InvokeNext[1]) ? fn.InvokeNext : [{true : [], false: []}, fn.InvokeNext]
+                    InvokeNext: Array.isArray(fn.InvokeNext[1]) ? fn.InvokeNext : [{True : [], False: []}, fn.InvokeNext]
                 };
             }
 

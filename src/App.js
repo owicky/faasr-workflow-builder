@@ -2,7 +2,7 @@ import './App.css';
 import '@xyflow/react/dist/style.css';
 import Dagre from '@dagrejs/dagre';
 import { useCallback, useMemo, useState } from 'react';
-import { ReactFlow, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Panel, MarkerType} from '@xyflow/react';
+import { ReactFlow, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Panel, MarkerType, Background} from '@xyflow/react';
 import Toolbar from './components/ToolBar/Toolbar';
 import FunctionNode from './components/FunctionNode';
 import { useWorkflowContext } from './WorkflowContext';
@@ -11,7 +11,9 @@ import VisibleWorkflow from './components/ToolBar/VisibleWorkflow';
 import VisibleGraph from './components/ToolBar/VisibleGraph';
 import useUndo from './components/Utils/Undo';
 import { IoMdUndo, IoMdRedo } from 'react-icons/io';
+import { TbGridDots } from "react-icons/tb";
 import useFunctionUtils from './components/Functions/FunctionsUtils';
+import { MdDarkMode, MdOutlineDarkMode } from "react-icons/md";
 
 const defaultEdgeOptions = { animated: false };
 
@@ -49,11 +51,15 @@ const getLayoutedElements = (nodes, edges, options) => {
 
 function App() {
   const { edges, setEdges, nodes, setNodes, workflow } = useWorkflowContext();
+  const [ colorMode, setColorMode] = useState('dark');
   const [editType, setEditType] = useState(null)
   const [ isDragging, setIsDragging] = useState(false);
+  const [ dots, setDots ] = useState(false)
   const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
   const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo, canUndo, canRedo } = useUndo();
-  const {parseInvoke, listInvokeNext, isValidNewRankedEdge} = useFunctionUtils()
+  const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
+
+
 
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
 
@@ -81,16 +87,15 @@ function App() {
   const onConnect = (params) => {
     const customEdge = {
       ...params,
+      className: "custom-edge",
       id: `${params.source}-${params.target}`,
       markerEnd: {
         width: 10,
         height: 10,
         type: MarkerType.ArrowClosed,
-        color: "#000000"
       },
       style : {
         strokeWidth : 2,
-        stroke : "#000000"
       }
     };
     const id = params.source+ "-"+ params.target
@@ -246,7 +251,7 @@ function App() {
   // Called when edge is deleted in flow panel
   const onEdgesDelete = 
     (deleted) => {
-      alert("Edge delete")
+      // alert("Edge delete")
       let coolEdge = deleted[0]
       let source = coolEdge.source
       let target = coolEdge.target
@@ -299,6 +304,7 @@ function App() {
   const createNewEdge = (id1, id2) => {
 
     const newEdge = {
+      className: "custom-edge",
       animated : false,
       source : id1,
       target : id2,
@@ -306,10 +312,8 @@ function App() {
         width: 10,
         height: 10,
         type: MarkerType.ArrowClosed,
-        color: "#000000",
       },
       style: {
-        stroke: "#000000",
         strokeWidth : 2
       }, 
       id : id1+"-"+id2
@@ -326,14 +330,14 @@ function App() {
 
 
     switch(condition) {
-      case "false":
+      case "False":
         colorc = "#F52F16"; 
         break;
-      case "true":
+      case "True":
         colorc = "#1BF23D";
         break;
       default:
-        colorc = "#000000";
+        colorc = "#c5c21eff";
       }
     if ( rank !== ""  ) {
       if (nodes.some( (node) => (node.data.rank > 1 && node.data.id === id2))) alert("target Already Has Rank Specified")
@@ -352,6 +356,7 @@ function App() {
         height : rank > 1 ? 8 : 10,
         width : rank > 1 ? 8 : 10
       },
+      className: "custom-edge",
       style: {
         stroke: colorc,
         strokeWidth : rank > 1 ? 4 : 2
@@ -359,7 +364,7 @@ function App() {
       label : rank }));
   }
   
-  /* Adds a new edge to the workflow and layout given a (Source id, Target id)
+  /* Adds a new edge to the workflow and layout given a (Source id, Target id, edge)
   */
   const add_edge = (sourceId, targetId, customEdge) => {
     // Get the function object for the source
@@ -368,7 +373,7 @@ function App() {
     if (!sourceFunction) {
       console.error(`Source function '${sourceId}' not found.`);
       return;
-    }
+    } 
   
     // Update the InvokeNext array
     const updatedInvokeNext = [...(sourceFunction.InvokeNext[1] || []), targetId];
@@ -376,7 +381,7 @@ function App() {
     // Create updated source function with new InvokeNext
     const updatedSourceFunction = {
       ...sourceFunction,
-      InvokeNext: [ {true : [], false : []}, updatedInvokeNext],
+      InvokeNext: [ {...sourceFunction.InvokeNext[0]}, updatedInvokeNext],
     };
   
     // Build new FunctionList with updated source function
@@ -403,16 +408,16 @@ function App() {
   }
 
   return (
-      <div className="App">
+    <div className="App">
 
-      <header className="App-header">
+      {/* <header className="App-header"> */}
         <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createNewNode={createNewNode} createEdge={ createEdge } createNewEdge={createNewEdge} updateWorkflowAndLayout={updateWorkflowAndLayout}></Toolbar>
-      </header>
+      {/* </header> */}
 
       <div id="mid-panel">
         <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
+        <EditorPanel id="editor-panel-component" addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
 
           <div id="workflow-panel">
             <ReactFlow
@@ -431,6 +436,7 @@ function App() {
               defaultEdgeOptions={defaultEdgeOptions}
               maxZoom={3}
               minZoom={.1}
+              colorMode={colorMode}
               fitView
             > <Controls/>
 
@@ -439,8 +445,10 @@ function App() {
                 <button onClick={() => onLayout('LR')}>horizontal layout</button>
                 <button onClick={undo} disabled={!canUndo}><IoMdUndo /></button>
                 <button onClick={redo} disabled={!canRedo}><IoMdRedo /></button>
+                <button onClick={() => setDots(!dots)}><TbGridDots /></button>
+                <button onClick={() => setColorMode(colorMode === "dark" ? "light": "dark")}>{colorMode === "dark" ? <MdOutlineDarkMode/> : <MdDarkMode />}</button>
               </Panel>
-
+              {dots && <Background variant="dots" gap={12} size={1} />}
             </ReactFlow>
           </div>
 
