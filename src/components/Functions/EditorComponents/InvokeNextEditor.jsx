@@ -32,10 +32,11 @@ export default function InvokeNextEditor( props ){
 
                 {/* For each action in nonconditional Invokenext */}
 
-                
-
                 {listInvokeNext(id).map( (invoke) => {
-
+                    if(invoke === undefined){
+                        console.log(id)
+                        console.log(listInvokeNext(id))
+                    }
                     const { id : invId, rank} = parseInvoke(invoke)
                     const condition = getInvokeCondition(id, invoke)
                     return (

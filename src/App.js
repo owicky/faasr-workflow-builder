@@ -210,7 +210,7 @@ function App() {
   // Called when node is deleted in flow panel
   const onNodesDelete = 
     (deleted) => {
-      alert("node delete");
+      //alert("node delete");
       const id = deleted[0].id
       let newWorkflow = structuredClone(workflow)
       let newNodes = structuredClone(nodes)
@@ -251,23 +251,26 @@ function App() {
   // Called when edge is deleted in flow panel
   const onEdgesDelete = 
     (deleted) => {
-      // alert("Edge delete")
+      //alert("Edge delete")
       let coolEdge = deleted[0]
       let source = coolEdge.source
       let target = coolEdge.target
       let newWorkflow = structuredClone(workflow);
 
-      if(coolEdge.label ? coolEdge.label > 1 : false){
-        const updatedNodes = [...nodes]
-        const nodeIndex = nodes.findIndex( (node) => node.id === (target))
-        updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : 1}}
-        updateLayout(updatedNodes, edges)
-      }
+      
       
       newWorkflow.FunctionList[source].InvokeNext[1] = newWorkflow.FunctionList[source].InvokeNext[1].filter(
         item => (item.indexOf("(") !== -1) ?  item.substring(0, item.indexOf("(")) !== target : item !== target
       )
-      updateWorkflow(newWorkflow);
+      
+      if(coolEdge.label ? coolEdge.label > 1 : false){
+        const updatedNodes = [...nodes]
+        const nodeIndex = nodes.findIndex( (node) => node.id === (target))
+        updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : 1}}
+        updateWorkflowAndLayout(newWorkflow, updatedNodes, edges)
+      }else{
+        updateWorkflow(newWorkflow);
+      }
     };
 
   // Adds new node given (xpos : num, ypos : num, name : string, id : string) to nodes obj

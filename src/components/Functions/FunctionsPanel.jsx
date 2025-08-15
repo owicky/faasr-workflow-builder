@@ -15,7 +15,7 @@ export default function FunctionsPanel(props){
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
     const {updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId } = useUndo();
     const { createNewFunction } = useCreateNewFunction();
-    const onCreateOption = (newActionId) => createNewFunction(newActionId);
+    const onCreateOption = (newActionId) => createNewFunction(newActionId, newActionId);
     
 
     return(
