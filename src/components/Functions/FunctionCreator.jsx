@@ -79,7 +79,7 @@ export const useCreateNewFunction = () => {
             updateWorkflowAndLayout(newWorkflow, nodes.concat(newNode), edges)
         }
     };
-    return { createNewFunction};
+    return { createNewFunction, createNewFunctionNode };
 
 }
 

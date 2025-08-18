@@ -22,8 +22,8 @@ const useUndo = () => {
         undoHistory, setUndoHistory
     } = useWorkflowContext();
 
-    const [canUndo, setCanUndo] = useState(false);
-    const [canRedo, setCanRedo] = useState(false);
+    const canUndo = history.length > 1;
+    const canRedo = undoHistory.length > 0;
 
     /* for testing
     useEffect(() => {
@@ -33,8 +33,6 @@ const useUndo = () => {
 
     const addToHistory = (newState) => {
         setUndoHistory([]);
-        setCanRedo(false);
-        setCanUndo(true);
         setHistory(hist => hist.concat(newState));
     }
     
@@ -99,15 +97,11 @@ const useUndo = () => {
             alert('Already at oldest state');
             return
         }
-        if (history.length <= 2) {
-            setCanUndo(false);
-        }
         const undoneState = history.at(-1);
         const currentState = history.at(-2);
         setHistory(hist => hist.slice(0,-1));
         setUndoHistory(hist => hist.concat(undoneState));
         applyState(currentState);
-        setCanRedo(true);
     };
 
     const redo = () => {
@@ -115,14 +109,10 @@ const useUndo = () => {
             alert('Already at most recent state');
             return
         }   
-        if (undoHistory.length <= 1) {
-            setCanRedo(false);
-        }
         const redoneState = undoHistory.at(-1);
         setUndoHistory(hist => hist.slice(0,-1));
         setHistory(hist => hist.concat(redoneState));
         applyState(redoneState);
-        setCanUndo(true);
     }
 
     return {

@@ -6,6 +6,10 @@ export default function ComputeServerEditor(props){
     const server = props.server
     const { updateWorkflow } = useUndo();
 
+    const handleBlur = (e) => {
+        updateWorkflow(workflow);
+    };
+
     if(server in workflow.ComputeServers){
         switch (workflow.ComputeServers[server].FaaSType){
             case "GitHubActions":
@@ -66,7 +70,10 @@ export default function ComputeServerEditor(props){
                                     UserName: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].UserName}/>
+                            })} 
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].UserName}
+                            />
                         </div>
         
                         <div>
@@ -80,7 +87,10 @@ export default function ComputeServerEditor(props){
                                     ActionRepoName: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].ActionRepoName}/>
+                            })}
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].ActionRepoName}
+                            />
                         </div>
         
                         <div>
@@ -94,7 +104,10 @@ export default function ComputeServerEditor(props){
                                     Branch: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].Branch}/>
+                            })} 
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].Branch}
+                            />
                         </div>
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
@@ -164,7 +177,11 @@ export default function ComputeServerEditor(props){
                                     Endpoint: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].Endpoint}/>
+                            })} 
+
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].Endpoint}
+                            />
                         </div>
         
                         <div>
@@ -178,7 +195,10 @@ export default function ComputeServerEditor(props){
                                     Namespace: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].Namespace}/>
+                            })} 
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].Namespace}
+                            />
                         </div>
         
                         <div>
@@ -192,7 +212,10 @@ export default function ComputeServerEditor(props){
                                     Region: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].Region}/>
+                            })} 
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].Region}
+                            />
                         </div>
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
@@ -263,7 +286,10 @@ export default function ComputeServerEditor(props){
                                     Region: e.target.value
                                     }
                                 }
-                            })} value={workflow.ComputeServers[server].Region} />
+                            })} 
+                                onBlur={handleBlur}
+                                value={workflow.ComputeServers[server].Region} 
+                            />
                         </div>
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
@@ -279,7 +305,7 @@ export default function ComputeServerEditor(props){
                 return(
                     <div>
                         <button>FaaSType</button>
-                        <select value={workflow.ComputeServers[server].FaaSType} onChange={(e)=>setWorkflow({
+                        <select value={workflow.ComputeServers[server].FaaSType} onChange={(e)=>updateWorkflow({
                             ...workflow,
                             ComputeServers: {
                                 ...workflow.ComputeServers,

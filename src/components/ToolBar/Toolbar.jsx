@@ -131,13 +131,19 @@ export default function Toolbar(props) {
         <div id="toolbar" style={{ width: '100vw', height: '5vh'}}>
             {/* <GenericButton onClick={() => alert("test")}>test</GenericButton> */}
 
-            <GenericButton icon={<FaUpload/>} onClick={() => setUploadPopupEnabled(true)}>Upload</GenericButton>
+            <GenericButton icon={<FaUpload/>} onClick={() => {
+                setUploadPopupEnabled(true);
+                setDownloadPopupEnabled(false);
+            }}>Upload</GenericButton>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
                 <UploadWorkflow setLayout={() => props.setLayout()} createNewEdge={ props.createNewEdge } createNewNode={props.createNewNode} workflow_template={props.workflow_template} updateWorkflowAndLayout={props.updateWorkflowAndLayout} setUploadPopupEnabled={setUploadPopupEnabled}/>
                 <UploadLayout createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template} setUploadPopupEnabled={setUploadPopupEnabled} />
             </Popup>
 
-            <GenericButton icon={<FaDownload/>} onClick={() => setDownloadPopupEnabled(true)}>Download</GenericButton>
+            <GenericButton icon={<FaDownload/>} onClick={() => {
+                setDownloadPopupEnabled(true);
+                setUploadPopupEnabled(false);
+            }}>Download</GenericButton>
             <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabled()}>
                 <GenericLabel value={"Download Options for Workflow: "+workflow.WorkflowName} size="20px"></GenericLabel>
                 <select id="schema-select">

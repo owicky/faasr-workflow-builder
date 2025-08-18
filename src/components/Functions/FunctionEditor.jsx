@@ -145,6 +145,7 @@ export default function FunctionEditor(props){
                         // Add new action to workflow
                         if (!(newActionName in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
                             createNewFunction(newActionName, `${workflow.FunctionList[id].FunctionName}_copy`);   
+                            setNewActionName("");
                         }else{
                             console.log("Already Exists")
                             console.log(newActionName + " in " + Object.keys(workflow.FunctionList))

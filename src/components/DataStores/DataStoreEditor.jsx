@@ -2,9 +2,13 @@ import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 
 export default function DataStoreEditor(props){
-    const {workflow } = useWorkflowContext();
+    const {workflow, setWorkflow } = useWorkflowContext();
     const id = props.id
     const { updateWorkflow } = useUndo();
+
+    const handleBlur = (e) => {
+        updateWorkflow(workflow);
+    };
 
     if(id in workflow.DataStores){
         return(
@@ -13,7 +17,7 @@ export default function DataStoreEditor(props){
 
                 <div>
                     <button>Endpoint</button>
-                    <input type="text" placeholder="Endpoint" onChange={(e)=>updateWorkflow({
+                    <input type="text" placeholder="Endpoint" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -22,12 +26,15 @@ export default function DataStoreEditor(props){
                             Endpoint: e.target.value
                             }
                         }
-                    })} value={workflow.DataStores[id].Endpoint}/>
+                    })} 
+                        onBlur={handleBlur}
+                        value={workflow.DataStores[id].Endpoint}
+                    />
                 </div>
 
                 <div>
                     <button>Bucket</button>
-                    <input type="text" placeholder="Bucket" onChange={(e)=>updateWorkflow({
+                    <input type="text" placeholder="Bucket" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -36,12 +43,15 @@ export default function DataStoreEditor(props){
                             Bucket: e.target.value
                             }
                         }
-                    })} value={workflow.DataStores[id].Bucket}/>
+                    })} 
+                        onBlur={handleBlur}
+                        value={workflow.DataStores[id].Bucket}
+                    />
                 </div>
 
                 <div>
                     <button>Region</button>
-                    <input type="text" placeholder="Region" onChange={(e)=>updateWorkflow({
+                    <input type="text" placeholder="Region" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -50,7 +60,10 @@ export default function DataStoreEditor(props){
                             Region: e.target.value
                             }
                         }
-                    })} value={workflow.DataStores[id].Region}/>
+                    })} 
+                        onBlur={handleBlur}
+                        value={workflow.DataStores[id].Region}
+                    />
                 </div>
 
                 <div>
