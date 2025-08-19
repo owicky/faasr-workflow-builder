@@ -1,9 +1,14 @@
 import { useWorkflowContext } from "../WorkflowContext"
 import { useRef } from "react";
+import useUndo from './Utils/Undo'
 
 export default function GeneralConfig(props){
     const {workflow, setWorkflow} = useWorkflowContext();
+    const { updateWorkflow } = useUndo();
 
+    const handleBlur = () => {
+        updateWorkflow(workflow);
+    }
     
 
     
@@ -16,7 +21,7 @@ export default function GeneralConfig(props){
             {/* Default DataStore */}
             <div>
                 <button>Default Data Server</button>
-                <select placeholder="DefaultDataStore" onChange={(e)=> setWorkflow({
+                <select placeholder="DefaultDataStore" onChange={(e)=>  updateWorkflow({
                     ...workflow,
                     DefaultDataStore : e.target.value
                     })
@@ -36,7 +41,7 @@ export default function GeneralConfig(props){
             {/* Logging DataStore */}
             <div>
                 <button>Data Server to Store Logs</button>
-                <select placeholder="LoggingDataStore" onChange={(e)=> setWorkflow({
+                <select placeholder="LoggingDataStore" onChange={(e)=> updateWorkflow({
                     ...workflow,
                     LoggingDataStore : e.target.value
                     })
@@ -61,13 +66,15 @@ export default function GeneralConfig(props){
                     ...workflow,
                     WorkflowName : e.target.value
                     
-                })} value={workflow.WorkflowName}/>
+                })} 
+                onBlur={handleBlur}
+                value={workflow.WorkflowName}/>
             </div>
 
             {/* Function Invoke */}
             <div>
                 <button>First Function to Execute</button>
-                <select placeholder="funcInvokeNext" onChange={(e)=> setWorkflow({
+                <select placeholder="funcInvokeNext" onChange={(e)=> updateWorkflow({
                     ...workflow,
                     FunctionInvoke : e.target.value
                     })
@@ -90,7 +97,10 @@ export default function GeneralConfig(props){
                     ...workflow,
                     FaaSrLog : e.target.value
                     
-                })} value={workflow.FaaSrLog}/>
+                })} 
+                onBlur={handleBlur}
+                value={workflow.FaaSrLog}
+            />
             </div>
 
             {/* Invocation Id */}
@@ -100,7 +110,9 @@ export default function GeneralConfig(props){
                     ...workflow,
                     InvocationID : e.target.value
                     
-                })} />
+                })} 
+                onBlur={handleBlur}
+                />
             </div>
 
         </div>

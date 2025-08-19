@@ -242,6 +242,7 @@ function App() {
         }
       })
       const newEdges = edges.filter( (edge) => !(edge.source === id || edge.target === id))
+      newNodes = nodes.filter( (node) => (node.id !== id));
       
 
       delete newWorkflow.FunctionList[id]; // Delete action from workflow
@@ -262,14 +263,16 @@ function App() {
       newWorkflow.FunctionList[source].InvokeNext[1] = newWorkflow.FunctionList[source].InvokeNext[1].filter(
         item => (item.indexOf("(") !== -1) ?  item.substring(0, item.indexOf("(")) !== target : item !== target
       )
+
+      const updatedEdges = edges.filter( (edge) => edge.source !== source || edge.target !== target);
       
       if(coolEdge.label ? coolEdge.label > 1 : false){
         const updatedNodes = [...nodes]
         const nodeIndex = nodes.findIndex( (node) => node.id === (target))
         updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : 1}}
-        updateWorkflowAndLayout(newWorkflow, updatedNodes, edges)
+        updateWorkflowAndLayout(newWorkflow, updatedNodes, updatedEdges)
       }else{
-        updateWorkflow(newWorkflow);
+        updateWorkflowAndLayout(newWorkflow, nodes, updatedEdges);
       }
     };
 

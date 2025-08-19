@@ -48,7 +48,7 @@ export default function GitPackageEditor( props ){
                                 }
                                 )
                             }
-                            onBlur={() => props.onBlur} 
+                            onBlur={props.onBlur} 
                             />
                             <button style={{color:"red"}} onClick={() => {
                                 const newWorkflow = structuredClone(workflow);
@@ -64,7 +64,7 @@ export default function GitPackageEditor( props ){
                 <button onClick={() => {
                     const newPackageName = newGitPackage.trim()
                     if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
-                        setWorkflow({
+                        updateWorkflow({
                             ...workflow,
                             FunctionGitHubPackage: {
                                 ...workflow.FunctionGitHubPackage,

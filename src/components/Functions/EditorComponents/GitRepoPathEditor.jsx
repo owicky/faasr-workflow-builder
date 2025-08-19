@@ -40,7 +40,7 @@ export default function GitRepoPathEditor( props ){
                     }
                 })}
                 value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName] || ""}
-                onBlur={() => props.onBlur}
+                onBlur={props.onBlur}
             />
         </div>
     )

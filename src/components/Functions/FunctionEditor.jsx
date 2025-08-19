@@ -219,7 +219,7 @@ export default function FunctionEditor(props){
                 <br></br>
                 
                 {/* Cran Package Handling */}
-                <CranPackageEditor createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></CranPackageEditor>
+                <CranPackageEditor onBlur={handleBlur} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></CranPackageEditor>
                 
             </div>
 

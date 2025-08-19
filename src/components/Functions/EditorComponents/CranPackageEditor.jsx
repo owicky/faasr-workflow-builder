@@ -48,6 +48,7 @@ export default function CranPackageEditor( props ){
                                 }
                                 )
                             }
+                            onBlur={props.onBlur}
                             />
                             <button style={{color:"red"}} onClick={() => {
                                 const newWorkflow = structuredClone(workflow);
@@ -62,7 +63,7 @@ export default function CranPackageEditor( props ){
                 <button onClick={() => {
                     const newPackageName = newCranPackage.trim()
                     if(newPackageName !== "" && (!workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
-                        setWorkflow({
+                        updateWorkflow({
                             ...workflow,
                             FunctionCRANPackage: {
                                 ...workflow.FunctionCRANPackage,

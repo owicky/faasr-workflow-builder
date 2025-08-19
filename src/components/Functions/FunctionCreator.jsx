@@ -33,11 +33,9 @@ export const useCreateNewFunction = () => {
         markerEnd: {
             width: 10,
             height: 10,
-            type: MarkerType.ArrowClosed,
-            color: "#000000",
+            type: MarkerType.ArrowClosed
         },
         style: {
-            stroke: "#000000",
             strokeWidth : 2
         }, 
         id : id1+"-"+id2
