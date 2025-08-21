@@ -26,10 +26,10 @@ export default function FunctionEditor(props){
     const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
 
     const [newInvoke, setNewInvoke] = useState("NONE")
-    const [newActionName, setNewActionName] = useState("")
+    const [newActionId, setNewActionId] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
     const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
-    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
+    const { duplicateFunction, createNewFunctionNode } = useCreateNewFunction();
 
     // const updateFunction = (updates) => {
     //     updateWorkflow({
@@ -108,7 +108,8 @@ export default function FunctionEditor(props){
                         if(nodes.some( (node) => node?.id === id )) {
                             alert("That action is already in the graph. Duplicate it instead to make a copy.");
                         } else {
-                            createNewFunctionNode(id);
+                            const {newNode, newEdges} = createNewFunctionNode(id);
+                            updateLayout([...nodes, newNode], [...edges, ...newEdges]);
                         }   
                     }}>Add Action to Graph</button>
                 </div>
@@ -140,15 +141,15 @@ export default function FunctionEditor(props){
                 {/* Duplicate Action Div */}
                 <GenericLabel value={"Duplicate Action"}></GenericLabel>
                 <div style={{display : "flex"}}>
-                    <TextInput value={newActionName} onChange={(e) => setNewActionName( e.target.value)} placeholder={"New Action Name"}></TextInput>
+                    <TextInput value={newActionId} onChange={(e) => setNewActionId( e.target.value)} placeholder={"New Action Id"}></TextInput>
                     <button onClick={ () => {
                         // Add new action to workflow
-                        if (!(newActionName in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
-                            createNewFunction(newActionName, `${workflow.FunctionList[id].FunctionName}_copy`);   
-                            setNewActionName("");
+                        if (!(newActionId in Object.keys(workflow.FunctionList)) && (newActionId !== "")){
+                            duplicateFunction(id, newActionId, `${workflow.FunctionList[id].FunctionName}_copy`);   
+                            setNewActionId("");
                         }else{
                             console.log("Already Exists")
-                            console.log(newActionName + " in " + Object.keys(workflow.FunctionList))
+                            console.log(newActionId + " in " + Object.keys(workflow.FunctionList))
                         }
                     }
                     }> Duplicate Action</button>

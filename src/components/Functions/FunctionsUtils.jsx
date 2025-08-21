@@ -378,7 +378,8 @@ const useFunctionUtils = () => {
         addInvoke,
         deleteInvoke,
         isValidNewRankedEdge,
-        updateInvoke
+        updateInvoke,
+        createEdge
     };
 
 }
