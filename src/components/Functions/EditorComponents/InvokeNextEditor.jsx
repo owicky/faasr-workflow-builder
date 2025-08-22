@@ -41,7 +41,7 @@ export default function InvokeNextEditor( props ){
                     const condition = getInvokeCondition(id, invoke)
                     return (
                     // Per Invoke Div
-                    <div key={invId} style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#f2f2f2"}}>
+                    <div key={invId} className="list-entry">
                         {/* Change Invoke Target Id */}
                         <select placeholder="funcInvokeNext" 
                         onChange={(e)=> { 

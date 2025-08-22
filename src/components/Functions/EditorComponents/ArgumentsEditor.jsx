@@ -52,7 +52,7 @@ export default function ArgumentsEditor( props ){
                 <GenericLabel size={"20px"} value={"Arguments"}></GenericLabel>
                 <div style={{border: "solid"}}>
                     {Object.entries(workflow.FunctionList[id].Arguments).map(([key, val], i) => (
-                        <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#f2f2f2"}}>
+                        <div className="list-entry">
                             <label className="truncate" style={{ width: '5vw' }}>{key}</label>
                             <input
                             style={{ width: '15vw' }}

@@ -1,7 +1,7 @@
 export default function Popup(props) {
     return (props.enabled) ? ( 
         <div className="popup">
-            <div style={{backgroundColor : "#f2f2f2", flex: "1", borderRadius : "10px", padding: "5px"}}>
+            <div style={{backgroundColor : "var(--background)", flex: "1", borderRadius : "10px", padding: "5px"}}>
                 {props.children}
                 
             

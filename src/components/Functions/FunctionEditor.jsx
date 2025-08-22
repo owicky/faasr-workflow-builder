@@ -138,7 +138,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Duplicate Action Div */}
-                <GenericLabel value={"Duplicate Action"}></GenericLabel>
+                <GenericLabel value={"Duplicate Action"} size={"20px"}></GenericLabel>
                 <div style={{display : "flex"}}>
                     <TextInput value={newActionName} onChange={(e) => setNewActionName( e.target.value)} placeholder={"New Action Name"}></TextInput>
                     <button onClick={ () => {

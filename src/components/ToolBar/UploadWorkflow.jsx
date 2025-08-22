@@ -1,10 +1,14 @@
 import { useRef } from "react";
 import useUndo from "../Utils/Undo";
 import { flushSync } from 'react-dom';
+import { useReactFlow } from "@xyflow/react";
+import { useWorkflowContext } from "../../WorkflowContext";
 
 export function UploadWorkflow(props) {
     const { updateWorkflowAndLayout } = useUndo()
     const fileInputRef = useRef(null);
+    const { fitView } = useReactFlow()
+    const { getLayoutedElements } = useWorkflowContext()
     
     // NEW: This ref tracks whether we want to run the effect
     const shouldBuildGraphRef = useRef(false);
@@ -89,10 +93,14 @@ export function UploadWorkflow(props) {
                 offset++;
             }
 
-            props.updateWorkflowAndLayout(updatedWorkflow, newNodes, newEdges);
+            
+            
+            const layouted = getLayoutedElements(newNodes, newEdges, 'TB' );
+            props.updateWorkflowAndLayout(updatedWorkflow, layouted.nodes, layouted.edges);
+            
+            fitView()
 
-        
-    
+
         }
     }; 
 

@@ -31,11 +31,35 @@ export default function FunctionsPanel(props){
                 styles={{
                     control: (baseStyles, state) => ({
                         ...baseStyles,
-                        borderColor: state.isFocused ? 'grey' : 'red',
+                        borderColor: state.isFocused ? 'var(--border-color)' : 'red',
+                        backgroundColor: "var(--background)",
+                        color: "var(--text-primary)",
                         width: "90%",
                     }),
+                    singleValue: (baseStyles) => ({
+                        ...baseStyles,
+                        color: "var(--text-primary)", 
+                    }),
+                    placeholder: (baseStyles) => ({
+                        ...baseStyles,
+                        color: "var(--text-primary)", 
+                    }),
+                    input: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "var(--text-primary)",
+                    }),
+                    option: (baseStyles, state) => ({
+                        ...baseStyles,
+                        backgroundColor: state.isFocused ? "grey" : "var(--background)",
+                        color: "var(--text-primary)",
+                    }),
+                    menu:  (baseStyles) => ({
+                        ...baseStyles,
+                        border: "2px solid var(--border-color)",
+                        backgroundColor:  "var(--background)",
+                        backgroundClip: "padding-box"                   
+                    })
                 }}
-
             />
             
             <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNewEdge={props.createNewEdge} createNode={props.createNode} id={selectedFunctionId}/>  

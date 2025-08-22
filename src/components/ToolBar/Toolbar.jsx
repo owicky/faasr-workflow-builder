@@ -144,6 +144,7 @@ export default function Toolbar(props) {
                 setDownloadPopupEnabled(true);
                 setUploadPopupEnabled(false);
             }}>Download</GenericButton>
+            
             <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabled()}>
                 <GenericLabel value={"Download Options for Workflow: "+workflow.WorkflowName} size="20px"></GenericLabel>
                 <select id="schema-select">

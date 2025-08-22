@@ -1,6 +1,6 @@
 import { useWorkflowContext } from "../../WorkflowContext";
 import useUndo from "../Utils/Undo";
-import { MarkerType} from '@xyflow/react';
+import { addEdge, MarkerType} from '@xyflow/react';
 
 // Utilities for working with functions
 
@@ -23,7 +23,7 @@ const useFunctionUtils = () => {
         const invokes = []
         const invokeNext = workflow.FunctionList[id].InvokeNext
 
-        const trueInvokes = invokeNext[0]["True"]
+        const trueInvokes = invokeNext[0]["True"]   
         const falseInvokes = invokeNext[0]["False"]
         const unconditionalInvokes = invokeNext[1]
 
@@ -52,7 +52,7 @@ const useFunctionUtils = () => {
         const invokeNext = workflow.FunctionList[funcId].InvokeNext
         if ( invokeNext[0].True.includes(invoke)) return "True"
         else if ( invokeNext[0].False.includes(invoke)) return "False"
-        else if (invokeNext[1].includes(invoke)) return "unclassified"
+        else if (invokeNext[1].includes(invoke)) return "Unclassified"
         return ""
     }
 
@@ -89,7 +89,7 @@ const useFunctionUtils = () => {
                 ];
                 break;
             default:
-                alert("Deletion Attempted fo Invoke that does not exist ("+funcId+", "+invoke)
+                alert("Deletion Attempted to Invoke that does not exist ("+funcId+", "+invoke)
         }
 
         const updatedEdges = edges.filter( (edge) => !(edge.source === funcId && edge.target === id))
@@ -208,10 +208,10 @@ const useFunctionUtils = () => {
             width: 10,
             height: 10,
             type: MarkerType.ArrowClosed,
-            color: "#000000",
+            color: "var(--edge-color)",
         },
         style: {
-            stroke: "#000000",
+            stroke: "var(--edge-color)",
             strokeWidth : 2
         }, 
         id : id1+"-"+id2
@@ -221,10 +221,7 @@ const useFunctionUtils = () => {
     }
       // creates a new edge given rank and condition 
     const createEdge = (id1, id2, rank, condition) => {
-
-
-    
-
+        
         let colorc = ""
         const updatedNodes = [...nodes]
 
@@ -237,7 +234,7 @@ const useFunctionUtils = () => {
             colorc = "#1BF23D";
             break;
         default:
-            colorc = "#000000";
+            colorc = "var(--edge-color)";
         }
         if ( rank !== ""  ) {
         // if (nodes.some( (node) => (node.data.rank > 1 && node.data.id === id2))) alert("target Already Has Rank Specified")
@@ -368,7 +365,40 @@ const useFunctionUtils = () => {
         } ), updatedEdges.concat(updateEdge))
 
     }
-
+    /* Adds a new edge to the workflow and layout given a (Source id, Target id, edge)
+    */
+    const add_edge = (sourceId, targetId, customEdge) => {
+        // Get the function object for the source
+        const sourceFunction = workflow.FunctionList[sourceId];
+        
+        if (!sourceFunction) {
+        console.error(`Source function '${sourceId}' not found.`);
+        return;
+        } 
+    
+        // Update the InvokeNext array
+        const updatedInvokeNext = [...(sourceFunction.InvokeNext[1] || []), targetId];
+    
+        // Create updated source function with new InvokeNext
+        const updatedSourceFunction = {
+        ...sourceFunction,
+        InvokeNext: [ {...sourceFunction.InvokeNext[0]}, updatedInvokeNext],
+        };
+    
+        // Build new FunctionList with updated source function
+        const updatedFunctionList = {
+        ...workflow.FunctionList,
+        [sourceId]: updatedSourceFunction,
+        };
+    
+        // Update entire workflow
+        const updatedWorkflow = {
+        ...workflow,
+        FunctionList: updatedFunctionList,
+        };
+    
+        updateWorkflowAndLayout(updatedWorkflow, nodes, edges.concat(customEdge));
+    };
 
     return {
         listInvokeNext,
@@ -378,7 +408,10 @@ const useFunctionUtils = () => {
         addInvoke,
         deleteInvoke,
         isValidNewRankedEdge,
-        updateInvoke
+        updateInvoke,
+        createEdge,
+        add_edge,
+        createNewEdge,
     };
 
 }
