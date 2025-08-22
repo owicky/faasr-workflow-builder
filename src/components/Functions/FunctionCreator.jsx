@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 import { MarkerType } from "@xyflow/react";
+import useFunctionUtils from "./FunctionsUtils";
 
 
 
 export const useCreateNewFunction = () => {
     const { workflow, nodes, edges } = useWorkflowContext();
     const { updateLayout, updateWorkflowAndLayout } = useUndo();
+    const { createEdge } = useFunctionUtils();
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
 
@@ -43,41 +45,82 @@ export const useCreateNewFunction = () => {
         
         return newEdge;  
     }
+
+    // create layout edges given true, false, or uncondition invokeNext array
+    const getEdgesFromInvokeNext = (functionId, invokeNext, condition) => {
+        let newEdges = [];
+        invokeNext.forEach( (target) => {
+            if (!edges.some( (edge) => edge.source === functionId && edge.target === target )) {
+                const splitInvokeNext = target.split('(');
+                const invokeNextId = splitInvokeNext[0]
+                let rank = "";
+                if (splitInvokeNext.length > 1) {
+                    const rankPostfix = splitInvokeNext[1].split(')');
+                    if (rankPostfix.length <= 1) {
+                        alert(`Error: InvokeNext ${target} is invalid, it must be in the form func_name(rank)`);
+                    } else {
+                        rank = parseInt(rankPostfix[0]);
+                    }
+                }
+                newEdges.push(createEdge(functionId, invokeNextId, rank, condition).updateEdge);
+            }
+        });
+        return newEdges;
+    }
+
     // Used to create layout node for existing function
-    const createNewFunctionNode = (functionId) => {
+    const createNewFunctionNode = (functionId, newWorkflow) => {
+        
+        let currentWorkflow = workflow;
+
+        if (newWorkflow !== null && newWorkflow !== undefined) {
+            currentWorkflow = newWorkflow;
+        }
 
         const newNode = createNewNode(functionId);
         let newEdges = [];
-        workflow.FunctionList[functionId].InvokeNext[1].forEach( (target) => {
-            if (!edges.some( (edge) => edge.source === functionId && edge.target === target )) {
-                newEdges.push(createNewEdge(functionId, target));
-            }
-        });
-        updateLayout(nodes.concat(newNode), edges.concat(newEdges));
+        const invokeNext = currentWorkflow.FunctionList[functionId].InvokeNext;
+
+        newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext[1], "")];
+        
+        newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].True, "True")];
+        newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].False, "False")];
+
+        return {newNode: newNode, newEdges: newEdges};
+
 
     }
-    const createNewFunction = ( newActionId, newActionName = "" ) => {
+    const duplicateFunction = ( existingId, newActionId, newActionName = "" ) => {
 
         if (!(newActionId in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
             console.log("is fresh")
+            const existingFunction = workflow.FunctionList[existingId];
             const newWorkflow = {
                 ...workflow,
                 FunctionList: {
                     ...workflow.FunctionList,
                     [newActionId]: {
                         FunctionName: newActionName,
-                        FaaSServer: defaultFaaSServer,
-                        Arguments: {
-                        },
-                        InvokeNext: [{ "True": [], "False": []}, []]
+                        FaaSServer: existingFunction.FaaSServer,
+                        Arguments: existingFunction.Arguments,
+                        InvokeNext: existingFunction.InvokeNext
                     }
+                },
+                ActionContainers: {
+                    ...workflow.ActionContainers,
+                    [newActionId]: workflow.ActionContainers[existingId]
+                },
+                FunctionGitRepo: {
+                    ...workflow.FunctionGitRepo,
+                    [newActionId]: workflow.FunctionGitRepo[existingId]
                 }
             };
-            const newNode = createNewNode(newActionId);
-            updateWorkflowAndLayout(newWorkflow, nodes.concat(newNode), edges)
+            const {newNode, newEdges} = createNewFunctionNode(newActionId, newWorkflow);
+
+            updateWorkflowAndLayout(newWorkflow, [...nodes, newNode], [...edges, ...newEdges])
         }
     };
-    return { createNewFunction, createNewFunctionNode };
+    return { duplicateFunction, createNewFunctionNode };
 
 }
 
