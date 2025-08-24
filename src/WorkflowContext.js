@@ -19,7 +19,7 @@ export const WorkflowProvider = ( {children} ) => {
 
     
     const [workflow, setWorkflow] = useState({
-        FunctionList : {},
+        ActionList : {},
         ComputeServers : {},
         DataStores : {},
         ActionContainers : {},

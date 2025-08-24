@@ -34,10 +34,10 @@ export default function FunctionEditor(props){
     // const updateFunction = (updates) => {
     //     updateWorkflow({
     //         ...workflow,
-    //         FunctionList: {
-    //             ...workflow.FunctionList,
+    //         ActionList: {
+    //             ...workflow.ActionList,
     //             [id]: {
-    //                 ...workflow.FunctionList[id],
+    //                 ...workflow.ActionList[id],
     //                 ...updates
     //             }
     //         }
@@ -45,7 +45,7 @@ export default function FunctionEditor(props){
     // };
 
     // const updateInvokeNext = (index, value) => {
-    //     const updatedInvokeNext = [...workflow.FunctionList[id].InvokeNext]
+    //     const updatedInvokeNext = [...workflow.ActionList[id].InvokeNext]
 
     //     updatedInvokeNext[1][index] = value
 
@@ -53,7 +53,7 @@ export default function FunctionEditor(props){
     // } 
     
     // const updateInvokeNextRank = (i, rank) => {
-    //     const invoke = workflow.FunctionList[id].InvokeNext[1][i]
+    //     const invoke = workflow.ActionList[id].InvokeNext[1][i]
     //     const invokeName = (invoke.indexOf("(") !== -1) ? invoke.substring(0, invoke.indexOf("(")) : invoke
     //     const rankHolder = edges.find( (edge) => edge.target === invokeName && edge.label !== undefined && edge.label !== "")
     //     if ( rankHolder === undefined || rankHolder.source === id){
@@ -83,7 +83,7 @@ export default function FunctionEditor(props){
 
     // const updateArgument = (key, value) => {
     //     updateFunction({Arguments : {
-    //         ...workflow.FunctionList[id].Arguments,
+    //         ...workflow.ActionList[id].Arguments,
     //         [key] : value
     //     }})
     // };
@@ -94,7 +94,7 @@ export default function FunctionEditor(props){
     
 
 
-    if(id != null && workflow.FunctionList?.[id]){
+    if(id != null && workflow.ActionList?.[id]){
         return(
 
             // Function Edit Box
@@ -128,7 +128,7 @@ export default function FunctionEditor(props){
                 <div>
                     <button onClick={ () => {
                         const newWorkflow = structuredClone(workflow);
-                        delete newWorkflow.FunctionList[id];
+                        delete newWorkflow.ActionList[id];
                         updateWorkflowAndLayout(
                             newWorkflow,
                             nodes.filter( (node) =>node.id !== id),
@@ -144,12 +144,12 @@ export default function FunctionEditor(props){
                     <TextInput value={newActionId} onChange={(e) => setNewActionId( e.target.value)} placeholder={"New Action Id"}></TextInput>
                     <button onClick={ () => {
                         // Add new action to workflow
-                        if (!(newActionId in Object.keys(workflow.FunctionList)) && (newActionId !== "")){
-                            duplicateFunction(id, newActionId, `${workflow.FunctionList[id].FunctionName}_copy`);   
+                        if (!(newActionId in Object.keys(workflow.ActionList)) && (newActionId !== "")){
+                            duplicateFunction(id, newActionId, `${workflow.ActionList[id].FunctionName}_copy`);   
                             setNewActionId("");
                         }else{
                             console.log("Already Exists")
-                            console.log(newActionId + " in " + Object.keys(workflow.FunctionList))
+                            console.log(newActionId + " in " + Object.keys(workflow.ActionList))
                         }
                     }
                     }> Duplicate Action</button>
@@ -159,14 +159,14 @@ export default function FunctionEditor(props){
                 <GenericLabel size={"20px"} value={"Function Name"}></GenericLabel>
                 {/* set workflow onChange, but only update history on blur*/}
                 <TextInput 
-                    value={workflow.FunctionList[id].FunctionName} 
+                    value={workflow.ActionList[id].FunctionName} 
                     placeholder={"FunctionName"} 
                     onChange={(e) => setWorkflow({
                         ...workflow,
-                        FunctionList:{
-                            ...workflow.FunctionList,
+                        ActionList:{
+                            ...workflow.ActionList,
                             [id]: {
-                                ...workflow.FunctionList[id],
+                                ...workflow.ActionList[id],
                                 FunctionName: e.target.value
                             }
                         }

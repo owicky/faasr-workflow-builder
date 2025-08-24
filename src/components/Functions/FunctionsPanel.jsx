@@ -8,7 +8,7 @@ import useCreateNewFunction from "./FunctionCreator";
 
 export default function FunctionsPanel(props){
     const {workflow, setWorkflow, edges, nodes, setNodes, selectedFunctionId, setSelectedFunctionId} = useWorkflowContext();
-    const functionSearchOptions = Object.keys(workflow.FunctionList).map( (id) => {
+    const functionSearchOptions = Object.keys(workflow.ActionList).map( (id) => {
         return { value: id, label: id }
     });
     const FaaSServerList = Object.keys(workflow.ComputeServers);

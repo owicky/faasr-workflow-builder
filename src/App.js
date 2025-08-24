@@ -93,9 +93,11 @@ function App() {
         width: 10,
         height: 10,
         type: MarkerType.ArrowClosed,
+        color: "var(--edge-color)",
       },
       style : {
         strokeWidth : 2,
+        color: "var(--edge-color)",
       }
     };
     const id = params.source+ "-"+ params.target
@@ -203,8 +205,8 @@ function App() {
 
   // Called when a node is Clicked in the flow panel
   const onNodeClick = (event, object) => {
-    setEditType("Functions")
     updateSelectedFunctionId(object.id)
+    setEditType("Functions")
   };
 
   // Called when node is deleted in flow panel
@@ -217,8 +219,8 @@ function App() {
 
 
 
-      for (let i in workflow.FunctionList){ // Remove each invokeNext which pointed to deleted action
-        newWorkflow.FunctionList[i].InvokeNext[1] = newWorkflow.FunctionList[i].InvokeNext[1].filter(
+      for (let i in workflow.ActionList){ // Remove each invokeNext which pointed to deleted action
+        newWorkflow.ActionList[i].InvokeNext[1] = newWorkflow.ActionList[i].InvokeNext[1].filter(
           item => (item.includes("(")) ?  item.substring(0, item.indexOf("(")) !== id : item !== id
         )
       }
@@ -245,7 +247,7 @@ function App() {
       newNodes = nodes.filter( (node) => (node.id !== id));
       
 
-      delete newWorkflow.FunctionList[id]; // Delete action from workflow
+      delete newWorkflow.ActionList[id]; // Delete action from workflow
       updateWorkflowAndLayout(newWorkflow, newNodes, newEdges);
     };
 
@@ -253,26 +255,28 @@ function App() {
   const onEdgesDelete = 
     (deleted) => {
       //alert("Edge delete")
-      let coolEdge = deleted[0]
-      let source = coolEdge.source
-      let target = coolEdge.target
-      let newWorkflow = structuredClone(workflow);
+      let deletedEdge = deleted[0]
+      let source = deletedEdge.source
+      let target = deletedEdge.target
+
+      let invoke = listInvokeNext(source).find( i => {
+          let { id } = parseInvoke(i)
+          return id === target
+        }
+      )
 
       
-      
-      newWorkflow.FunctionList[source].InvokeNext[1] = newWorkflow.FunctionList[source].InvokeNext[1].filter(
-        item => (item.indexOf("(") !== -1) ?  item.substring(0, item.indexOf("(")) !== target : item !== target
-      )
+      deleteInvoke(source, invoke)
 
       const updatedEdges = edges.filter( (edge) => edge.source !== source || edge.target !== target);
       
-      if(coolEdge.label ? coolEdge.label > 1 : false){
+      if(deletedEdge.label ? deletedEdge.label > 1 : false){
         const updatedNodes = [...nodes]
         const nodeIndex = nodes.findIndex( (node) => node.id === (target))
         updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : 1}}
-        updateWorkflowAndLayout(newWorkflow, updatedNodes, updatedEdges)
+        updateLayout( updatedNodes, updatedEdges)
       }else{
-        updateWorkflowAndLayout(newWorkflow, nodes, updatedEdges);
+        updateLayout(nodes, updatedEdges);
       }
     };
 
@@ -295,7 +299,7 @@ function App() {
     const newNode = createNewNode(x, y, name, id);
 
     // Attach the edges on creation
-    const workflowAction = workflow.FunctionList[id];
+    const workflowAction = workflow.ActionList[id];
     let newEdges = [];
 
     if (workflowAction && workflowAction.InvokeNext.length > 0) {

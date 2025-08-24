@@ -30,10 +30,10 @@ export default function ArgumentsEditor( props ){
     const updateFunction = (updates) => {
         updateWorkflow({
             ...workflow,
-            FunctionList: {
-                ...workflow.FunctionList,
+            ActionList: {
+                ...workflow.ActionList,
                 [id]: {
-                    ...workflow.FunctionList[id],
+                    ...workflow.ActionList[id],
                     ...updates
                 }
             }
@@ -42,7 +42,7 @@ export default function ArgumentsEditor( props ){
 
     const updateArgument = (key, value) => {
         updateFunction({Arguments : {
-            ...workflow.FunctionList[id].Arguments,
+            ...workflow.ActionList[id].Arguments,
             [key] : value
         }})
     };
@@ -51,7 +51,7 @@ export default function ArgumentsEditor( props ){
         <div id="arguments-editor">
                 <GenericLabel size={"20px"} value={"Arguments"}></GenericLabel>
                 <div style={{border: "solid"}}>
-                    {Object.entries(workflow.FunctionList[id].Arguments).map(([key, val], i) => (
+                    {Object.entries(workflow.ActionList[id].Arguments).map(([key, val], i) => (
                         <div className="list-entry">
                             <label className="truncate" style={{ width: '5vw' }}>{key}</label>
                             <input
@@ -65,8 +65,8 @@ export default function ArgumentsEditor( props ){
                             />
                             <button style={{color:"red", marginLeft: 'auto'}} onClick={() => {
                                 const newWorkflow = structuredClone(workflow);
-                                delete newWorkflow.FunctionList[id].Arguments[key]
-                                console.log("Deleting: " + key)
+                                delete newWorkflow.ActionList[id].Arguments[key]
+                                // console.log("Deleting: " + key)
                                 updateWorkflow(newWorkflow)
                             }}>Delete</button>
                     </div>
@@ -80,12 +80,12 @@ export default function ArgumentsEditor( props ){
                         if (!/\s/.test(newArg) && newArg !== "" && !/\s/.test(newArgVal) && newArgVal !== ""){
                             updateWorkflow({
                             ...workflow,
-                            FunctionList: {
-                                ...workflow.FunctionList,
+                            ActionList: {
+                                ...workflow.ActionList,
                                 [id]: {
-                                    ...workflow.FunctionList[id],
+                                    ...workflow.ActionList[id],
                                     Arguments: {
-                                    ...workflow.FunctionList[id].Arguments,
+                                    ...workflow.ActionList[id].Arguments,
                                     [newArg]: newArgVal
                                     }
                                 }

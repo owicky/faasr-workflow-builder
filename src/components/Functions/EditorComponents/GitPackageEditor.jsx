@@ -29,8 +29,8 @@ export default function GitPackageEditor( props ){
         <div id="git-package-editor">
         <GenericLabel size={"20px"} value={"GitHub Packages for the Function"}></GenericLabel>
             <div style={{border: "solid"}}>
-                { workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] ? 
-                    Object.entries(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
+                { workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] ? 
+                    Object.entries(workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName]).map(([key, val], i) => (
                         <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
                             <input
                             type="text"
@@ -41,8 +41,8 @@ export default function GitPackageEditor( props ){
                                     ...workflow,
                                     FunctionGitHubPackage : {
                                         ...workflow.FunctionGitHubPackage,
-                                        [workflow.FunctionList[id].FunctionName] :
-                                        workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName]
+                                        [workflow.ActionList[id].FunctionName] :
+                                        workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName]
                                             .map(pkg => pkg === val ? e.target.value : pkg)
                                     }
                                 }
@@ -52,7 +52,7 @@ export default function GitPackageEditor( props ){
                             />
                             <button style={{color:"red"}} onClick={() => {
                                 const newWorkflow = structuredClone(workflow);
-                                newWorkflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] = newWorkflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val);
+                                newWorkflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] = newWorkflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName].filter(value => value !== val);
                                 updateWorkflow(newWorkflow);
                             }}>Delete</button>
                     </div>
@@ -63,13 +63,13 @@ export default function GitPackageEditor( props ){
                 <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
                 <button onClick={() => {
                     const newPackageName = newGitPackage.trim()
-                    if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
+                    if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName].includes(newPackageName))){
                         updateWorkflow({
                             ...workflow,
                             FunctionGitHubPackage: {
                                 ...workflow.FunctionGitHubPackage,
-                                [workflow.FunctionList[id].FunctionName]: [
-                                    ...(workflow.FunctionGitHubPackage[workflow.FunctionList[id].FunctionName] || []),
+                                [workflow.ActionList[id].FunctionName]: [
+                                    ...(workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] || []),
                                     newPackageName
                                 ]
                             }

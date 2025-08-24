@@ -16,14 +16,14 @@ export default function ComputeServerSelector( props ){
 
                     <select placeholder="FaaSServer" onChange={(e)=>updateWorkflow({
                         ...workflow,
-                        FunctionList: {
-                            ...workflow.FunctionList,
+                        ActionList: {
+                            ...workflow.ActionList,
                             [id]: {
-                                ...workflow.FunctionList[id],
+                                ...workflow.ActionList[id],
                                 FaaSServer: e.target.value
                             }
                         }
-                    })} type="text" value={workflow.FunctionList[id].FaaSServer}>
+                    })} type="text" value={workflow.ActionList[id].FaaSServer}>
                         <option value={""}> NONE </option>
                         {Object.entries(workflow.ComputeServers).map(([key, val], i) => (
                             <option key={key} value={key}>{key}</option>

@@ -79,7 +79,7 @@ export const useCreateNewFunction = () => {
 
         const newNode = createNewNode(functionId);
         let newEdges = [];
-        const invokeNext = currentWorkflow.FunctionList[functionId].InvokeNext;
+        const invokeNext = currentWorkflow.ActionList[functionId].InvokeNext;
 
         newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext[1], "")];
         
@@ -92,13 +92,13 @@ export const useCreateNewFunction = () => {
     }
     const duplicateFunction = ( existingId, newActionId, newActionName = "" ) => {
 
-        if (!(newActionId in Object.keys(workflow.FunctionList)) && (newActionName !== "")){
+        if (!(newActionId in Object.keys(workflow.ActionList)) && (newActionName !== "")){
             console.log("is fresh")
-            const existingFunction = workflow.FunctionList[existingId];
+            const existingFunction = workflow.ActionList[existingId];
             const newWorkflow = {
                 ...workflow,
-                FunctionList: {
-                    ...workflow.FunctionList,
+                ActionList: {
+                    ...workflow.ActionList,
                     [newActionId]: {
                         FunctionName: newActionName,
                         FaaSServer: existingFunction.FaaSServer,
@@ -131,11 +131,11 @@ export function FunctionCreator(props){
     return(
         <>
             <button onClick={() => {
-                if (!(newId in Object.keys(workflow.FunctionList)) && (newId !== "")){
+                if (!(newId in Object.keys(workflow.ActionList)) && (newId !== "")){
                     setWorkflow({
                         ...workflow,
-                        FunctionList: {
-                            ...workflow.FunctionList,
+                        ActionList: {
+                            ...workflow.ActionList,
                             [newId]: {
                                 FunctionName: "",
                                 FaaSServer: "",

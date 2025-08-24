@@ -21,11 +21,11 @@ const useFunctionUtils = () => {
     // Get List of All InvokeNext values [id(rank),...]
     const listInvokeNext = (id) => {
         const invokes = []
-        const invokeNext = workflow.FunctionList[id].InvokeNext
+        const invokeNext = workflow.ActionList[id].InvokeNext
 
-        const trueInvokes = invokeNext[0]["True"]   
-        const falseInvokes = invokeNext[0]["False"]
-        const unconditionalInvokes = invokeNext[1]
+        const trueInvokes = invokeNext[0].True 
+        const falseInvokes = invokeNext[0].False
+        const unconditionalInvokes = invokeNext.slice(1)
 
         return invokes.concat(trueInvokes, falseInvokes, unconditionalInvokes)
     }
@@ -39,6 +39,9 @@ const useFunctionUtils = () => {
 
     // Split invoke into id and rank (invoke) => {id, rank}
     const parseInvoke = (invoke) => {
+        if (!invoke){
+            alert("can not parse undefined invoke")
+        }
         const hasRank = invoke.includes("(")
         const id = hasRank ? invoke.substring(0, invoke.indexOf("(") ) : invoke
 
@@ -49,16 +52,16 @@ const useFunctionUtils = () => {
 
     // Find true/false/unconditional value of invoke
     const getInvokeCondition = (funcId, invoke) => {
-        const invokeNext = workflow.FunctionList[funcId].InvokeNext
+        const invokeNext = workflow.ActionList[funcId].InvokeNext
         if ( invokeNext[0].True.includes(invoke)) return "True"
         else if ( invokeNext[0].False.includes(invoke)) return "False"
-        else if (invokeNext[1].includes(invoke)) return "Unclassified"
+        else if (invokeNext.includes(invoke)) return "Unclassified"
         return ""
     }
 
     // Remove an invoke from functions InvokeNext and delete corresponding Edge
     const deleteInvoke = (funcId, invoke) => {
-        let newInvokeNext = workflow.FunctionList[funcId].InvokeNext
+        let newInvokeNext = workflow.ActionList[funcId].InvokeNext
         const {id} = parseInvoke(invoke)
         const condition = getInvokeCondition(funcId, invoke)
 
@@ -69,7 +72,7 @@ const useFunctionUtils = () => {
                         ...newInvokeNext[0],
                         True: [...newInvokeNext[0].True.filter( (inv) => inv !== invoke )]
                     },
-                    newInvokeNext[1]
+                    ...newInvokeNext.slice(1)
                 ];
                 break;
             case "False":
@@ -79,13 +82,13 @@ const useFunctionUtils = () => {
                         ...newInvokeNext[0],
                         False: [...newInvokeNext[0].False.filter( (inv) => inv !== invoke )]
                     },
-                    newInvokeNext[1]
+                    ...newInvokeNext.slice(1)
                 ];
                 break;
             case "Unclassified":
                 newInvokeNext = [
                     newInvokeNext[0],
-                    [...newInvokeNext[1].filter( (inv) => inv !== invoke ) ]
+                    ...newInvokeNext.slice(1).filter( (inv) => inv !== invoke )
                 ];
                 break;
             default:
@@ -109,10 +112,10 @@ const useFunctionUtils = () => {
         })
         const updatedWorkflow = {
             ...workflow,
-            FunctionList : {
-                ...workflow.FunctionList,
+            ActionList : {
+                ...workflow.ActionList,
                 [funcId] : {
-                    ...workflow.FunctionList[funcId],
+                    ...workflow.ActionList[funcId],
                     InvokeNext : newInvokeNext
                 }
             }
@@ -127,7 +130,7 @@ const useFunctionUtils = () => {
             return
         }
 
-        let newInvokeNext = [...workflow.FunctionList[funcId].InvokeNext]
+        let newInvokeNext = [...workflow.ActionList[funcId].InvokeNext]
         const newInvoke = rank > 1 ? id+"("+rank+")" : id
 
         switch (condition) {
@@ -137,7 +140,7 @@ const useFunctionUtils = () => {
                     ...newInvokeNext[0],
                     True: [...newInvokeNext[0].True, newInvoke]
                 },
-                newInvokeNext[1]
+                ...newInvokeNext.slice(1)
                 ];
                 break;
             case "False":
@@ -146,27 +149,27 @@ const useFunctionUtils = () => {
                     ...newInvokeNext[0],
                     False: [...newInvokeNext[0].False, newInvoke]
                 },
-                newInvokeNext[1]
+                    ...newInvokeNext.slice(1)
                 ];
                 break;
-            case "condition":
+            case "Unconditional":
                 newInvokeNext = [
-                newInvokeNext[0],
-                [...newInvokeNext[1], newInvoke]
+                    newInvokeNext[0],
+                    ...newInvokeNext.slice(1),
+                    newInvoke
                 ];
                 break;
             default:
-                // optional: handle default case
                 break;
             }
 
         
         updateWorkflow({
             ...workflow,
-            FunctionList : {
-                ...workflow.FunctionList,
+            ActionList : {
+                ...workflow.ActionList,
                 [funcId] : {
-                    ...workflow.FunctionList[funcId],
+                    ...workflow.ActionList[funcId],
                     InvokeNext : newInvokeNext
                 }
             }
@@ -178,7 +181,7 @@ const useFunctionUtils = () => {
         const sourceRank = nodes.find( node => node.id === source).data.rank
         const targetRank = nodes.find( node => node.id === target).data.rank
 
-        if (sourceRank > 1){
+        if (sourceRank > 1 && rankedEdge){
             alert("Ranked action may not invoke another ranked action")
             return false
         }
@@ -227,46 +230,40 @@ const useFunctionUtils = () => {
 
 
         switch(condition) {
-        case "False":
-            colorc = "#F52F16"; 
-            break;
-        case "True":
-            colorc = "#1BF23D";
-            break;
-        default:
-            colorc = "var(--edge-color)";
-        }
+            case "False":
+                colorc = "#F52F16"; 
+                break;
+            case "True":
+                colorc = "#1BF23D";
+                break;
+            default:
+                colorc = "var(--edge-color)";
+            }
         if ( rank !== ""  ) {
-        // if (nodes.some( (node) => (node.data.rank > 1 && node.data.id === id2))) alert("target Already Has Rank Specified")
-        const nodeIndex = nodes.findIndex( (node) => node.id === (id2))
-        updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}}
-        // else{
-        // }
+            const nodeIndex = nodes.findIndex( (node) => node.id === (id2))
+            updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}}
         }
-
         const newEdge = createNewEdge(id1, id2);
-        // updateLayout(updatedNodes, edges.concat());
         
         return({ updateNode : updatedNodes, updateEdge : {
-        ...newEdge,
-        markerEnd: {
-            ...newEdge.markerEnd,
-            color : colorc,
-            height : rank > 1 ? 8 : 10,
-            width : rank > 1 ? 8 : 10
-        },
-        style: {
-            stroke: colorc,
-            strokeWidth : rank > 1 ? 4 : 2
-        }, 
-        label : (rank > 1 ) ? rank : "" } 
-            
+            ...newEdge,
+            markerEnd: {
+                ...newEdge.markerEnd,
+                color : colorc,
+                height : rank > 1 ? 8 : 10,
+                width : rank > 1 ? 8 : 10
+            },
+            style: {
+                stroke: colorc,
+                strokeWidth : rank > 1 ? 4 : 2
+            }, 
+            label : (rank > 1 ) ? rank : "" }  
         })
     }
 
     const updateInvoke = (funcId, invoke, newId, newRank, newCondition) => {
 
-        let newInvokeNext = [...workflow.FunctionList[funcId].InvokeNext]
+        let newInvokeNext = [...workflow.ActionList[funcId].InvokeNext]
 
         const {id} = parseInvoke(invoke)
         if(!isValidNewRankedEdge(funcId, newId, newRank)){
@@ -281,7 +278,7 @@ const useFunctionUtils = () => {
                     ...newInvokeNext[0],
                     True: [...newInvokeNext[0].True.filter( (inv) => inv !== invoke )]
                 },
-                newInvokeNext[1]
+                ...newInvokeNext.slice(1)
             ];
         }
         else if ( newInvokeNext[0].False.includes(invoke) ){
@@ -291,39 +288,40 @@ const useFunctionUtils = () => {
                     ...newInvokeNext[0],
                     False: [...newInvokeNext[0].False.filter( (inv) => inv !== invoke )]
                 },
-                newInvokeNext[1]
+                ...newInvokeNext.slice(1)
             ];
         }
         else{
             newInvokeNext = [
                 newInvokeNext[0],
-                [...newInvokeNext[1].filter( (inv) => inv !== invoke ) ]
+                ...newInvokeNext.slice(1).filter( (inv) => inv !== invoke )
             ];
         }
 
         switch (newCondition) {
             case "True":
                 newInvokeNext = [
-                {
-                    ...newInvokeNext[0],
-                    True: [...newInvokeNext[0].True, newInvoke]
-                },
-                newInvokeNext[1]
+                    {
+                        ...newInvokeNext[0],
+                        True: [...newInvokeNext[0].True, newInvoke]
+                    },
+                    ...newInvokeNext.slice(1)
                 ];
                 break;
             case "False":
                 newInvokeNext = [
-                {
-                    ...newInvokeNext[0],
-                    False: [...newInvokeNext[0].False, newInvoke]
-                },
-                newInvokeNext[1]
+                    {
+                        ...newInvokeNext[0],
+                        False: [...newInvokeNext[0].False, newInvoke]
+                    },
+                    ...newInvokeNext.slice(1)
                 ];
                 break;
             default:
                 newInvokeNext = [
-                newInvokeNext[0],
-                [...newInvokeNext[1], newInvoke]
+                    newInvokeNext[0],
+                    ...newInvokeNext.slice(1),
+                    newInvoke
                 ];
             }
 
@@ -333,10 +331,10 @@ const useFunctionUtils = () => {
         const {updateNode, updateEdge} = createEdge(funcId, newId, newRank, newCondition)
         updateWorkflowAndLayout({
             ...workflow,
-            FunctionList : {
-                ...workflow.FunctionList,
+            ActionList : {
+                ...workflow.ActionList,
                 [funcId] : {
-                    ...workflow.FunctionList[funcId],
+                    ...workflow.ActionList[funcId],
                     InvokeNext : newInvokeNext
                 }
             }
@@ -365,36 +363,33 @@ const useFunctionUtils = () => {
         } ), updatedEdges.concat(updateEdge))
 
     }
-    /* Adds a new edge to the workflow and layout given a (Source id, Target id, edge)
+    /* Adds a new edge to the workflow and layout given a (Source id, Target id, edge) rank 1 unconditional
     */
     const add_edge = (sourceId, targetId, customEdge) => {
         // Get the function object for the source
-        const sourceFunction = workflow.FunctionList[sourceId];
+        const sourceFunction = workflow.ActionList[sourceId];
         
         if (!sourceFunction) {
         console.error(`Source function '${sourceId}' not found.`);
         return;
         } 
     
-        // Update the InvokeNext array
-        const updatedInvokeNext = [...(sourceFunction.InvokeNext[1] || []), targetId];
-    
         // Create updated source function with new InvokeNext
         const updatedSourceFunction = {
-        ...sourceFunction,
-        InvokeNext: [ {...sourceFunction.InvokeNext[0]}, updatedInvokeNext],
+            ...sourceFunction,
+            InvokeNext: [...sourceFunction.InvokeNext, targetId]
         };
     
-        // Build new FunctionList with updated source function
-        const updatedFunctionList = {
-        ...workflow.FunctionList,
-        [sourceId]: updatedSourceFunction,
+        // Build new ActionList with updated source function
+        const updatedActionList = {
+            ...workflow.ActionList,
+            [sourceId]: updatedSourceFunction,
         };
     
         // Update entire workflow
         const updatedWorkflow = {
-        ...workflow,
-        FunctionList: updatedFunctionList,
+            ...workflow,
+            ActionList: updatedActionList,
         };
     
         updateWorkflowAndLayout(updatedWorkflow, nodes, edges.concat(customEdge));

@@ -15,7 +15,7 @@ const logos={
 const FunctionNode = ({ data }) => {
     const {workflow} = useWorkflowContext()
 
-    const FaasAcc = workflow.FunctionList[data.id]?.FaaSServer
+    const FaasAcc = workflow.ActionList[data.id]?.FaaSServer
     const FaasType = workflow.ComputeServers[FaasAcc]?.FaaSType
 
     const xShift = -11

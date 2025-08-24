@@ -3,12 +3,14 @@ import useUndo from "../Utils/Undo";
 import { flushSync } from 'react-dom';
 import { useReactFlow } from "@xyflow/react";
 import { useWorkflowContext } from "../../WorkflowContext";
+import useFunctionUtils from "../Functions/FunctionsUtils";
 
 export function UploadWorkflow(props) {
     const { updateWorkflowAndLayout } = useUndo()
     const fileInputRef = useRef(null);
     const { fitView } = useReactFlow()
     const { getLayoutedElements } = useWorkflowContext()
+    const { parseInvoke, listInvokeNext} = useFunctionUtils()
     
     // NEW: This ref tracks whether we want to run the effect
     const shouldBuildGraphRef = useRef(false);
@@ -27,9 +29,9 @@ export function UploadWorkflow(props) {
                 // Set flag before updating state
                 shouldBuildGraphRef.current = true;
 
-                // Update workflow 
+                // Update workflow and populate with defaults if missing
                 buildGraph({ ...new_workflow,
-                            FunctionList : new_workflow.FunctionList || {},
+                            ActionList : new_workflow.ActionList || {},
                             ComputeServers : new_workflow.ComputeServers || {},
                             DataStores : new_workflow.DataStores || {},
                             ActionContainers : new_workflow.ActionContainers || {},
@@ -41,6 +43,7 @@ export function UploadWorkflow(props) {
                             FaaSrLog : new_workflow.FaaSrLog || "",
                             LoggingDataStore : new_workflow.LoggingDataStore || "",
                             InvocationID : new_workflow.InvocationID || "",
+                            PyPIPackageDownloads : new_workflow.PyPIPackageDownloads || {},
                             WorkflowName : new_workflow.WorkflowName || "unnamed-workflow"
                 });
                 setUploadPopupEnabled(false)
@@ -57,38 +60,47 @@ export function UploadWorkflow(props) {
         fileInputRef.current.click();
     };
 
-    // I changed the useEffect to a function, now it just gets called when file changes
+    
     const buildGraph = (newWorkflow) => {
         if (shouldBuildGraphRef.current) {
             shouldBuildGraphRef.current = false;
 
-            const functions = newWorkflow.FunctionList || {};
+            const actions = newWorkflow.ActionList || {};
             let offset = 0;
 
 
-            const updatedFunctionList = {};
-            for (const key in functions) {
-                const fn = functions[key];
-                updatedFunctionList[key] = {
+            const updatedActionList = {};
+            for (const key in actions) {
+                const fn = actions[key];
+                updatedActionList[key] = {
                     ...fn,
-                    InvokeNext: Array.isArray(fn.InvokeNext[1]) ? fn.InvokeNext : [{True : [], False: []}, fn.InvokeNext]
+                    InvokeNext: typeof fn.InvokeNext[0] === 'object' ? [{ True : fn.InvokeNext[0].True || [], False : fn.InvokeNext[0].False || []}, ...fn.InvokeNext.slice(1)] : [{ True : [], False : []}, ...fn.InvokeNext]
                 };
             }
 
 
             const updatedWorkflow = {
                 ...newWorkflow,
-                FunctionList: updatedFunctionList
+                ActionList: updatedActionList
             };
 
 
             //Create Graph
             let newNodes = [];
             let newEdges = [];
-            for (let i in updatedFunctionList) {
-                newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i));
-                updatedFunctionList[i].InvokeNext[1].forEach( (id) => {
-                    newEdges.push(props.createNewEdge(i, id));
+            for (let action in updatedActionList) {
+                newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedActionList[action].FunctionName, action));            
+                updatedActionList[action].InvokeNext[0].True.forEach( (invoke) => {
+                    const {id} = parseInvoke(invoke)
+                    newEdges.push(props.createNewEdge(action, id));
+                });
+                updatedActionList[action].InvokeNext[0].False.forEach( (invoke) => {
+                    const {id} = parseInvoke(invoke)
+                    newEdges.push(props.createNewEdge(action, id));
+                });
+                updatedActionList[action].InvokeNext.slice(1).forEach( (invoke) => {
+                    const {id} = parseInvoke(invoke)
+                    newEdges.push(props.createNewEdge(action, id));
                 });
                 offset++;
             }
@@ -97,7 +109,8 @@ export function UploadWorkflow(props) {
             
             const layouted = getLayoutedElements(newNodes, newEdges, 'TB' );
             props.updateWorkflowAndLayout(updatedWorkflow, layouted.nodes, layouted.edges);
-            
+            props.updateWorkflowAndLayout(updatedWorkflow, newNodes, newEdges);
+
             fitView()
 
 

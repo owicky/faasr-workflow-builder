@@ -22,7 +22,7 @@ export default function InvokeNextEditor( props ){
 
     const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionName, setNewActionName] = useState("")
-    const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
+    const { listInvokeNext, parseInvoke, createEdge, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
     const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
 
     return (
@@ -33,10 +33,6 @@ export default function InvokeNextEditor( props ){
                 {/* For each action in nonconditional Invokenext */}
 
                 {listInvokeNext(id).map( (invoke) => {
-                    if(invoke === undefined){
-                        console.log(id)
-                        console.log(listInvokeNext(id))
-                    }
                     const { id : invId, rank} = parseInvoke(invoke)
                     const condition = getInvokeCondition(id, invoke)
                     return (
@@ -55,7 +51,7 @@ export default function InvokeNextEditor( props ){
                             
                             <option value={""}> NONE </option>
                             
-                            {Object.entries(workflow.FunctionList).map(([key]) => (
+                            {Object.entries(workflow.ActionList).map(([key]) => (
                             
                             <option key={key} value={key}>{key}</option>
                             ))}
@@ -91,7 +87,7 @@ export default function InvokeNextEditor( props ){
                     
                     <option value={""}> NONE </option>
                     
-                    {Object.entries(workflow.FunctionList).map(([key]) => (
+                    {Object.entries(workflow.ActionList).map(([key]) => (
                     
                     <option key={key} value={key}>{key}</option>
                     ))}
@@ -114,34 +110,45 @@ export default function InvokeNextEditor( props ){
                             if (newInvoke !== ""){
                                 updateWorkflow({
                                 ...workflow,
-                                FunctionList: {
-                                    ...workflow.FunctionList,
+                                ActionList: {
+                                    ...workflow.ActionList,
                                     [id]: {
-                                    ...workflow.FunctionList[id],
+                                    ...workflow.ActionList[id],
                                     InvokeNext: condition === ""
                                         ? [
-                                            workflow.FunctionList[id].InvokeNext[0], // keep conditionals
-                                            [
-                                            ...workflow.FunctionList[id].InvokeNext[1],
+                                            ...workflow.ActionList[id].InvokeNext,
                                             newInvoke + rankString
-                                            ] // update unconditional
                                         ]
                                         : [
                                             {
-                                            ...workflow.FunctionList[id].InvokeNext[0],
-                                            [condition]: [
-                                                ...workflow.FunctionList[id].InvokeNext[0][condition],
-                                                newInvoke + rankString
-                                            ]
-                                            },
-                                            workflow.FunctionList[id].InvokeNext[1] // keep unconditionals
+                                                ...workflow.ActionList[id].InvokeNext[0],
+                                                [condition]: [
+                                                    ...workflow.ActionList[id].InvokeNext[0][condition],
+                                                    newInvoke + rankString
+                                            ]},
+                                            ...workflow.ActionList[id].InvokeNext.slice(1),
                                         ]
-                                    }
+                                    }   
                                 }
                                 })
 
                                 }
-                                props.createEdge(id, newInvoke, newrank, condition)
+                                const {updateNode, updateEdge} = createEdge(id, newInvoke, newrank, condition)
+                                updateLayout(
+                                    updateNode.map( (node) => {
+                                        if (node.id === newInvoke){
+                                            return {
+                                                ...node,
+                                                data : {
+                                                    ...node.data,
+                                                    rank : newrank
+                                                }
+                                            }
+                                        }else{
+                                            return node
+                                        }
+                                    } ),
+                                    edges.concat(updateEdge))
                                 
                             }
                         } 

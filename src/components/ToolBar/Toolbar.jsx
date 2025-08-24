@@ -4,7 +4,6 @@ import { useState } from "react";
 import Popup from "../Utils/Popup";
 import GenericLabel from "../Utils/GenericLabel";
 import { UploadLayout } from "./UploadLayout";
-import schemaOld from "../../assets/webui-workflow-schema.json"
 import schemaNew from "../../assets/webui-workflow-schema-new.json"
 import GenericButton from "../Utils/GenericButton";
 import { IoMdSettings } from "react-icons/io";
@@ -19,26 +18,21 @@ export default function Toolbar(props) {
     const [ downloadPopupEnabled, setDownloadPopupEnabled ] = useState(false)
     const [ uploadPopupEnabled, setUploadPopupEnabled ] = useState(false)
 
-    const downloadWorkflowJson = (name, newSchema) => {
+    const downloadWorkflowJson = (name) => {
 
         const validator = require('is-my-json-valid')
-            const validate = validator(newSchema ? schemaNew : schemaOld, {
+            const validate = validator(schemaNew, {
             greedy : true
         })
 
         const strippedWorkflow = stripRemovedActions(workflow)
         const cleanedWorkflow = cleanObject({...strippedWorkflow})
+        // console.log(cleanedWorkflow)
 
 
-        if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.FunctionList)) {
+        if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.ActionList)) {
             alert(`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`);
             return
-        }
-
-
-        if (newSchema) {
-            cleanedWorkflow.ActionList = cleanedWorkflow.FunctionList
-            delete cleanedWorkflow.FunctionList
         }
 
         if (!validate(cleanedWorkflow, { verbose: true})){ // If violates Schema
@@ -52,9 +46,10 @@ export default function Toolbar(props) {
         }
     
 
-        const blob = new Blob([JSON.stringify(workflow, null, 2)], {
+        const blob = new Blob([JSON.stringify(cleanedWorkflow, null, 2)], {
             type: 'application/json',
         });
+
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -66,13 +61,13 @@ export default function Toolbar(props) {
 
     function stripRemovedActions(workflow) {
         let newWorkflow = structuredClone(workflow)
-        Object.values(newWorkflow.FunctionList).forEach( (key, value) => {
+        Object.values(newWorkflow.ActionList).forEach( (key, value) => {
 
             if (!nodes.some( (node) => node.id === key)) {
-                delete newWorkflow.FunctionList[key];
+                delete newWorkflow.ActionList[key];
             }else{
                 // remove edges to nodes not in layout
-                newWorkflow.FunctionList[key].InvokeNext = newWorkflow.FunctionList[key].InvokeNext.filter(
+                newWorkflow.ActionList[key].InvokeNext = newWorkflow.ActionList[key].InvokeNext.filter(
                     ( (id) => nodes.some( (node) => node.id === id))
                 );
             }
@@ -82,34 +77,43 @@ export default function Toolbar(props) {
     }
 
     function cleanObject(object) {
-        // Type matched object or array to be poppulated and returned
-        const result = Array.isArray(object) ? [] : {}; 
-
-        for (const [key, value] of Object.entries(object)) { // For each child
-
-            if (value === "" || value === null) {// Skip if empty
-                continue; 
-            }
-
-            if (typeof value === 'object') { // If type is another object
-                const cleaned = cleanObject(value); // Recurse
-
-                if ( // Skip if empty after cleaning children 
-                    (typeof cleaned === 'object' && cleaned !== null && // null object
-                    ((Array.isArray(cleaned) && cleaned.length === 0) || // empty list
-                    (!Array.isArray(cleaned) && Object.keys(cleaned).length === 0))) // Empty object
-                ) {
-                    continue;
-                }
-
-                result[key] = cleaned; // Set selected child to cleaned self
-            } else { // nonempty, return value
-                result[key] = value;
-            }
+        if (Array.isArray(object)) {
+            // Clean each array element, drop empties
+            return object
+                .map(item => cleanObject(item))
+                .filter( (item, key) => {
+                    if (key === "InvokeNext") return true
+                    if (item === "" || item === null) return false;
+                    if (Array.isArray(item)) return item.length > 0;
+                    if (typeof item === "object" && Object.keys(item).length === 0) return false;
+                    return true;
+                });
         }
 
-        return result;
+        if (typeof object === "object" && object !== null) {
+            const result = {};
+            for (const [key, value] of Object.entries(object)) {
+                const cleaned = cleanObject(value);
+
+                // Drop if empty
+                if (
+                    (cleaned === "" || cleaned === null ||
+                    (Array.isArray(cleaned) && cleaned.length === 0) ||
+                    (typeof cleaned === "object" && Object.keys(cleaned).length === 0))
+                    && key !== "InvokeNext"
+                ) {
+                    continue; // removes empty True/False keys
+                }
+
+                result[key] = cleaned;
+            }
+            return result;
+        }
+
+        // Primitive (string, number, bool, etc.)
+        return object;
     }
+
 
     const downloadLayoutJson = (name) => {
         const layout = {nodes : nodes,
@@ -147,13 +151,7 @@ export default function Toolbar(props) {
             
             <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabled()}>
                 <GenericLabel value={"Download Options for Workflow: "+workflow.WorkflowName} size="20px"></GenericLabel>
-                <select id="schema-select">
-                    <option value={"false"}>Validate using old schema</option>
-                    <option value={"true"}>Validate using new schema</option>
-                </select>
-                <br></br>
-                <br></br>
-                <button onClick={() => downloadWorkflowJson(workflow.WorkflowName, document.getElementById("schema-select").value === "true")}>Download {workflow.WorkflowName}.json</button>
+                <button onClick={() => downloadWorkflowJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}.json</button>
                 <button onClick={() => downloadLayoutJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}-layout.json</button>
             </Popup>
             <GenericButton icon={<FaDatabase/>} onClick={() => props.setEditType("DataStores")}>Edit Data Stores</GenericButton>

@@ -29,8 +29,8 @@ export default function CranPackageEditor( props ){
         <div id="cran-package-editor">
             <GenericLabel size={"20px"} value={"CRAN Packages for the Function"}></GenericLabel>
             <div style={{border: "solid"}}>
-                { workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] ? 
-                    Object.entries(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName]).map(([key, val], i) => (
+                { workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName] ? 
+                    Object.entries(workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName]).map(([key, val], i) => (
                         <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
                             <input
                             type="text"
@@ -41,8 +41,8 @@ export default function CranPackageEditor( props ){
                                     ...workflow,
                                     FunctionCRANPackage : {
                                         ...workflow.FunctionCRANPackage,
-                                        [workflow.FunctionList[id].FunctionName] :
-                                        workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName]
+                                        [workflow.ActionList[id].FunctionName] :
+                                        workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName]
                                             .map(pkg => pkg === val ? e.target.value : pkg)
                                     }
                                 }
@@ -52,7 +52,7 @@ export default function CranPackageEditor( props ){
                             />
                             <button style={{color:"red"}} onClick={() => {
                                 const newWorkflow = structuredClone(workflow);
-                                newWorkflow.FunctionCRANPackage[newWorkflow.FunctionList[id].FunctionName] = newWorkflow.FunctionCRANPackage[newWorkflow.FunctionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].filter(value => value !== val);
+                                newWorkflow.FunctionCRANPackage[newWorkflow.ActionList[id].FunctionName] = newWorkflow.FunctionCRANPackage[newWorkflow.ActionList[id].FunctionName] = workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName].filter(value => value !== val);
                                 updateWorkflow(newWorkflow);
                             }}>Delete</button>
                     </div>
@@ -62,13 +62,13 @@ export default function CranPackageEditor( props ){
                 <input value={newCranPackage} placeholder="NewPackageName" onChange={ (e) => setNewCranPackage(e.target.value)}></input>
                 <button onClick={() => {
                     const newPackageName = newCranPackage.trim()
-                    if(newPackageName !== "" && (!workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || !workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName].includes(newPackageName))){
+                    if(newPackageName !== "" && (!workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName] || !workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName].includes(newPackageName))){
                         updateWorkflow({
                             ...workflow,
                             FunctionCRANPackage: {
                                 ...workflow.FunctionCRANPackage,
-                                [workflow.FunctionList[id].FunctionName]: [
-                                    ...(workflow.FunctionCRANPackage[workflow.FunctionList[id].FunctionName] || []),
+                                [workflow.ActionList[id].FunctionName]: [
+                                    ...(workflow.FunctionCRANPackage[workflow.ActionList[id].FunctionName] || []),
                                     newPackageName
                                 ]
                             }

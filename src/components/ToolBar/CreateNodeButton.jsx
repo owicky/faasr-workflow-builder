@@ -4,7 +4,7 @@ export default function CreateNodeButton(props){
     const { setNodes} = useWorkflowContext();
 
     const createNewFunction = () => {
-        props.workflow.FunctionList[props.id] = {
+        props.workflow.ActionList[props.id] = {
             "FunctionName": "undefined",
             "FaaSServer": "undefined",
             "Arguments": {

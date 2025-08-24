@@ -42,14 +42,14 @@ export function UploadLayout(props) {
         if (shouldBuildGraphRef.current) {
             shouldBuildGraphRef.current = false;
 
-        // const functions = workflow.FunctionList || {};
+        // const functions = workflow.ActionList || {};
         // let offset = 0;
 
 
-        // const updatedFunctionList = {};
+        // const updatedActionList = {};
         // for (const key in functions) {
         //     const fn = functions[key];
-        //     updatedFunctionList[key] = {
+        //     updatedActionList[key] = {
         //         ...fn,
         //         InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
         //     };
@@ -58,20 +58,20 @@ export function UploadLayout(props) {
 
         // const updatedWorkflow = {
         //     ...workflow,
-        //     FunctionList: updatedFunctionList
+        //     ActionList: updatedActionList
         // };
 
         // setWorkflow(updatedWorkflow);
 
         //     //Create Nodes
-        //     for (let i in updatedFunctionList) {
-        //         props.createNode(100 + offset * 100, 100 + offset * 50, updatedFunctionList[i].FunctionName, i);
+        //     for (let i in updatedActionList) {
+        //         props.createNode(100 + offset * 100, 100 + offset * 50, updatedActionList[i].FunctionName, i);
         //         offset++;
         //     }
         //     //Connect Edges
-        //     for (let i in updatedFunctionList) {
-        //         if (updatedFunctionList[i].InvokeNext !== null) {
-        //             for (let j of updatedFunctionList[i].InvokeNext) {
+        //     for (let i in updatedActionList) {
+        //         if (updatedActionList[i].InvokeNext !== null) {
+        //             for (let j of updatedActionList[i].InvokeNext) {
         //                 props.createEdge(i, j);
         //             }
         //         }

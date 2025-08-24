@@ -83,7 +83,7 @@ export default function GeneralConfig(props){
                             
                             <option value={""}> NONE </option>
                             
-                            {Object.entries(workflow.FunctionList).map(([key]) => (
+                            {Object.entries(workflow.ActionList).map(([key]) => (
                             
                             <option value={key}>{key}</option>
                             ))}

@@ -36,10 +36,10 @@ export default function GitRepoPathEditor( props ){
                     ...workflow,
                     FunctionGitRepo: {
                         ...workflow.FunctionGitRepo,
-                        [workflow.FunctionList[id].FunctionName] : e.target.value
+                        [workflow.ActionList[id].FunctionName] : e.target.value
                     }
                 })}
-                value={workflow.FunctionGitRepo[workflow.FunctionList[id].FunctionName] || ""}
+                value={workflow.FunctionGitRepo[workflow.ActionList[id].FunctionName] || ""}
                 onBlur={props.onBlur}
             />
         </div>
