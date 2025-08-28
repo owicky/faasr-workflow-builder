@@ -11,12 +11,17 @@ import { FaDownload, FaUpload } from "react-icons/fa6";
 import { FaDatabase  } from "react-icons/fa";
 import { FaServer  } from "react-icons/fa6";
 import { FaSitemap } from "react-icons/fa"
-
+import useLayoutUtils from "../Utils/LayoutUtils";
+import useWorkflowUtils from "../Utils/WorkflowUtils";
+import useWorkflowAndLayoutUtils from "../Utils/WorkflowAndLayoutUtils";
 
 export default function Toolbar(props) {
     const {workflow, edges, nodes, } = useWorkflowContext();
     const [ downloadPopupEnabled, setDownloadPopupEnabled ] = useState(false)
     const [ uploadPopupEnabled, setUploadPopupEnabled ] = useState(false)
+    const { addEdge, deleteEdge, updateEdge, addNode, deleteNode, updateNode } = useLayoutUtils()
+    const { applyWorkflowChanges, deleteAction, addInvoke, updateAction, addAction, updateInvoke} = useWorkflowUtils()
+    const { createActionAndNode, deleteActionAndNode, createInvokeAndEdge} = useWorkflowAndLayoutUtils()
 
     const downloadWorkflowJson = (name) => {
 
@@ -133,8 +138,7 @@ export default function Toolbar(props) {
 
     return(
         <div id="toolbar" style={{ width: '100vw', height: '5vh'}}>
-            {/* <GenericButton onClick={() => alert("test")}>test</GenericButton> */}
-
+            {/* <GenericButton onClick={() => updateInvoke("add_operation", "r_func", {newCondition : "True"})}>TEST</GenericButton> */}
             <GenericButton icon={<FaUpload/>} onClick={() => {
                 setUploadPopupEnabled(true);
                 setDownloadPopupEnabled(false);
@@ -159,9 +163,9 @@ export default function Toolbar(props) {
 
             <GenericButton icon={<FaSitemap/>} onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</GenericButton>
             <GenericButton icon={<IoMdSettings/>} onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</GenericButton>
-            <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
 
-            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton>
+            {/* <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
+            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton> */}
 
             {/* Workflow Name Banner */}
             <span style={{

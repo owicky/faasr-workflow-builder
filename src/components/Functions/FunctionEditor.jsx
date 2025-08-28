@@ -13,80 +13,17 @@ import CranPackageEditor from "./EditorComponents/CranPackageEditor";
 import GitPackageEditor from "./EditorComponents/GitPackageEditor";
 import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
 import GenericButton from "../Utils/GenericButton";
+import useWorkflowUtils from "../Utils/WorkflowUtils";
 
 
 export default function FunctionEditor(props){
-    const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
+    const {workflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
     const id = selectedFunctionId
-    const [newArg, setNewArg] = useState("")
-    const [newArgVal, setNewArgVal] = useState("")
-    const [newGitPackage, setNewGitPackage] = useState("")
-    const [newCranPackage, setNewCranPackage] = useState("")
 
-    const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
-
-    const [newInvoke, setNewInvoke] = useState("NONE")
     const [newActionId, setNewActionId] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
-    const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
     const { duplicateFunction, createNewFunctionNode } = useCreateNewFunction();
-
-    // const updateFunction = (updates) => {
-    //     updateWorkflow({
-    //         ...workflow,
-    //         ActionList: {
-    //             ...workflow.ActionList,
-    //             [id]: {
-    //                 ...workflow.ActionList[id],
-    //                 ...updates
-    //             }
-    //         }
-    //     });
-    // };
-
-    // const updateInvokeNext = (index, value) => {
-    //     const updatedInvokeNext = [...workflow.ActionList[id].InvokeNext]
-
-    //     updatedInvokeNext[1][index] = value
-
-    //     updateFunction({InvokeNext : [...updatedInvokeNext]})
-    // } 
-    
-    // const updateInvokeNextRank = (i, rank) => {
-    //     const invoke = workflow.ActionList[id].InvokeNext[1][i]
-    //     const invokeName = (invoke.indexOf("(") !== -1) ? invoke.substring(0, invoke.indexOf("(")) : invoke
-    //     const rankHolder = edges.find( (edge) => edge.target === invokeName && edge.label !== undefined && edge.label !== "")
-    //     if ( rankHolder === undefined || rankHolder.source === id){
-    //         let rankString = ""
-    
-    //         if ( rank > 1 ) {
-    //             rankString = "(" + rank + ")"
-    //         }
-    //         updateInvokeNext(i, invokeName + rankString)
-            
-    //         const edgeIndex = edges.findIndex( (edge) => edge.id === (id + "-" + invokeName))
-    //         const updatedEdges = [...edges]
-    //         updatedEdges[edgeIndex] = {...updatedEdges[edgeIndex], label : (rank > 1) ? rank : ""}
-    
-    //         const nodeIndex = nodes.findIndex( (node) => node.id === (invokeName))
-    //         const updatedNodes = [...nodes]
-    //         updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}}
-            
-    //         updateLayout(updatedNodes, updatedEdges)
-    //     }else{
-    //         alert( rankHolder.source + " already invokes " + rankHolder.target + " with rank: " + rankHolder.label )
-    //     }
-
-    // }
-
-
-
-    // const updateArgument = (key, value) => {
-    //     updateFunction({Arguments : {
-    //         ...workflow.ActionList[id].Arguments,
-    //         [key] : value
-    //     }})
-    // };
+    const { updateAction, applyWorkflowChanges } = useWorkflowUtils()
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);
@@ -161,16 +98,9 @@ export default function FunctionEditor(props){
                 <TextInput 
                     value={workflow.ActionList[id].FunctionName} 
                     placeholder={"FunctionName"} 
-                    onChange={(e) => setWorkflow({
-                        ...workflow,
-                        ActionList:{
-                            ...workflow.ActionList,
-                            [id]: {
-                                ...workflow.ActionList[id],
-                                FunctionName: e.target.value
-                            }
-                        }
-                    })}
+                    onChange={(e) => 
+                        updateAction(id, { FunctionName : e.target.value})
+                    }
                     onBlur={handleBlur}
                 />
                 
@@ -189,7 +119,7 @@ export default function FunctionEditor(props){
 
 
                 {/* InvokeNext Editor */}
-                <InvokeNextEditor createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id}></InvokeNextEditor>
+                <InvokeNextEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} id={id}></InvokeNextEditor>
                 
 
                         
@@ -197,17 +127,15 @@ export default function FunctionEditor(props){
                 <br></br>
                 
                 {/* Paths */}
-                <GitRepoPathEditor onBlur={handleBlur} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></GitRepoPathEditor>
+                <GitRepoPathEditor onBlur={handleBlur} id={id} ></GitRepoPathEditor>
 
                 <br></br>
 
                 <div>
                     <GenericLabel size={"20px"} value={"Function's Action Container"}></GenericLabel>
                     <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
-                        onChange={(e)=>setWorkflow({
-                            ...workflow,
+                        onChange={(e)=>applyWorkflowChanges({
                             ActionContainers: {
-                                ...workflow.ActionContainers,
                                 [id] : e.target.value
                             }
                         })}
@@ -216,12 +144,12 @@ export default function FunctionEditor(props){
                     />
                 </div>
                 <br></br>
-                <GitPackageEditor onBlur={handleBlur} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></GitPackageEditor>
+                <GitPackageEditor onBlur={handleBlur} id={id} ></GitPackageEditor>
                 <br></br>
                 
                 {/* Cran Package Handling */}
-                <CranPackageEditor onBlur={handleBlur} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } id={id} ></CranPackageEditor>
-                
+                <CranPackageEditor onBlur={handleBlur} id={id} ></CranPackageEditor>
+                <br></br>
             </div>
 
 

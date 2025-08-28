@@ -81,7 +81,7 @@ export const useCreateNewFunction = () => {
         let newEdges = [];
         const invokeNext = currentWorkflow.ActionList[functionId].InvokeNext;
 
-        newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext[1], "")];
+        newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext.slice(1), "")];
         
         newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].True, "True")];
         newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].False, "False")];

@@ -13,11 +13,14 @@ code {
 }
 
 
+
 :root {
   --background: white;
   --text-primary: black;
   --border-color : black;
   --edge-color: black;
+  --edge-true-color: #1BF23D;
+  --edge-false-color: #F52F16;
 }
 [data-theme='dark'] {
   --background: #1e1e1e;

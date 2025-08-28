@@ -2,7 +2,7 @@ import './App.css';
 import '@xyflow/react/dist/style.css';
 import Dagre from '@dagrejs/dagre';
 import { useCallback, useMemo, useState } from 'react';
-import { useReactFlow, ReactFlow, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Panel, MarkerType, Background} from '@xyflow/react';
+import { useReactFlow, ReactFlow, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Panel, MarkerType, Background, useUpdateNodeInternals} from '@xyflow/react';
 import Toolbar from './components/ToolBar/Toolbar';
 import FunctionNode from './components/FunctionNode';
 import { useWorkflowContext } from './WorkflowContext';
@@ -11,13 +11,46 @@ import VisibleWorkflow from './components/ToolBar/VisibleWorkflow';
 import VisibleGraph from './components/ToolBar/VisibleGraph';
 import useUndo from './components/Utils/Undo';
 import { IoMdUndo, IoMdRedo } from 'react-icons/io';
-import { TbAccessPoint, TbGridDots } from "react-icons/tb";
+import { TbGridDots } from "react-icons/tb";
 import useFunctionUtils from './components/Functions/FunctionsUtils';
 import { MdDarkMode, MdOutlineDarkMode } from "react-icons/md";
+import useWorkflowAndLayoutUtils from './components/Utils/WorkflowAndLayoutUtils';
+import useUtils from './components/Utils/Utils';
 
 const defaultEdgeOptions = { animated: false };
 
-// Uses Dagre to apply layout
+function App() {
+  const { edges, setEdges, nodes, setNodes, workflow } = useWorkflowContext();
+  const [ colorMode, setColorMode] = useState('light');
+  const [editType, setEditType] = useState(null)
+  const [ isDragging, setIsDragging] = useState(false);
+  const [ dots, setDots ] = useState(false)
+  const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
+  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo, canUndo, canRedo } = useUndo();
+  const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge, createEdge, add_edge, createNewEdge} = useFunctionUtils ();
+  const { fitView } = useReactFlow()
+  const { cycleDetection } = useUtils()
+  const updateNodeInternals = useUpdateNodeInternals()
+  const { createInvokeAndEdge, deleteInvokeAndEdge, deleteActionAndNode} = useWorkflowAndLayoutUtils() 
+
+  const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
+
+  const onNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [setNodes],
+  );
+
+  // Updates flow panel to reflect edges changes
+  const onEdgesChange = useCallback(
+    (changes) => {
+        //alert(`Edges changed: ${edges}`);
+        setEdges((eds) => applyEdgeChanges(changes, eds))
+    },
+    [setEdges],
+  );
+
+
+  // Uses Dagre to apply layout
 const getLayoutedElements = (nodes, edges, options) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: options.direction });
@@ -41,41 +74,12 @@ const getLayoutedElements = (nodes, edges, options) => {
       const y = position.y - (node.measured?.height ?? 0) / 2;
       return { ...node,
               position: { x, y },
+              data : {...node.data, direct : (options.direction === 'TB') ? 1:0}
               };
     }),
-    edges,
+    edges,//
   };
 };
-
-
-
-function App() {
-  const { edges, setEdges, nodes, setNodes, workflow } = useWorkflowContext();
-  const [ colorMode, setColorMode] = useState('light');
-  const [editType, setEditType] = useState(null)
-  const [ isDragging, setIsDragging] = useState(false);
-  const [ dots, setDots ] = useState(false)
-  const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
-  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo, canUndo, canRedo } = useUndo();
-  const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge, createEdge, add_edge, createNewEdge} = useFunctionUtils ();
-  const { fitView } = useReactFlow()
-
-
-  const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
-
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [setNodes],
-  );
-
-  // Updates flow panel to reflect edges changes
-  const onEdgesChange = useCallback(
-    (changes) => {
-        //alert(`Edges changed: ${edges}`);
-        setEdges((eds) => applyEdgeChanges(changes, eds))
-    },
-    [setEdges],
-  );
 
   const onNodeDragStart = (event, nodeType) => setIsDragging(true);
   const onNodeDragStop = (event, nodeType) => {
@@ -85,112 +89,8 @@ function App() {
     
   // Called when two nodes are connected (nodes socket dragged to another nodes socket)
   const onConnect = (params) => {
-    const customEdge = {
-      ...params,
-      className: "custom-edge",
-      id: `${params.source}-${params.target}`,
-      markerEnd: {
-        width: 10,
-        height: 10,
-        type: MarkerType.ArrowClosed,
-        color: "var(--edge-color)",
-      },
-      style : {
-        strokeWidth : 2,
-        color: "var(--edge-color)",
-      }
-    };
-    const id = params.source+ "-"+ params.target
-    
-    if (isValidNewRankedEdge(params.source, params.target, 1) && !cycleDetection(nodes, addEdge(customEdge, edges)) && (!edges[id])){
-      // modified add_edge to update both workflow and edges
-      add_edge(params.source, params.target, customEdge);
-    }
-    
+    createInvokeAndEdge(params.source, params.target)
   };
-
-
-  
-
-      // DFS cycle check from https://www.geeksforgeeks.org/dsa/detect-cycle-in-a-graph/
-
-    // Helper function to perform DFS and detect cycle
-    function isCyclicUtil(adj, u, visited, recStack)
-    {
-        // If node is already in the recursion stack, cycle
-        // detected
-        if (recStack[u]){
-            return true;
-        }
-
-        // If node is already visited and not in recStack, no
-        // need to check again
-        if (visited[u])
-            return false;
-
-        // Mark the node as visited and add it to the recursion
-        // stack
-        visited[u] = true;
-        recStack[u] = true;
-
-        // Recur for all neighbors of the current node
-        for (let v of adj[u]) {
-            if (isCyclicUtil(adj, v, visited, recStack)){
-                
-                
-                return true; // If any path leads to a cycle,
-                                // return true
-            }
-        }
-
-        // Backtrack: remove the node from recursion stack
-        recStack[u] = false;
-        return false; // No cycle found in this path
-    }
-
-    // Function to construct adjacency list from edge list
-    function constructadj(V, edges)
-    {
-        let adj = Array.from(
-            {length : V},
-            () => []); // Create an empty list for each vertex
-        for (let [u, v] of edges) {
-            adj[u].push(v); // Add directed edge from u to v
-        }
-        return adj;
-    }
-
-    // Main function to detect cycle in directed graph
-    const isCyclic = (V, edges) =>
-    {
-        let adj
-            = constructadj(V, edges); // Build adjacency list
-        let visited
-            = new Array(V).fill(false); // Track visited nodes
-        let recStack
-            = new Array(V).fill(false); // Track recursion stack
-
-
-        // Check each vertex (for disconnected components)
-        for (let i = 0; i < V; i++) {
-            if (!visited[i] && isCyclicUtil(adj, i, visited, recStack))
-              return true; // Cycle found
-        }
-
-        return false; // No cycle detected
-    }
-
-    // Cycle detection 
-    const cycleDetection = (nds, eds) => {
-
-        const V = nds.length
-
-        const dfsEdges = eds.map( (edge) => [nds.findIndex( (node) => (node.id === edge.source) ), nds.findIndex( (node) => (node.id === edge.target) )])
-        const cycleDetected = isCyclic(V, dfsEdges)
-        if (cycleDetected) alert("Cycle Detected!")
-        return(cycleDetected); 
-    }
-
     
   // Applies layout to the flow panel 
   // ('TB') = Top-to-Bottom
@@ -199,8 +99,10 @@ function App() {
       (direction) => {
       const layouted = getLayoutedElements(nodes, edges, { direction });
       updateLayout([...layouted.nodes], [...layouted.edges]);
+      updateNodeInternals(nodes.map( (node) => node.id))
     },
     [nodes, edges, updateLayout],
+
   );
 
   // Called when a node is Clicked in the flow panel
@@ -212,72 +114,13 @@ function App() {
   // Called when node is deleted in flow panel
   const onNodesDelete = 
     (deleted) => {
-      //alert("node delete");
-      const id = deleted[0].id
-      let newWorkflow = structuredClone(workflow)
-      let newNodes = structuredClone(nodes)
-
-
-
-      for (let i in workflow.ActionList){ // Remove each invokeNext which pointed to deleted action
-        newWorkflow.ActionList[i].InvokeNext[1] = newWorkflow.ActionList[i].InvokeNext[1].filter(
-          item => (item.includes("(")) ?  item.substring(0, item.indexOf("(")) !== id : item !== id
-        )
-      }
-
-      listInvokeNext(id).forEach( invoke => {
-        const {id, rank} = parseInvoke(invoke)
-        if (rank > 1 ) {
-          newNodes = newNodes.map( node => {
-            if (node.id === id) {
-              return {
-                  ...node,
-                  data : {
-                      ...node.data,
-                      rank : 1
-                  }
-              }
-            }else{
-              return node
-            }
-          })
-        }
-      })
-      const newEdges = edges.filter( (edge) => !(edge.source === id || edge.target === id))
-      newNodes = nodes.filter( (node) => (node.id !== id));
-      
-
-      delete newWorkflow.ActionList[id]; // Delete action from workflow
-      updateWorkflowAndLayout(newWorkflow, newNodes, newEdges);
+      deleteActionAndNode(deleted[0].id)
     };
 
   // Called when edge is deleted in flow panel
   const onEdgesDelete = 
     (deleted) => {
-      //alert("Edge delete")
-      let deletedEdge = deleted[0]
-      let source = deletedEdge.source
-      let target = deletedEdge.target
-
-      let invoke = listInvokeNext(source).find( i => {
-          let { id } = parseInvoke(i)
-          return id === target
-        }
-      )
-
-      
-      deleteInvoke(source, invoke)
-
-      const updatedEdges = edges.filter( (edge) => edge.source !== source || edge.target !== target);
-      
-      if(deletedEdge.label ? deletedEdge.label > 1 : false){
-        const updatedNodes = [...nodes]
-        const nodeIndex = nodes.findIndex( (node) => node.id === (target))
-        updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : 1}}
-        updateLayout( updatedNodes, updatedEdges)
-      }else{
-        updateLayout(nodes, updatedEdges);
-      }
+      deleteInvokeAndEdge(deleted[0].source, deleted[0].target)
     };
 
   // Adds new node given (xpos : num, ypos : num, name : string, id : string) to nodes obj
@@ -312,13 +155,13 @@ function App() {
 
     
 
-  const handleOnKeyDown = (event) => {
+  document.addEventListener('keydown', function(event) {    
     if (event.ctrlKey && event.key === 'z') {
         undo();
     } else if (event.ctrlKey && event.key === 'y') {
         redo();
     }
-  }
+  })
 
   return (
     <div className="App" data-theme={colorMode}>
@@ -328,9 +171,9 @@ function App() {
       {/* </header> */}
 
       <div id="mid-panel" >
-        <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
-        <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
-        <EditorPanel id="editor-panel-component" addEdge={(eds, newEdge) => addEdge(eds, newEdge)} checkCycle={ (nds,eds) => cycleDetection(nds, eds) } createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
+        {/* <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
+        <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow> */}
+        <EditorPanel id="editor-panel-component" addEdge={(eds, newEdge) => addEdge(eds, newEdge)} createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
 
           <div id="workflow-panel">
             <ReactFlow
@@ -345,8 +188,8 @@ function App() {
               onNodeDragStart={onNodeDragStart}
               onNodeDragStop={onNodeDragStop}
               nodeTypes={nodeTypes}
-              onKeyDown={handleOnKeyDown}
               defaultEdgeOptions={defaultEdgeOptions}
+              tabIndex={0}
               style={{
                 backgroundColor: colorMode === "dark" ? "#242222ff" : "white"
               }}

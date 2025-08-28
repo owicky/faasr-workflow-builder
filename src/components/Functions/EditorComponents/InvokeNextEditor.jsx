@@ -3,28 +3,24 @@ import useUndo from "../../Utils/Undo";
 import GenericLabel from "../../Utils/GenericLabel"
 import { useState } from "react";
 import useFunctionUtils from "../FunctionsUtils"
-import useCreateNewFunction from "../FunctionCreator"
 import Popup from "../../Utils/Popup"
+import useUtils from "../../Utils/Utils";
+import useWorkflowAndLayoutUtils from "../../Utils/WorkflowAndLayoutUtils";
+import useWorkflowUtils from "../../Utils/WorkflowUtils";
 
 export default function InvokeNextEditor( props ){
-    const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
-    const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
+    const {workflow, edges, nodes} = useWorkflowContext();
+    const { updateWorkflow, updateLayout } = useUndo();
+
 
     // Id of Action we are editing
     const id = props.id
 
-    const [newArg, setNewArg] = useState("")
-    const [newArgVal, setNewArgVal] = useState("")
-    const [newGitPackage, setNewGitPackage] = useState("")
-    const [newCranPackage, setNewCranPackage] = useState("")
-
-    const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
+    const [newInvokePopupEnabled, setNewInvokePopupEnabled] = useState(false)
 
     const [newInvoke, setNewInvoke] = useState("NONE")
-    const [newActionName, setNewActionName] = useState("")
     const { listInvokeNext, parseInvoke, createEdge, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
-    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
-
+    const { cycleDetection } = useUtils()
     return (
         <div id="invokenext-editor">
             <GenericLabel size={"20px"} value={"Next Actions To Invoke"}></GenericLabel>
@@ -42,7 +38,7 @@ export default function InvokeNextEditor( props ){
                         <select placeholder="funcInvokeNext" 
                         onChange={(e)=> { 
 
-                            if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${e.target.value}`, source : id, target: e.target.value}, edges))) {
+                            if (!cycleDetection(nodes, props.addEdge({ id: `${id}-${e.target.value}`, source : id, target: e.target.value}, edges))) {
                                 updateInvoke(id, invoke, e.target.value, rank, condition)
                             }
                     
@@ -82,77 +78,82 @@ export default function InvokeNextEditor( props ){
                     </div>
                 )})}
 
-                <select placeholder="funcInvokeNext" onChange={(e)=> setNewInvoke(e.target.value)}
-                    type="text" value={newInvoke}>
-                    
-                    <option value={""}> NONE </option>
-                    
-                    {Object.entries(workflow.ActionList).map(([key]) => (
-                    
-                    <option key={key} value={key}>{key}</option>
-                    ))}
-                </select>
+                <button onClick={() => setNewInvokePopupEnabled(true)}>Add New InvokeNext</button>
+                <Popup enabled={newInvokePopupEnabled} setEnabled={() => setNewInvokePopupEnabled()}>
+                    <select placeholder="funcInvokeNext" onChange={(e)=> setNewInvoke(e.target.value)}
+                        type="text" value={newInvoke}>
+                        
+                        <option value={""}> NONE </option>
+                        
+                        {Object.entries(workflow.ActionList).map(([key]) => (
+                        
+                        <option key={key} value={key}>{key}</option>
+                        ))}
+                    </select>
 
-                <input type="number" id="rankInput" min="1" step="1" placeholder="rank"></input>
-                <select id="conditionInput" type="text">
-                    
-                    <option value={""}> Unconditional </option>
-                    <option value={"False"}> False </option>
-                    <option value={"True"}> True </option>
-                </select>
+                    <input type="number" id="rankInput" min="1" step="1" placeholder="rank"></input>
+                    <select id="conditionInput" type="text">
+                        
+                        <option value={""}> Unconditional </option>
+                        <option value={"False"}> False </option>
+                        <option value={"True"}> True </option>
+                    </select>
 
-                <button onClick={() => {
-                    if(!edges.some( (edge) => edge.id === id+"-"+newInvoke)){
-                        const newrank = document.getElementById("rankInput").value
-                        const condition = document.getElementById("conditionInput").value
-                        const rankString = (newrank > 1) ? "(" +newrank + ")" : ""
-                        if (!props.checkCycle(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: newInvoke}, edges)) && isValidNewRankedEdge(id, newInvoke, newrank)) {                    
-                            if (newInvoke !== ""){
-                                updateWorkflow({
-                                ...workflow,
-                                ActionList: {
-                                    ...workflow.ActionList,
-                                    [id]: {
-                                    ...workflow.ActionList[id],
-                                    InvokeNext: condition === ""
-                                        ? [
-                                            ...workflow.ActionList[id].InvokeNext,
-                                            newInvoke + rankString
-                                        ]
-                                        : [
-                                            {
-                                                ...workflow.ActionList[id].InvokeNext[0],
-                                                [condition]: [
-                                                    ...workflow.ActionList[id].InvokeNext[0][condition],
-                                                    newInvoke + rankString
-                                            ]},
-                                            ...workflow.ActionList[id].InvokeNext.slice(1),
-                                        ]
-                                    }   
-                                }
-                                })
+                    <button onClick={() => {
+                        if(!edges.some( (edge) => edge.id === id+"-"+newInvoke)){
+                            const newrank = document.getElementById("rankInput").value
+                            const condition = document.getElementById("conditionInput").value
+                            const rankString = (newrank > 1) ? "(" +newrank + ")" : ""
+                            if (!cycleDetection(nodes, props.addEdge({ id: `${id}-${newInvoke}`, source : id, target: newInvoke}, edges)) && isValidNewRankedEdge(id, newInvoke, newrank)) {                    
+                                if (newInvoke !== ""){
+                                    updateWorkflow({
+                                    ...workflow,
+                                    ActionList: {
+                                        ...workflow.ActionList,
+                                        [id]: {
+                                        ...workflow.ActionList[id],
+                                        InvokeNext: condition === ""
+                                            ? [
+                                                ...workflow.ActionList[id].InvokeNext,
+                                                newInvoke + rankString
+                                            ]
+                                            : [
+                                                {
+                                                    ...workflow.ActionList[id].InvokeNext[0],
+                                                    [condition]: [
+                                                        ...workflow.ActionList[id].InvokeNext[0][condition],
+                                                        newInvoke + rankString
+                                                ]},
+                                                ...workflow.ActionList[id].InvokeNext.slice(1),
+                                            ]
+                                        }   
+                                    }
+                                    })
 
-                                }
-                                const {updateNode, updateEdge} = createEdge(id, newInvoke, newrank, condition)
-                                updateLayout(
-                                    updateNode.map( (node) => {
-                                        if (node.id === newInvoke){
-                                            return {
-                                                ...node,
-                                                data : {
-                                                    ...node.data,
-                                                    rank : newrank
+                                    }
+                                    const {updateNode, updateEdge} = createEdge(id, newInvoke, newrank, condition)
+                                    updateLayout(
+                                        updateNode.map( (node) => {
+                                            if (node.id === newInvoke){
+                                                return {
+                                                    ...node,
+                                                    data : {
+                                                        ...node.data,
+                                                        rank : newrank
+                                                    }
                                                 }
+                                            }else{
+                                                return node
                                             }
-                                        }else{
-                                            return node
-                                        }
-                                    } ),
-                                    edges.concat(updateEdge))
-                                
-                            }
-                        } 
-                }}>Add New InvokeNext</button>
+                                        } ),
+                                        edges.concat(updateEdge))
+                                    
+                                }
+                            } 
+                    }}>Add New InvokeNexts</button>
+                </Popup>
+                
+
 
             </div>
         </div>

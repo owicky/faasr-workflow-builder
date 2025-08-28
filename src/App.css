@@ -156,6 +156,10 @@
   padding: 3px;
 }
 
+.list-entry input {
+  width: 30%;
+}
+
 #test{
   background-color: var(--background);
   border-color: var(--border-color);

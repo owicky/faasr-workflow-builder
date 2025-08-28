@@ -4,18 +4,20 @@ import { useWorkflowContext } from "../../WorkflowContext"
 import CreatableSelect from "react-select/creatable";
 import FunctionEditor from "./FunctionEditor";
 import useUndo from "../Utils/Undo";
-import useCreateNewFunction from "./FunctionCreator";
+import useCreateNewFunction from "./FunctionCreator"
+import useWorkflowAndLayoutUtils from "../Utils/WorkflowAndLayoutUtils";
 
 export default function FunctionsPanel(props){
     const {workflow, setWorkflow, edges, nodes, setNodes, selectedFunctionId, setSelectedFunctionId} = useWorkflowContext();
     const functionSearchOptions = Object.keys(workflow.ActionList).map( (id) => {
         return { value: id, label: id }
     });
+    const { createActionAndNode} = useWorkflowAndLayoutUtils()
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
     const {updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId } = useUndo();
     const { createNewFunction } = useCreateNewFunction();
-    const onCreateOption = (newActionId) => createNewFunction(newActionId, newActionId);
+    const onCreateOption = (newActionId) => createActionAndNode(newActionId);
     
 
     return(
@@ -62,7 +64,7 @@ export default function FunctionsPanel(props){
                 }}
             />
             
-            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} checkCycle={ (nds,eds) => props.checkCycle(nds, eds) } createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNewEdge={props.createNewEdge} createNode={props.createNode} id={selectedFunctionId}/>  
+            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNewEdge={props.createNewEdge} createNode={props.createNode} id={selectedFunctionId}/>  
 
         </div>     
     )

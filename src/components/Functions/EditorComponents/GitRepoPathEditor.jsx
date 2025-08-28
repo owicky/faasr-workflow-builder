@@ -1,45 +1,25 @@
 import { useWorkflowContext } from "../../../WorkflowContext"
-import useUndo from "../../Utils/Undo";
 import GenericLabel from "../../Utils/GenericLabel"
-import { useState } from "react";
-import useFunctionUtils from "../FunctionsUtils"
-import useCreateNewFunction from "../FunctionCreator"
-import Popup from "../../Utils/Popup"
-
+import useWorkflowUtils from "../../Utils/WorkflowUtils";
 export default function GitRepoPathEditor( props ){
 
-    const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
-    const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
+    const {workflow} = useWorkflowContext();
+    const { applyWorkflowChanges } = useWorkflowUtils()
+
 
     // Id of Action we are editing
     const id = props.id
-
-    const [newArg, setNewArg] = useState("")
-    const [newArgVal, setNewArgVal] = useState("")
-    const [newGitPackage, setNewGitPackage] = useState("")
-    const [newCranPackage, setNewCranPackage] = useState("")
-
-    const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
-
-    const [newInvoke, setNewInvoke] = useState("NONE")
-    const [newActionName, setNewActionName] = useState("")
-    const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
-    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
-
-
-
+    const functionName = workflow.ActionList[id].FunctionName
     return(
         <div id="git-repo-path-editor">
             <GenericLabel size={"20px"} value={"Function's Git Repo/Path"}></GenericLabel>
             <input id={id+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" 
-                onChange={(e)=>setWorkflow({
-                    ...workflow,
+                onChange={(e)=> applyWorkflowChanges({
                     FunctionGitRepo: {
-                        ...workflow.FunctionGitRepo,
-                        [workflow.ActionList[id].FunctionName] : e.target.value
+                        [functionName] : e.target.value
                     }
                 })}
-                value={workflow.FunctionGitRepo[workflow.ActionList[id].FunctionName] || ""}
+                value={workflow.FunctionGitRepo[functionName] || ""}
                 onBlur={props.onBlur}
             />
         </div>

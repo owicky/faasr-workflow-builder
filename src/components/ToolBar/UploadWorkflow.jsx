@@ -4,6 +4,7 @@ import { flushSync } from 'react-dom';
 import { useReactFlow } from "@xyflow/react";
 import { useWorkflowContext } from "../../WorkflowContext";
 import useFunctionUtils from "../Functions/FunctionsUtils";
+import useWorkflowAndLayoutUtils from "../Utils/WorkflowAndLayoutUtils";
 
 export function UploadWorkflow(props) {
     const { updateWorkflowAndLayout } = useUndo()
@@ -11,6 +12,7 @@ export function UploadWorkflow(props) {
     const { fitView } = useReactFlow()
     const { getLayoutedElements } = useWorkflowContext()
     const { parseInvoke, listInvokeNext} = useFunctionUtils()
+    const { createActionAndNode } = useWorkflowAndLayoutUtils()
     
     // NEW: This ref tracks whether we want to run the effect
     const shouldBuildGraphRef = useRef(false);
@@ -89,27 +91,37 @@ export function UploadWorkflow(props) {
             let newNodes = [];
             let newEdges = [];
             for (let action in updatedActionList) {
-                newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedActionList[action].FunctionName, action));            
+                newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedActionList[action].FunctionName, action));
                 updatedActionList[action].InvokeNext[0].True.forEach( (invoke) => {
-                    const {id} = parseInvoke(invoke)
-                    newEdges.push(props.createNewEdge(action, id));
+                    const {id, rank} = parseInvoke(invoke)
+                    newEdges.push({...props.createNewEdge(action, id, rank, "True")});
                 });
                 updatedActionList[action].InvokeNext[0].False.forEach( (invoke) => {
-                    const {id} = parseInvoke(invoke)
-                    newEdges.push(props.createNewEdge(action, id));
+                    const {id, rank} = parseInvoke(invoke)
+                    newEdges.push(props.createNewEdge(action, id, rank, "False"));
                 });
                 updatedActionList[action].InvokeNext.slice(1).forEach( (invoke) => {
-                    const {id} = parseInvoke(invoke)
-                    newEdges.push(props.createNewEdge(action, id));
+                    const {id, rank} = parseInvoke(invoke)
+                    newEdges.push(props.createNewEdge(action, id, rank, "Unconditional"));
                 });
                 offset++;
+            }
+            for ( let edge of newEdges){
+                newNodes = newNodes.map( node => {
+                    return {
+                        ...node,
+                        data : {
+                            ...node.data,
+                            rank : ( edge.target === node.id) ? (edge.label === "" ? 1 : edge.label) : node.data.rank
+                        }
+                    }
+                })
             }
 
             
             
             const layouted = getLayoutedElements(newNodes, newEdges, 'TB' );
             props.updateWorkflowAndLayout(updatedWorkflow, layouted.nodes, layouted.edges);
-            props.updateWorkflowAndLayout(updatedWorkflow, newNodes, newEdges);
 
             fitView()
 

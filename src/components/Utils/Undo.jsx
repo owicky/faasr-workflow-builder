@@ -94,7 +94,7 @@ const useUndo = () => {
 
     const undo = () => {
         if (history.length <= 1){
-            alert('Already at oldest state');
+            // alert('Already at oldest state');
             return
         }
         const undoneState = history.at(-1);
@@ -106,7 +106,7 @@ const useUndo = () => {
 
     const redo = () => {
         if (undoHistory.length <= 0) {
-            alert('Already at most recent state');
+            // alert('Already at most recent state');
             return
         }   
         const redoneState = undoHistory.at(-1);

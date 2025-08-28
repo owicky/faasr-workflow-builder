@@ -2,47 +2,37 @@ import { useWorkflowContext } from "../../../WorkflowContext"
 import useUndo from "../../Utils/Undo";
 import GenericLabel from "../../Utils/GenericLabel"
 import { useState } from "react";
-import useFunctionUtils from "../FunctionsUtils"
-import useCreateNewFunction from "../FunctionCreator"
-import Popup from "../../Utils/Popup"
+import useWorkflowUtils from "../../Utils/WorkflowUtils";
 
 export default function GitPackageEditor( props ){
-    const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
-    const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
+    const {workflow} = useWorkflowContext();
+    const { applyWorkflowChanges } = useWorkflowUtils()
 
     // Id of Action we are editing
     const id = props.id
 
-    const [newArg, setNewArg] = useState("")
-    const [newArgVal, setNewArgVal] = useState("")
     const [newGitPackage, setNewGitPackage] = useState("")
-    const [newCranPackage, setNewCranPackage] = useState("")
+    const functionName = workflow.ActionList[id].FunctionName
 
-    const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
-
-    const [newInvoke, setNewInvoke] = useState("NONE")
-    const [newActionName, setNewActionName] = useState("")
-    const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
-    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
 
     return (
         <div id="git-package-editor">
         <GenericLabel size={"20px"} value={"GitHub Packages for the Function"}></GenericLabel>
             <div style={{border: "solid"}}>
-                { workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] ? 
-                    Object.entries(workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName]).map(([key, val], i) => (
+
+                {/* Entries for each GitHubPackage */}
+                { workflow.FunctionGitHubPackage[functionName] ? 
+                    Object.entries(workflow.FunctionGitHubPackage[functionName]).map(([key, val]) => (
                         <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
                             <input
                             type="text"
                             placeholder={key+" value"}
                             value={val}
                             onChange={(e) =>
-                                setWorkflow({
-                                    ...workflow,
+                                applyWorkflowChanges({
                                     FunctionGitHubPackage : {
-                                        ...workflow.FunctionGitHubPackage,
-                                        [workflow.ActionList[id].FunctionName] :
-                                        workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName]
+                                        [functionName] :
+                                        workflow.FunctionGitHubPackage[functionName]
                                             .map(pkg => pkg === val ? e.target.value : pkg)
                                     }
                                 }
@@ -51,25 +41,27 @@ export default function GitPackageEditor( props ){
                             onBlur={props.onBlur} 
                             />
                             <button style={{color:"red"}} onClick={() => {
-                                const newWorkflow = structuredClone(workflow);
-                                newWorkflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] = newWorkflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName].filter(value => value !== val);
-                                updateWorkflow(newWorkflow);
+                                applyWorkflowChanges({
+                                    FunctionGitHubPackage : {
+                                        [functionName] : 
+                                            workflow.FunctionGitHubPackage[functionName].filter( pkg => pkg !== val)
+                                    }
+                                });
                             }}>Delete</button>
                     </div>
                     ))
                     : ""
                 }
 
+                {/* Adding another package */}
                 <input value={newGitPackage} placeholder="NewPackageName" onChange={ (e) => setNewGitPackage(e.target.value)}></input>
                 <button onClick={() => {
                     const newPackageName = newGitPackage.trim()
-                    if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] || !workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName].includes(newPackageName))){
-                        updateWorkflow({
-                            ...workflow,
+                    if(newPackageName !== "" && (!workflow.FunctionGitHubPackage[functionName] || !workflow.FunctionGitHubPackage[functionName].includes(newPackageName))){
+                        applyWorkflowChanges({
                             FunctionGitHubPackage: {
-                                ...workflow.FunctionGitHubPackage,
-                                [workflow.ActionList[id].FunctionName]: [
-                                    ...(workflow.FunctionGitHubPackage[workflow.ActionList[id].FunctionName] || []),
+                                [functionName]: [
+                                    ...(workflow.FunctionGitHubPackage[functionName] || []),
                                     newPackageName
                                 ]
                             }

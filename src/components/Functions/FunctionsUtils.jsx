@@ -124,6 +124,7 @@ const useFunctionUtils = () => {
         updateWorkflowAndLayout(updatedWorkflow, updatedNodes, updatedEdges)
     }
 
+    // Adds new Invoke to workflow
     const addInvoke = (funcId, id, rank, condition) => {
         if ( rank > 1 && !isValidNewRankedEdge(funcId, id, rank)){
             alert("Breaks Rank rules")
@@ -176,6 +177,7 @@ const useFunctionUtils = () => {
         })
     }
 
+    // Checks if new edge violates rank rules
     const isValidNewRankedEdge = (source, target, rank) => {
         const rankedEdge = rank > 1
         const sourceRank = nodes.find( node => node.id === source).data.rank
@@ -202,7 +204,10 @@ const useFunctionUtils = () => {
         return true
     }
 
-    const createNewEdge = (id1, id2) => {
+    // generate edge object
+    const createNewEdge = (id1, id2, rank = 1, condition = "Unconditional") => {
+        const thickness = rank > 1 ? 2 : 1
+        const edgeColor = { "True" : "var(--edge-true-color)", "False" : "var(--edge-true-color)", "Unconditional" : "var(--edge-color)"}[condition]
         const newEdge = {
         animated : false,
         source : id1,
@@ -211,12 +216,13 @@ const useFunctionUtils = () => {
             width: 10,
             height: 10,
             type: MarkerType.ArrowClosed,
-            color: "var(--edge-color)",
+            color: edgeColor,
         },
         style: {
-            stroke: "var(--edge-color)",
-            strokeWidth : 2
-        }, 
+            stroke: edgeColor,
+            strokeWidth : 2 * thickness
+        },
+        label : rank > 1 ? rank : "",
         id : id1+"-"+id2
         };
         
@@ -229,35 +235,41 @@ const useFunctionUtils = () => {
         const updatedNodes = [...nodes]
 
 
+        // Set Color based on condition
         switch(condition) {
             case "False":
-                colorc = "#F52F16"; 
+                colorc = "var(--edge-false-color)"; 
                 break;
             case "True":
-                colorc = "#1BF23D";
+                colorc = "var(--edge-true-color)";
                 break;
             default:
                 colorc = "var(--edge-color)";
-            }
-        if ( rank !== ""  ) {
-            const nodeIndex = nodes.findIndex( (node) => node.id === (id2))
-            updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}}
         }
+
+        // If edge has a rank 
+        if ( rank !== ""  ) {
+            const nodeIndex = nodes.findIndex( (node) => node.id === (id2)) // Get target node index
+            updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}} // Update nodes rank 
+        }
+
+        // Generate edge object
         const newEdge = createNewEdge(id1, id2);
         
+
         return({ updateNode : updatedNodes, updateEdge : {
             ...newEdge,
             markerEnd: {
                 ...newEdge.markerEnd,
                 color : colorc,
-                height : rank > 1 ? 8 : 10,
-                width : rank > 1 ? 8 : 10
+                height : rank > 1 ? 8 : 10, // Thicker if ranked edge
+                width : rank > 1 ? 8 : 10 // Thicker if ranked edge
             },
             style: {
                 stroke: colorc,
-                strokeWidth : rank > 1 ? 4 : 2
+                strokeWidth : rank > 1 ? 4 : 2 // Thicker if ranked edge
             }, 
-            label : (rank > 1 ) ? rank : "" }  
+            label : (rank > 1 ) ? rank : "" }  // Add label if edge has rank > 1
         })
     }
 
@@ -363,6 +375,7 @@ const useFunctionUtils = () => {
         } ), updatedEdges.concat(updateEdge))
 
     }
+
     /* Adds a new edge to the workflow and layout given a (Source id, Target id, edge) rank 1 unconditional
     */
     const add_edge = (sourceId, targetId, customEdge) => {

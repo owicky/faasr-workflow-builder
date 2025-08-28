@@ -1,6 +1,5 @@
 
 import { Handle, Position } from '@xyflow/react';
-
 import gitLogo from '../assets/github-mark.png'
 import awsLogo from '../assets/awsLambda.png'
 import openWhiskLogo  from '../assets/openWhisk.png'
@@ -24,6 +23,7 @@ const FunctionNode = ({ data }) => {
     if (parseInt(data.rank) > 1){
         return(
             <div className='function-node'>
+                
                 <div style={{ marginLeft: xShift, marginTop: yShift}} className='function-node'>
 
                     {/* Rank Display */}
@@ -43,7 +43,7 @@ const FunctionNode = ({ data }) => {
                             <label className='truncate'>{data.id}</label>
                             <br></br>
                         </div>
-                    <Handle type="source" position={( data.direct === 0) ? Position.Right : Position.Bottom} id="a"/>
+                    <Handle type="source" position={( data.direct === 0) ? Position.Right : Position.Bottom}/>
                 </div>
             </div>
         )
@@ -51,13 +51,13 @@ const FunctionNode = ({ data }) => {
     else{
         return (
             <div className='function-node'>
-                <Handle type="target" position={( data.direct  === 0) ? Position.Left : Position.Top} />
+                <Handle type="target"   id={data.direct === 0 ? "left" : "top"}  position={( data.direct  === 0) ? Position.Left : Position.Top} />
                     <div style={{display : "flex", alignItems : "baseline"}}>
                         <img alt="" src={logos[FaasType]}style={{ width: '30px', height: '30px'}}/>
                         <label style={{paddingLeft: "2px"}} className='truncate'>{data.id}</label>
                         <br></br>
                     </div>
-                <Handle type="source" position={( data.direct === 0) ? Position.Right : Position.Bottom} id="a"/>
+                <Handle type="source"   position={( data.direct === 0) ? Position.Right : Position.Bottom}/>
             </div>
         );
     }
