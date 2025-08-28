@@ -59,7 +59,6 @@ const useWorkflowUtils = () => {
      */
     const addAction = ( id, options = {}) => {
         const newAction = {
-            test : "testoing",
             Arguments : {},
             InvokeNext : [{ True : [], False : []}],
             ...options
