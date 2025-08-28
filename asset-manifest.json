@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/faasr-workflow-builder/static/css/main.d26444eb.css",
-    "main.js": "/faasr-workflow-builder/static/js/main.dffafe4f.js",
+    "main.js": "/faasr-workflow-builder/static/js/main.36d18035.js",
     "static/media/awsLambda.png": "/faasr-workflow-builder/static/media/awsLambda.7005e54783990f2b26bd.png",
     "index.html": "/faasr-workflow-builder/index.html",
     "main.d26444eb.css.map": "/faasr-workflow-builder/static/css/main.d26444eb.css.map",
-    "main.dffafe4f.js.map": "/faasr-workflow-builder/static/js/main.dffafe4f.js.map"
+    "main.36d18035.js.map": "/faasr-workflow-builder/static/js/main.36d18035.js.map"
   },
   "entrypoints": [
     "static/css/main.d26444eb.css",
-    "static/js/main.dffafe4f.js"
+    "static/js/main.36d18035.js"
   ]
 }
