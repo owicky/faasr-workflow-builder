@@ -14,6 +14,7 @@ import { FaSitemap } from "react-icons/fa"
 import useLayoutUtils from "../Utils/LayoutUtils";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
 import useWorkflowAndLayoutUtils from "../Utils/WorkflowAndLayoutUtils";
+import axios from "axios";
 
 export default function Toolbar(props) {
     const {workflow, edges, nodes, } = useWorkflowContext();
@@ -87,7 +88,7 @@ export default function Toolbar(props) {
             return object
                 .map(item => cleanObject(item))
                 .filter( (item, key) => {
-                    if (key === "InvokeNext") return true
+                    if (key === "InvokeNext" || key ===  "Arguments") return true
                     if (item === "" || item === null) return false;
                     if (Array.isArray(item)) return item.length > 0;
                     if (typeof item === "object" && Object.keys(item).length === 0) return false;
@@ -134,11 +135,17 @@ export default function Toolbar(props) {
         URL.revokeObjectURL(url);
     };
 
+    const testFunc = async () => {
+        (async() => {
+            const res = await axios.get("https://raw.githubusercontent.com/nolcut/workflow-json-test/refs/heads/main/new-with-r.json")
+            console.log(res.data)
+        })()
+    }
 
 
     return(
         <div id="toolbar" style={{ width: '100vw', height: '5vh'}}>
-            {/* <GenericButton onClick={() => updateInvoke("add_operation", "r_func", {newCondition : "True"})}>TEST</GenericButton> */}
+            {/* <GenericButton onClick={() => testFunc()}>TEST</GenericButton> */}
             <GenericButton icon={<FaUpload/>} onClick={() => {
                 setUploadPopupEnabled(true);
                 setDownloadPopupEnabled(false);

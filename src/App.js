@@ -20,8 +20,7 @@ import useUtils from './components/Utils/Utils';
 const defaultEdgeOptions = { animated: false };
 
 function App() {
-  const { edges, setEdges, nodes, setNodes, workflow } = useWorkflowContext();
-  const [ colorMode, setColorMode] = useState('light');
+  const { edges, setEdges, nodes, setNodes, workflow, colorMode, setColorMode} = useWorkflowContext();
   const [editType, setEditType] = useState(null)
   const [ isDragging, setIsDragging] = useState(false);
   const [ dots, setDots ] = useState(false)

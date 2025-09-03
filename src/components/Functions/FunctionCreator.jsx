@@ -103,7 +103,8 @@ export const useCreateNewFunction = () => {
                         FunctionName: newActionName,
                         FaaSServer: existingFunction.FaaSServer,
                         Arguments: existingFunction.Arguments,
-                        InvokeNext: existingFunction.InvokeNext
+                        InvokeNext: existingFunction.InvokeNext,
+                        Type: existingFunction.Type
                     }
                 },
                 ActionContainers: {
@@ -141,7 +142,8 @@ export function FunctionCreator(props){
                                 FaaSServer: "",
                                 Arguments: {
                                 },
-                                InvokeNext: [{}, []]
+                                InvokeNext: [{}],
+                                Type : "None"
                             }
                         }
                     })

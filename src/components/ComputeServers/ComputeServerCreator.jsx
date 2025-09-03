@@ -38,8 +38,8 @@ export default function ComputeServerCreator(props){
                                     Endpoint:"",
                                     Namespace:"",
                                     UserName:"",
-                                    ActionRepoName:"",
-                                    Branch: "",
+                                    ActionRepoName:"FaaSr-Workflows",
+                                    Branch: "main",
                                 }
                             }
                         })

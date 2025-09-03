@@ -2,17 +2,14 @@ import { useWorkflowContext } from "../../WorkflowContext"
 import { useState, useCallback } from "react";
 import TextInput from "../Utils/TextInput";
 import GenericLabel from "../Utils/GenericLabel";
-import Popup from "../Utils/Popup"
 import useUndo from "../Utils/Undo";
 import useCreateNewFunction from "./FunctionCreator"
-import useFunctionUtils from "./FunctionsUtils";
 import ComputeServerSelector from "./EditorComponents/ComputeServerSelector"
 import ArgumentsEditor from "./EditorComponents/ArgumentsEditor"
 import InvokeNextEditor from "./EditorComponents/InvokeNextEditor"
 import CranPackageEditor from "./EditorComponents/CranPackageEditor";
 import GitPackageEditor from "./EditorComponents/GitPackageEditor";
 import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
-import GenericButton from "../Utils/GenericButton";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
 
 
@@ -103,6 +100,17 @@ export default function FunctionEditor(props){
                     }
                     onBlur={handleBlur}
                 />
+                
+                <br></br>
+
+                {/* Function Name Input */}
+                <GenericLabel size={"20px"} value={"Type"}></GenericLabel>
+                {/* set workflow onChange, but only update history on blur*/}
+                <select value={workflow.ActionList[id].Type} onChange={(e) => updateAction(id, { Type : e.target.value})} onBlur={handleBlur}>
+                    <option value={"None"}>None</option>
+                    <option value={"R"}>R</option>
+                    <option value={"Python"}>Python</option>
+                </select>
                 
                 <br></br>
 

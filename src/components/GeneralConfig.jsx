@@ -93,7 +93,7 @@ export default function GeneralConfig(props){
             {/* FaaSR Log */}
             <div>
                 <button>Log File Name</button>
-                <input type="text" placeholder="FaaSrLog" onChange={(e)=>setWorkflow({
+                <input type="text" defaultValue={"FaaSrLog"} placeholder="FaaSrLog" onChange={(e)=>setWorkflow({
                     ...workflow,
                     FaaSrLog : e.target.value
                     
@@ -106,7 +106,7 @@ export default function GeneralConfig(props){
             {/* Invocation Id */}
             <div>
                 <button>InvocationID (Optional/UUID Format)</button>
-                <input type="text" placeholder={exampleUUID.current} onChange={(e)=>setWorkflow({
+                <input type="text"  placeholder={exampleUUID.current} onChange={(e)=>setWorkflow({
                     ...workflow,
                     InvocationID : e.target.value
                     

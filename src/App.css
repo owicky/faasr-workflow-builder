@@ -117,6 +117,11 @@
   stroke: #000000;
 }
 
+.type-logo{
+  align-self:flex-start;
+  margin-left: 32px;
+  position: absolute;
+}
 
 
 .truncate{

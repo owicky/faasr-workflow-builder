@@ -5,9 +5,7 @@ import { useState } from "react";
 import useFunctionUtils from "../FunctionsUtils"
 import Popup from "../../Utils/Popup"
 import useUtils from "../../Utils/Utils";
-import useWorkflowAndLayoutUtils from "../../Utils/WorkflowAndLayoutUtils";
-import useWorkflowUtils from "../../Utils/WorkflowUtils";
-
+import { LuRotateCcw } from "react-icons/lu";
 export default function InvokeNextEditor( props ){
     const {workflow, edges, nodes} = useWorkflowContext();
     const { updateWorkflow, updateLayout } = useUndo();
@@ -54,13 +52,17 @@ export default function InvokeNextEditor( props ){
                         </select>
 
                         {/* Change Rank */}
-                        <input value={rank} id={invId+"--"+rank} type="number" min="1" step="1" placeholder="rank"
+                        <input value={rank} id={"rankUpdate"} type="number" min="1" step="1" placeholder="rank"
                             onChange={
                                 (e) => {
                                     updateInvoke(id, invoke, invId, e.target.value, condition)
                                 }
                             }>
                         </input>
+                        
+                        <button id="resetRankButton" onClick={() => document.getElementById("rankUpdate").value = 1}>
+                            <LuRotateCcw></LuRotateCcw>
+                        </button>
 
                         {/* Change Condition */}
                         <select  value={condition} id={invoke+"cond"} type="text" onChange={ (e) => {

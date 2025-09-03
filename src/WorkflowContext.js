@@ -14,7 +14,8 @@ export const WorkflowProvider = ( {children} ) => {
 
     const [deletedActions, setDeletedActions] = useState([]);
 
-    
+    const [colorMode, setColorMode ] = useState('light') 
+
     const [workflow, setWorkflow] = useState({
         ActionList : {},
         ComputeServers : {},
@@ -25,7 +26,7 @@ export const WorkflowProvider = ( {children} ) => {
         FunctionGitRepo : {},
         FunctionCRANPackage : {},
         FunctionGitHubPackage : {},
-        FaaSrLog : "",
+        FaaSrLog : "FaaSrLog",
         LoggingDataStore : "",
         InvocationID : "",
         WorkflowName : "unnamed-workflow"
@@ -79,7 +80,8 @@ export const WorkflowProvider = ( {children} ) => {
             workflow, setWorkflow,
             history, setHistory,
             undoHistory, setUndoHistory,
-            getLayoutedElements
+            colorMode, setColorMode,
+            getLayoutedElements,
         }}>
 
             {children}
