@@ -31,7 +31,8 @@ function App() {
   const { cycleDetection } = useUtils()
   const updateNodeInternals = useUpdateNodeInternals()
   const { createInvokeAndEdge, deleteInvokeAndEdge, deleteActionAndNode} = useWorkflowAndLayoutUtils() 
-
+  const [selectedServer, setSelectedServer] = useState("My_GitHub_Account");
+  const [selectedDataStore, setSelectedDataStore] = useState("My_S3_Bucket");
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
 
   const onNodesChange = useCallback(
@@ -170,10 +171,10 @@ const getLayoutedElements = (nodes, edges, options) => {
       {/* </header> */}
 
       <div id="mid-panel" >
-        {/* <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
-        <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow> */}
+        <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
+        <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
         <EditorPanel id="editor-panel-component" addEdge={(eds, newEdge) => addEdge(eds, newEdge)} createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
-
+        
           <div id="workflow-panel">
             <ReactFlow
               nodes={nodes}
@@ -198,13 +199,51 @@ const getLayoutedElements = (nodes, edges, options) => {
               fitView
             > <Controls/>
 
-              <Panel position="top-right">
+              <Panel position="top-center">
                 <button onClick={() => { onLayout('TB'); fitView()}}>vertical layout</button>
                 <button onClick={() => { onLayout('LR'); fitView()}  }>horizontal layout</button>
                 <button onClick={undo} disabled={!canUndo}><IoMdUndo /></button>
                 <button onClick={redo} disabled={!canRedo}><IoMdRedo /></button>
                 <button onClick={() => setDots(!dots)}><TbGridDots /></button>
                 <button onClick={() => setColorMode(colorMode === "dark" ? "light": "dark")}>{colorMode === "dark" ? <MdOutlineDarkMode/> : <MdDarkMode />}</button>
+              </Panel>
+              <Panel position="top-left">
+                    <select onChange={ e =>  setSelectedServer(e.target.value)} defaultValue={"nmone"} id="compute-server-select">
+                      {Object.entries(workflow.ComputeServers).map(([key, val]) => (
+                        <option value={key}>{key}</option>
+                        ))}
+                    </select>
+                    <div className="info-panel">
+                    <div style={{backgroundColor : "var(--background)", flex: "1", borderRadius : "10px", padding: "5px"}}>
+
+                        {workflow.ComputeServers[selectedServer] ? 
+                          Object.entries(workflow.ComputeServers[selectedServer]).map(([key, val]) => (
+                            <div key={key} style={{ marginBottom: "4px" }}>
+                              <strong>{key}:</strong> {val}
+                            </div>
+                          ))
+                        : null}
+                    </div>
+                  </div>
+              </Panel>
+              <Panel position="top-right">
+                    <select style={{ right: 200 }} onChange={ e =>  setSelectedDataStore(e.target.value)} defaultValue={"nmone"} id="compute-server-select">
+                      {Object.entries(workflow.DataStores).map(([key, val]) => (
+                        <option value={key}>{key}</option>
+                        ))}
+                    </select>
+                    <div className="info-panel">
+                    <div style={{ right : 50, backgroundColor : "var(--background)", flex: "1", borderRadius : "10px", padding: "5px"}}>
+
+                        {workflow.DataStores[selectedDataStore] ? 
+                          Object.entries(workflow.DataStores[selectedDataStore]).map(([key, val]) => (
+                            <div key={key} style={{ marginBottom: "4px" }}>
+                              <strong>{key}:</strong> {val}
+                            </div>
+                          ))
+                        : null}
+                    </div>
+                  </div>
               </Panel>
               {dots && <Background variant="dots" gap={12} size={1} />}
             </ReactFlow>

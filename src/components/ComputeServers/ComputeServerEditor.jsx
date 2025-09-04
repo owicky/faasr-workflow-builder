@@ -1,10 +1,13 @@
 import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
+import ComputeServerPropertyEditor from "./ComputeServerPropertyEditor";
+import useWorkflowUtils from "../Utils/WorkflowUtils";
 
 export default function ComputeServerEditor(props){
     const {workflow, setWorkflow, setNodes, nodes} = useWorkflowContext();
     const server = props.server
     const { updateWorkflow } = useUndo();
+    const { applyWorkflowChanges } = useWorkflowUtils()
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);
@@ -62,246 +65,73 @@ export default function ComputeServerEditor(props){
         }
 
     if(server in workflow.ComputeServers){
-        switch (workflow.ComputeServers[server].FaaSType){
-            case "GitHubActions":
-                return(
-                    <div style={{ }}>
-                        <h1>Function ID: {server}</h1>
-        
-                        <div>
-                            <button>FaaSType</button>
-                            <select key={server+"-FaasType-input"} value={workflow.ComputeServers[server].FaaSType} onChange={handleSwitchComputeServer}>
-                                <option value={"None"}>None</option>
-                                <option value={"GitHubActions"}>GitHubActions</option>
-                                <option value={"OpenWhisk"}>OpenWhisk</option>
-                                <option value={"Lambda"}>Lambda</option>
-                            </select>
-                        </div>
-        
-                        <div>
-                            <button>
-                                <span style={{ color: 'red' }}>*</span>    
-                                UserName
-                            </button>
-                            <input key={server+"-username"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
-                                ...workflow,
-                                ComputeServers: {
-                                    ...workflow.ComputeServers,
-                                    [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    UserName: e.target.value
-                                    }
-                                }
-                            })} 
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].UserName}
-                            />
-                        </div>
-        
-                        <div>
-                            <button>
-                                <span style={{ color: 'red' }}>*</span>
-                                ActionRepoName  
-                            </button>
-                            <input key={server+"-ActionRepoName-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
-                                ...workflow,
-                                ComputeServers: {
-                                    ...workflow.ComputeServers,
-                                    [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    ActionRepoName: e.target.value
-                                    }
-                                }
-                            })}
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].ActionRepoName}
-                            />
-                        </div>
-        
-                        <div>
-                            <button>Branch</button>
-                            <input key={server+"-Branch-input"} type="text" defaultValue="Branch" onChange={(e)=>setWorkflow({
-                                ...workflow,
-                                ComputeServers: {
-                                    ...workflow.ComputeServers,
-                                    [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    Branch: e.target.value
-                                    }
-                                }
-                            })} 
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].Branch}
-                            />
-                        </div>
-                        <br></br>
-                        <button style={{color:"red"}} onClick={() => {
-                            const serverToDelete = server
-                            let newWorkflow = structuredClone(workflow);
-                            delete newWorkflow.ComputeServers[serverToDelete]
-                            props.setServer(null)
-                            updateWorkflow(newWorkflow);
-                        }}>Delete Compute Server</button>
-                    </div>
-                )
-            case "OpenWhisk":
-                return(
-                    <div>
-                        <h1>Function ID: {server}</h1>
-        
-                        <div>
-                            <button>FaaSType</button>
-                            <select key={server+"-FaasType-input"}value={workflow.ComputeServers[server].FaaSType} onChange={handleSwitchComputeServer}>
-                                <option value={"None"}>None</option>
-                                <option value={"GitHubActions"}>GitHubActions</option>
-                                <option value={"OpenWhisk"}>OpenWhisk</option>
-                                <option value={"Lambda"}>Lambda</option>
-                            </select>
-                        </div>
-        
-                        <div>
-                            <button>
-                                <span style={{ color: 'red' }}>*</span>
-                                Endpoint
-                            </button>
-                            <input key={server+"-endpoint-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
-                                ...workflow,
-                                ComputeServers: {
-                                    ...workflow.ComputeServers,
-                                    [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    Endpoint: e.target.value
-                                    }
-                                }
-                            })} 
+        const type = workflow.ComputeServers[server].FaaSType
+        return (
+            <div style={{ }}>
+                <h1>Function ID: {server}</h1>
 
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].Endpoint}
-                            />
-                        </div>
-        
-                        <div>
-                            <button>
-                                <span style={{ color: 'red' }}>*</span>
-                                Namespace
-                            </button>
-                            <input key={server+"-namespace-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
-                                ...workflow,
+                <div>
+                    <button>FaaSType</button>
+                    <select key={server+"-FaasType-input"} value={workflow.ComputeServers[server].FaaSType} onChange={
+                        (e)=>{
+                            applyWorkflowChanges({
                                 ComputeServers: {
-                                    ...workflow.ComputeServers,
                                     [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    Namespace: e.target.value
+                                        ["FaaSType"]: e.target.value
                                     }
                                 }
-                            })} 
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].Namespace}
-                            />
-                        </div>
-                        {/* Does OpenWhisk have region?
-                        <div>
-                            <button>Region</button>
-                            <input key={server+"-region-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
-                                ...workflow,
-                                ComputeServers: {
-                                    ...workflow.ComputeServers,
-                                    [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    Region: e.target.value
-                                    }
-                                }
-                            })} 
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].Region}
-                            />
-                        </div>
-                        */}
-                        <br></br>
-                        <button style={{color:"red"}} onClick={() => {
-                            const serverToDelete = server
-                            let newWorkflow = structuredClone(workflow);
-                            delete newWorkflow.ComputeServers[serverToDelete]
-                            props.setServer(null)
-                            updateWorkflow(newWorkflow);
-                        }}>Delete Compute Server</button>
-                    </div>
-                )
-            case "Lambda":
-                return(
-                    <div>
-                        <h1>Function ID: {server}</h1>
-        
-                        <div>
-                            <button>FaaSType</button>
-                            <select value={workflow.ComputeServers[server].FaaSType} onChange={handleSwitchComputeServer}>
-                                <option value={"None"}>None</option>
-                                <option value={"GitHubActions"}>GitHubActions</option>
-                                <option value={"OpenWhisk"}>OpenWhisk</option>
-                                <option value={"Lambda"}>Lambda</option>
-                            </select>
-                        </div>
-        
-                        <div>
-                            <button>
-                                <span style={{ color: 'red' }}>*</span>
-                                Region
-                            </button>
-                            <input key={server+"-region-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
-                                ...workflow,
-                                ComputeServers: {
-                                    ...workflow.ComputeServers,
-                                    [server]: {
-                                    ...workflow.ComputeServers[server],
-                                    Region: e.target.value
-                                    }
-                                }
-                            })} 
-                                onBlur={handleBlur}
-                                value={workflow.ComputeServers[server].Region} 
-                            />
-                        </div>
-                        <br></br>
-                        <button style={{color:"red"}} onClick={() => {
-                            const serverToDelete = server
-                            let newWorkflow = structuredClone(workflow);
-                            delete newWorkflow.ComputeServers[serverToDelete]
-                            props.setServer(null)
-                            updateWorkflow(newWorkflow);
-                        }}>Delete Compute Server</button>
-                    </div>
-                )
-            default:
-                return(
-                    <div>
-                        <button>FaaSType</button>
-                        <select value={workflow.ComputeServers[server].FaaSType} onChange={(e)=>updateWorkflow({
-                            ...workflow,
-                            ComputeServers: {
-                                ...workflow.ComputeServers,
-                                [server]: {
-                                ...workflow.ComputeServers[server],
-                                FaaSType: e.target.value
-                                }
-                            }
-                            })}>
-                            <option value={"None"}>None</option>
-                            <option value={"GitHubActions"}>GitHubActions</option>
-                            <option value={"OpenWhisk"}>OpenWhisk</option>
-                            <option value={"Lambda"}>Lambda</option>
-                        </select>
-                        <br></br>
-                        <button style={{color:"red"}} onClick={() => {
-                            const serverToDelete = server
-                            let newWorkflow = structuredClone(workflow);
-                            delete newWorkflow.ComputeServers[serverToDelete]
-                            props.setServer(null)
-                            updateWorkflow(newWorkflow);
-                        }}>Delete Compute Server</button>
-                    </div>
-                    
-                )
-        }
+                            })
+                        }}>
+                        <option value={"None"}>None</option>
+                        <option value={"GitHubActions"}>GitHubActions</option>
+                        <option value={"OpenWhisk"}>OpenWhisk</option>
+                        <option value={"Lambda"}>Lambda</option>
+                        <option value={"SLURM"}>SLURM</option>
+                        <option value={"GoogleCloud"}>GoogleCloud</option>
+                    </select>
+                </div>
+
+                {/* UserName */}
+                {["SLURM", "GitHubActions"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="UserName" />
+                ) : null}  
+                
+                {/* ActionRepoName */}
+                {["GitHubActions"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="ActionRepoName" />
+                ) : null}                  
+                
+                {/* Branch */}
+                {["GitHubActions"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="Branch" />
+                ) : null}                  
+                
+                {/* Endpoint */}
+                {["SLURM", "OpenWhisk"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="Endpoint" />
+                ) : null}
+
+                {/* NameSpace */}
+                {["GoogleCloud","OpenWhisk"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="NameSpace" />
+                ) : null}
+                
+                {/* Region */}
+                {["Lambda", "GoogleCloud", "OpenWhisk"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="Region" />
+                ) : null}  
+
+                {/* Delete Compute Server Button */}
+                <button style={{color:"red"}} onClick={() => {
+                    const serverToDelete = server
+                    let newWorkflow = structuredClone(workflow);
+                        delete newWorkflow.ComputeServers[serverToDelete]
+                    props.setServer(null)
+                    updateWorkflow(newWorkflow);
+                }}>Delete Compute Server</button>
+                
+            </div> 
+        )
     }else{
         props.setServer(null);
     }
