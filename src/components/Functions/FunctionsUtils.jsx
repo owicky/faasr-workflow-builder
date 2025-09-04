@@ -247,10 +247,12 @@ const useFunctionUtils = () => {
                 colorc = "var(--edge-color)";
         }
 
-        // If edge has a rank 
-        if ( rank !== ""  ) {
+        // If edge has a rank (skip if it hasn't been added to layout yet)
+        if ( rank !== "" ) {
             const nodeIndex = nodes.findIndex( (node) => node.id === (id2)) // Get target node index
-            updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}} // Update nodes rank 
+            if ( nodeIndex != -1) {
+                updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}} // Update nodes rank 
+            }
         }
 
         // Generate edge object

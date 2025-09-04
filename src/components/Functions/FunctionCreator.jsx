@@ -7,20 +7,20 @@ import useFunctionUtils from "./FunctionsUtils";
 
 
 export const useCreateNewFunction = () => {
-    const { workflow, nodes, edges } = useWorkflowContext();
+    const { workflow, nodes, setNodes, edges} = useWorkflowContext();
     const { updateLayout, updateWorkflowAndLayout } = useUndo();
     const { createEdge } = useFunctionUtils();
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
 
-    const createNewNode = (newId) => {
+    const createNewNode = (newId, rank=1) => {
         const newNode = {
             id : newId,
             type: 'functionNode',
             position: ({
             x: 0,
             y: 0}),
-            data: { id: newId, name : newId, direct: 1},
+            data: { id: newId, name : newId, direct: 1, rank: rank},
             origin: [0.5, 0.0],
         };
         return newNode;
@@ -46,13 +46,19 @@ export const useCreateNewFunction = () => {
         return newEdge;  
     }
 
-    // create layout edges given true, false, or uncondition invokeNext array
-    const getEdgesFromInvokeNext = (functionId, invokeNext, condition) => {
+    // create layout edges from functionId to targetId given true, false, or uncondition invokeNext array
+    // if targetId is undefined, return all outgoing edges 
+    const getEdgesFromInvokeNext = (functionId, invokeNext, condition, targetId) => {
         let newEdges = [];
         invokeNext.forEach( (target) => {
-            if (!edges.some( (edge) => edge.source === functionId && edge.target === target )) {
-                const splitInvokeNext = target.split('(');
-                const invokeNextId = splitInvokeNext[0]
+
+            const splitInvokeNext = target.split('(');
+            const invokeNextId = splitInvokeNext[0]
+
+            const edgeExists = edges.some( (edge) => edge.source === functionId && edge.target === target)
+            const edgeHasSpecifiedTarget = targetId === undefined || invokeNextId === targetId ;
+            if (!edgeExists && edgeHasSpecifiedTarget ) {
+
                 let rank = "";
                 if (splitInvokeNext.length > 1) {
                     const rankPostfix = splitInvokeNext[1].split(')');
@@ -68,6 +74,23 @@ export const useCreateNewFunction = () => {
         return newEdges;
     }
 
+    // return layout edges for all edges leading to actionId
+    const getIncomingEdges = (actionId) => {
+        let newEdges = [];
+        Object.keys(workflow.ActionList).forEach( (id) => {
+            if ( id === actionId ) {
+                return;
+            }
+            const invokeNext = workflow.ActionList[id].InvokeNext;
+            newEdges = [...newEdges, ...getEdgesFromInvokeNext(id, invokeNext.slice(1), "", actionId)];
+            
+            newEdges = [...newEdges, ...getEdgesFromInvokeNext(id, invokeNext[0].True, "True", actionId)];
+            newEdges = [...newEdges, ...getEdgesFromInvokeNext(id, invokeNext[0].False, "False", actionId)]; 
+            
+        })
+        return newEdges;
+    }
+
     // Used to create layout node for existing function
     const createNewFunctionNode = (functionId, newWorkflow) => {
         
@@ -77,14 +100,25 @@ export const useCreateNewFunction = () => {
             currentWorkflow = newWorkflow;
         }
 
-        const newNode = createNewNode(functionId);
-        let newEdges = [];
+        
         const invokeNext = currentWorkflow.ActionList[functionId].InvokeNext;
 
-        newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext.slice(1), "")];
+        let newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext.slice(1), "")];
         
         newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].True, "True")];
         newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].False, "False")];
+        
+        const incomingEdges = getIncomingEdges(functionId);
+        let rank = 1 ;
+        incomingEdges.forEach( (edge) => {
+            if (edge.label !== "") rank = edge.label;
+        });
+
+        console.log(`Edges: ${JSON.stringify(incomingEdges)} Rank: ${rank}`);
+
+        newEdges = [...newEdges, ...incomingEdges];
+
+        const newNode = createNewNode(functionId, rank);
 
         return {newNode: newNode, newEdges: newEdges};
 
