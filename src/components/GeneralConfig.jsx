@@ -20,7 +20,10 @@ export default function GeneralConfig(props){
 
             {/* Default DataStore */}
             <div>
-                <button>Default Data Server</button>
+                <button>
+                    <span style={{ color: 'red' }}>* </span>
+                    Default Data Server
+                </button>
                 <select placeholder="DefaultDataStore" onChange={(e)=>  updateWorkflow({
                     ...workflow,
                     DefaultDataStore : e.target.value
@@ -61,7 +64,10 @@ export default function GeneralConfig(props){
 
             {/* Workflow Name */}
             <div>
-                <button>Workflow Name</button>
+                <button>
+                    <span style={{ color: 'red' }}>* </span>
+                    Workflow Name
+                </button>
                 <input type="text" placeholder="workflow" onChange={(e)=>setWorkflow({
                     ...workflow,
                     WorkflowName : e.target.value
@@ -73,7 +79,10 @@ export default function GeneralConfig(props){
 
             {/* Function Invoke */}
             <div>
-                <button>First Function to Execute</button>
+                <button>
+                    <span style={{ color: 'red' }}>* </span>
+                    First Function to Execute
+                </button>
                 <select placeholder="funcInvokeNext" onChange={(e)=> updateWorkflow({
                     ...workflow,
                     FunctionInvoke : e.target.value

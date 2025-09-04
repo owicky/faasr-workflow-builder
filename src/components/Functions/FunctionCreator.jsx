@@ -55,7 +55,7 @@ export const useCreateNewFunction = () => {
             const splitInvokeNext = target.split('(');
             const invokeNextId = splitInvokeNext[0]
 
-            const edgeExists = edges.some( (edge) => edge.source === functionId && edge.target === target)
+            const edgeExists = false//edges.some( (edge) => edge.source === functionId && edge.target === target)
             const edgeHasSpecifiedTarget = targetId === undefined || invokeNextId === targetId ;
             if (!edgeExists && edgeHasSpecifiedTarget ) {
 
@@ -92,7 +92,8 @@ export const useCreateNewFunction = () => {
     }
 
     // Used to create layout node for existing function
-    const createNewFunctionNode = (functionId, newWorkflow) => {
+    // pass in newActionId to make a duplicate based on functionId
+    const createNewFunctionNode = (functionId, newWorkflow, newActionId) => {
         
         let currentWorkflow = workflow;
 
@@ -103,22 +104,36 @@ export const useCreateNewFunction = () => {
         
         const invokeNext = currentWorkflow.ActionList[functionId].InvokeNext;
 
-        let newEdges = [...getEdgesFromInvokeNext(functionId, invokeNext.slice(1), "")];
+        let outgoingEdges = [...getEdgesFromInvokeNext(functionId, invokeNext.slice(1), "")];
         
-        newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].True, "True")];
-        newEdges = [...newEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].False, "False")];
+        outgoingEdges = [...outgoingEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].True, "True")];
+        outgoingEdges = [...outgoingEdges, ...getEdgesFromInvokeNext(functionId, invokeNext[0].False, "False")];
         
-        const incomingEdges = getIncomingEdges(functionId);
+        let incomingEdges = getIncomingEdges(functionId);
         let rank = 1 ;
         incomingEdges.forEach( (edge) => {
             if (edge.label !== "") rank = edge.label;
         });
 
-        console.log(`Edges: ${JSON.stringify(incomingEdges)} Rank: ${rank}`);
 
-        newEdges = [...newEdges, ...incomingEdges];
+        if (newActionId) {
+            //replace functionId with newActionId (creating duplicate)
+            outgoingEdges = outgoingEdges.map(edge => ({
+                ...edge,
+                source: edge.source === functionId ? newActionId : edge.source,
+                id: newActionId+"-"+edge.target
+            }));
 
-        const newNode = createNewNode(functionId, rank);
+            incomingEdges = incomingEdges.map(edge => ({
+                ...edge,
+                target: edge.target === functionId ? newActionId : edge.target,
+                id: edge.source+"-"+newActionId
+            }));
+        }
+       
+        const newEdges = [...outgoingEdges, ...incomingEdges];
+        const newNodeId = newActionId ? newActionId : functionId;
+        const newNode = createNewNode(newNodeId, rank);
 
         return {newNode: newNode, newEdges: newEdges};
 
@@ -150,7 +165,7 @@ export const useCreateNewFunction = () => {
                     [newActionId]: workflow.FunctionGitRepo[existingId]
                 }
             };
-            const {newNode, newEdges} = createNewFunctionNode(newActionId, newWorkflow);
+            const {newNode, newEdges} = createNewFunctionNode(existingId, newWorkflow, newActionId);
 
             updateWorkflowAndLayout(newWorkflow, [...nodes, newNode], [...edges, ...newEdges])
         }
