@@ -75,7 +75,11 @@ export default function FunctionEditor(props){
                 {/* Duplicate Action Div */}
                 <GenericLabel value={"Duplicate Action"} size={"20px"}></GenericLabel>
                 <div style={{display : "flex"}}>
-                    <TextInput value={newActionId} onChange={(e) => setNewActionId( e.target.value)} placeholder={"New Action Id"}></TextInput>
+                    <TextInput value={newActionId} onChange={(e) => {
+                        const newName = e.target.value
+                        const actionNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\\([0-9]+\\))?$/
+                        if (newName === "" || actionNameRegex.test(newName)) setNewActionId( e.target.value)
+                    }} placeholder={"New Action Id"}></TextInput>
                     <button onClick={ () => {
                         // Add new action to workflow
                         if (!(newActionId in Object.keys(workflow.ActionList)) && (newActionId !== "")){
@@ -96,7 +100,12 @@ export default function FunctionEditor(props){
                     value={workflow.ActionList[id].FunctionName} 
                     placeholder={"FunctionName"} 
                     onChange={(e) => 
-                        updateAction(id, { FunctionName : e.target.value})
+                        {
+                            const newName = e.target.value
+                            const regex = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+                            if (regex.test(newName) || newName === "") updateAction(id, { FunctionName : newName});
+                        }
                     }
                     onBlur={handleBlur}
                 />

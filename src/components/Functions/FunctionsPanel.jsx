@@ -18,18 +18,35 @@ export default function FunctionsPanel(props){
     const {updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId } = useUndo();
     const { createNewFunction } = useCreateNewFunction();
     const onCreateOption = (newActionId) => createActionAndNode(newActionId);
-    
+    const actionNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\\([0-9]+\\))?$/
+    const [ inputValue, setInputValue ] = useState("")
+
+    const isValidInput = (val) => {
+
+        return (val === "" || actionNameRegex.test(val))
+    }
 
     return(
         <div className="editor-panel">
             <h1>Actions</h1>
             <CreatableSelect 
-                onChange={(e) => {updateSelectedFunctionId(e?.value ?? null)}}
+                onChange={(e) => {
+                    updateSelectedFunctionId(e?.value ?? null);
+                }}
                 options={functionSearchOptions} 
                 onCreateOption={onCreateOption}
                 isClearable
                 placeholder={"Start typing to create a new action..."}
                 createOptionPosition={"first"}
+                inputValue={inputValue}
+                onInputChange={ (val) => {
+                        if (isValidInput(val)) {
+                            setInputValue(val)
+                        }
+
+                        return val
+                    }
+                }
                 styles={{
                     control: (baseStyles, state) => ({
                         ...baseStyles,

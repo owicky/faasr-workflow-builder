@@ -19,6 +19,9 @@ export default function InvokeNextEditor( props ){
     const [newInvoke, setNewInvoke] = useState("NONE")
     const { listInvokeNext, parseInvoke, createEdge, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
     const { cycleDetection } = useUtils()
+
+    const invokeRegex = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\\([0-9]+\\))?$/
+
     return (
         <div id="invokenext-editor">
             <GenericLabel size={"20px"} value={"Next Actions To Invoke"}></GenericLabel>
@@ -60,7 +63,10 @@ export default function InvokeNextEditor( props ){
                             }>
                         </input>
                         
-                        <button id="resetRankButton" onClick={() => document.getElementById("rankUpdate").value = 1}>
+                        <button id="resetRankButton" onClick={() => {
+                                document.getElementById("rankUpdate").value = 1
+                                updateInvoke(id, invoke, invId, 1, condition)
+                            }}>
                             <LuRotateCcw></LuRotateCcw>
                         </button>
 

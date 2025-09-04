@@ -171,8 +171,8 @@ export default function Toolbar(props) {
             <GenericButton icon={<FaSitemap/>} onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</GenericButton>
             <GenericButton icon={<IoMdSettings/>} onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</GenericButton>
 
-            {/* <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
-            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton> */}
+            <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
+            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton>
 
             {/* Workflow Name Banner */}
             <span style={{
