@@ -10,6 +10,57 @@ export default function ComputeServerEditor(props){
         updateWorkflow(workflow);
     };
 
+    const handleSwitchComputeServer = (e) => {
+            const newType = e.target.value
+                switch (newType){
+                    case "Lambda":
+                        updateWorkflow({
+                            ...workflow,
+                            ComputeServers: {
+                                ...workflow.ComputeServers,
+                                [server]: {
+                                ...workflow.ComputeServers[server],
+                                
+                                    FaaSType: e.target.value,
+                                    Region: workflow.ComputeServers[server].Region ? workflow.ComputeServers[server].Region : "" 
+                                }
+                            }
+                        })
+                        break;
+                    case "OpenWhisk": 
+                        updateWorkflow({
+                            ...workflow,
+                            ComputeServers: {
+                                ...workflow.ComputeServers,
+                                [server]: {
+                                ...workflow.ComputeServers[server],
+                                
+                                    FaaSType: e.target.value,
+                                    Endpoint: workflow.ComputeServers[server].Endpoint ? workflow.ComputeServers[server].Endpoint : "",
+                                    Namespace: workflow.ComputeServers[server].Namespace ? workflow.ComputeServers[server].Namespace : ""
+                                }
+                            }
+                        })
+                        break;
+                    case "GitHubActions":
+                        updateWorkflow({
+                            ...workflow,
+                            ComputeServers: {
+                                ...workflow.ComputeServers,
+                                [server]: {
+                                ...workflow.ComputeServers[server],
+                                
+                                    FaaSType: e.target.value,
+                                    UserName: workflow.ComputeServers[server].UserName ? workflow.ComputeServers[server].UserName : "",
+                                    ActionRepoName: workflow.ComputeServers[server].ActionRepoName ? workflow.ComputeServers[server].ActionRepoName : ""
+                                }
+                            }
+                        })
+                        break;
+
+                }
+        }
+
     if(server in workflow.ComputeServers){
         switch (workflow.ComputeServers[server].FaaSType){
             case "GitHubActions":
@@ -19,39 +70,7 @@ export default function ComputeServerEditor(props){
         
                         <div>
                             <button>FaaSType</button>
-                            <select key={server+"-FaasType-input"} value={workflow.ComputeServers[server].FaaSType} onChange={
-                                (e)=>{
-                                    const newType = e.target.value
-                                        switch (newType){
-                                            case "Lambda":
-                                                updateWorkflow({
-                                                    ...workflow,
-                                                    ComputeServers: {
-                                                        ...workflow.ComputeServers,
-                                                        [server]: {
-                                                        ...workflow.ComputeServers[server],
-                                                        
-                                                            FaaSType: e.target.value,
-                                                            Region: workflow.ComputeServers[server].Region ? workflow.ComputeServers[server].Region : "" 
-                                                        }
-                                                    }
-                                                })
-                                            case "OpenWhisk": 
-                                                updateWorkflow({
-                                                    ...workflow,
-                                                    ComputeServers: {
-                                                        ...workflow.ComputeServers,
-                                                        [server]: {
-                                                        ...workflow.ComputeServers[server],
-                                                        
-                                                            FaaSType: e.target.value,
-                                                            Endpoint: workflow.ComputeServers[server].Endpoint ? workflow.ComputeServers[server].Endpoint : "",
-                                                            Namespace: workflow.ComputeServers[server].Namespace ? workflow.ComputeServers[server].Namespace : ""
-                                                        }
-                                                    }
-                                                })
-                                        }
-                                }}>
+                            <select key={server+"-FaasType-input"} value={workflow.ComputeServers[server].FaaSType} onChange={handleSwitchComputeServer}>
                                 <option value={"None"}>None</option>
                                 <option value={"GitHubActions"}>GitHubActions</option>
                                 <option value={"OpenWhisk"}>OpenWhisk</option>
@@ -60,7 +79,10 @@ export default function ComputeServerEditor(props){
                         </div>
         
                         <div>
-                            <button>UserName</button>
+                            <button>
+                                <span style={{ color: 'red' }}>*</span>    
+                                UserName
+                            </button>
                             <input key={server+"-username"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
                                 ...workflow,
                                 ComputeServers: {
@@ -77,7 +99,10 @@ export default function ComputeServerEditor(props){
                         </div>
         
                         <div>
-                            <button>ActionRepoName</button>
+                            <button>
+                                <span style={{ color: 'red' }}>*</span>
+                                ActionRepoName  
+                            </button>
                             <input key={server+"-ActionRepoName-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
                                 ...workflow,
                                 ComputeServers: {
@@ -126,39 +151,7 @@ export default function ComputeServerEditor(props){
         
                         <div>
                             <button>FaaSType</button>
-                            <select key={server+"-FaasType-input"}value={workflow.ComputeServers[server].FaaSType} onChange={
-                                (e)=>{
-                                    const newType = e.target.value
-                                        switch (newType){
-                                            case "GitHubActions":
-                                                updateWorkflow({
-                                                    ...workflow,
-                                                    ComputeServers: {
-                                                        ...workflow.ComputeServers,
-                                                        [server]: {
-                                                        ...workflow.ComputeServers[server],
-                                                        
-                                                            FaaSType: e.target.value,
-                                                            UserName: workflow.ComputeServers[server].UserName ? workflow.ComputeServers[server].UserName : "",
-                                                            ActionRepoName: workflow.ComputeServers[server].ActionRepoName ? workflow.ComputeServers[server].ActionRepoName : ""
-                                                        }
-                                                    }
-                                                })
-                                            case "Lambda":
-                                                updateWorkflow({
-                                                    ...workflow,
-                                                    ComputeServers: {
-                                                        ...workflow.ComputeServers,
-                                                        [server]: {
-                                                        ...workflow.ComputeServers[server],
-                                                        
-                                                            FaaSType: e.target.value,
-                                                            Region: workflow.ComputeServers[server].Region ? workflow.ComputeServers[server].Region : "" 
-                                                        }
-                                                    }
-                                                })
-                                        }
-                                }}>
+                            <select key={server+"-FaasType-input"}value={workflow.ComputeServers[server].FaaSType} onChange={handleSwitchComputeServer}>
                                 <option value={"None"}>None</option>
                                 <option value={"GitHubActions"}>GitHubActions</option>
                                 <option value={"OpenWhisk"}>OpenWhisk</option>
@@ -167,7 +160,10 @@ export default function ComputeServerEditor(props){
                         </div>
         
                         <div>
-                            <button>Endpoint</button>
+                            <button>
+                                <span style={{ color: 'red' }}>*</span>
+                                Endpoint
+                            </button>
                             <input key={server+"-endpoint-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
                                 ...workflow,
                                 ComputeServers: {
@@ -185,7 +181,10 @@ export default function ComputeServerEditor(props){
                         </div>
         
                         <div>
-                            <button>Namespace</button>
+                            <button>
+                                <span style={{ color: 'red' }}>*</span>
+                                Namespace
+                            </button>
                             <input key={server+"-namespace-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
                                 ...workflow,
                                 ComputeServers: {
@@ -200,7 +199,7 @@ export default function ComputeServerEditor(props){
                                 value={workflow.ComputeServers[server].Namespace}
                             />
                         </div>
-        
+                        {/* Does OpenWhisk have region?
                         <div>
                             <button>Region</button>
                             <input key={server+"-region-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
@@ -217,6 +216,7 @@ export default function ComputeServerEditor(props){
                                 value={workflow.ComputeServers[server].Region}
                             />
                         </div>
+                        */}
                         <br></br>
                         <button style={{color:"red"}} onClick={() => {
                             const serverToDelete = server
@@ -234,40 +234,7 @@ export default function ComputeServerEditor(props){
         
                         <div>
                             <button>FaaSType</button>
-                            <select value={workflow.ComputeServers[server].FaaSType} onChange={
-                                (e)=>{
-                                    const newType = e.target.value
-                                        switch (newType){
-                                            case "GitHubActions":
-                                                updateWorkflow({
-                                                    ...workflow,
-                                                    ComputeServers: {
-                                                        ...workflow.ComputeServers,
-                                                        [server]: {
-                                                        ...workflow.ComputeServers[server],
-                                                        
-                                                            FaaSType: e.target.value,
-                                                            UserName: workflow.ComputeServers[server].UserName ? workflow.ComputeServers[server].UserName : "",
-                                                            ActionRepoName: workflow.ComputeServers[server].ActionRepoName ? workflow.ComputeServers[server].ActionRepoName : ""
-                                                        }
-                                                    }
-                                                })
-                                            case "OpenWhisk": 
-                                                updateWorkflow({
-                                                    ...workflow,
-                                                    ComputeServers: {
-                                                        ...workflow.ComputeServers,
-                                                        [server]: {
-                                                        ...workflow.ComputeServers[server],
-                                                        
-                                                            FaaSType: e.target.value,
-                                                            Endpoint: workflow.ComputeServers[server].Endpoint ? workflow.ComputeServers[server].Endpoint : "",
-                                                            Namespace: workflow.ComputeServers[server].Namespace ? workflow.ComputeServers[server].Namespace : ""
-                                                        }
-                                                    }
-                                                })
-                                        }
-                                }}>
+                            <select value={workflow.ComputeServers[server].FaaSType} onChange={handleSwitchComputeServer}>
                                 <option value={"None"}>None</option>
                                 <option value={"GitHubActions"}>GitHubActions</option>
                                 <option value={"OpenWhisk"}>OpenWhisk</option>
@@ -276,7 +243,10 @@ export default function ComputeServerEditor(props){
                         </div>
         
                         <div>
-                            <button>Region</button>
+                            <button>
+                                <span style={{ color: 'red' }}>*</span>
+                                Region
+                            </button>
                             <input key={server+"-region-input"} type="text" defaultValue="" onChange={(e)=>setWorkflow({
                                 ...workflow,
                                 ComputeServers: {
@@ -320,7 +290,16 @@ export default function ComputeServerEditor(props){
                             <option value={"OpenWhisk"}>OpenWhisk</option>
                             <option value={"Lambda"}>Lambda</option>
                         </select>
+                        <br></br>
+                        <button style={{color:"red"}} onClick={() => {
+                            const serverToDelete = server
+                            let newWorkflow = structuredClone(workflow);
+                            delete newWorkflow.ComputeServers[serverToDelete]
+                            props.setServer(null)
+                            updateWorkflow(newWorkflow);
+                        }}>Delete Compute Server</button>
                     </div>
+                    
                 )
         }
     }else{

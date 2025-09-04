@@ -30,6 +30,8 @@ export default function DataStoreCreator(props){
                                 }
                             }
                         })
+                        props.setDataStore(newName);
+                        setPopupEnabled(false);
                     }else{
                         alert("Data Store name must neither be empty nor contain whitespaces.")
                     }

@@ -14,6 +14,10 @@ import { useWorkflowContext } from '../WorkflowContext';
 const FunctionNode = ({ data }) => {
     const {workflow, colorMode} = useWorkflowContext()
 
+    if (!(data.id in workflow.ActionList)) {
+        return;
+    }
+
     const FaasAcc = workflow.ActionList[data.id]?.FaaSServer
     const FaasType = workflow.ComputeServers[FaasAcc]?.FaaSType
 

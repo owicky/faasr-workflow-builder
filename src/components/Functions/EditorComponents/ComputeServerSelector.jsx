@@ -12,7 +12,7 @@ export default function ComputeServerSelector( props ){
 
     return (
         <div id="compute-server-selector">
-                    <GenericLabel size={"20px"} value={"Compute Server"}></GenericLabel>
+                    <GenericLabel size={"20px"} value={"Compute Server"} required={true}></GenericLabel>
 
                     <select placeholder="FaaSServer" onChange={(e)=>updateWorkflow({
                         ...workflow,

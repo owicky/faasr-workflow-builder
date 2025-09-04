@@ -19,7 +19,7 @@ export default function ComputeServersPanel(){
                 </>
             ))}
             <br></br>
-            <ComputeServerCreator/>
+            <ComputeServerCreator setServer={setServer} />
             <ComputeServerEditor setServer={setServer} server={server}/>
         </div>
     )

@@ -1,7 +1,11 @@
-export default function GenericLabel({ value, size }) {
+export default function GenericLabel({ value, size, required }) {
     return (
         <div className="generic-label">
-            <p style={{ fontSize : size }}>{value}</p>
+            
+            <p style={{ fontSize : size }}>
+                {required ? <span style={{ color: 'red' }}>* </span> : <></>}
+                {value}
+            </p>
         </div>
     );
 }

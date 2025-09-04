@@ -19,7 +19,7 @@ export default function DataStoresPanel(){
                 </>
             ))}
             <br></br>
-            <DataStoreCreator/>
+            <DataStoreCreator setDataStore={setDataStore}/>
             <DataStoreEditor setDataStore={setDataStore} id={dataStore}/>
             {/* <h1>{JSON.stringify(workflow.DataStores[dataStore], null, 2) }</h1> */}
         </div>

@@ -33,7 +33,10 @@ export default function DataStoreEditor(props){
                 </div>
 
                 <div>
-                    <button>Bucket</button>
+                    <button>
+                        <span style={{ color: 'red' }}>*</span>
+                         Bucket
+                    </button>
                     <input type="text" placeholder="Bucket" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {

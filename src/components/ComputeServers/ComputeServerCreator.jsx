@@ -43,6 +43,8 @@ export default function ComputeServerCreator(props){
                                 }
                             }
                         })
+                        props.setServer(newName);
+                        setPopupEnabled(false);
                     }
                     else{
                         alert("FaaS server name must neither be empty nor contain whitespaces.")

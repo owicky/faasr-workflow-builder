@@ -90,7 +90,7 @@ export default function FunctionEditor(props){
                 </div>
 
                 {/* Function Name Input */}
-                <GenericLabel size={"20px"} value={"Function Name"}></GenericLabel>
+                <GenericLabel size={"20px"} value={"Function Name"} required={true}></GenericLabel>
                 {/* set workflow onChange, but only update history on blur*/}
                 <TextInput 
                     value={workflow.ActionList[id].FunctionName} 
