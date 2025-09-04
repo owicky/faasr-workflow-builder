@@ -24,6 +24,19 @@
   padding-left: 4px;
 }
 
+.info-panel{
+  display: flex;
+  z-index: 3;
+  width: 18vw;
+  height: 35vh;
+  color: var(--text-primary);
+  background-color: var(--background);
+  border-radius: 10px;
+  border-style: ridge;
+  border-color: var(--border-color);
+  padding: 5px; 
+}
+
 .editor-panel{
   width: 30vw;
   height: 100%;
