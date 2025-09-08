@@ -16,16 +16,17 @@ import useFunctionUtils from './components/Functions/FunctionsUtils';
 import { MdDarkMode, MdOutlineDarkMode } from "react-icons/md";
 import useWorkflowAndLayoutUtils from './components/Utils/WorkflowAndLayoutUtils';
 import useUtils from './components/Utils/Utils';
+import InfoBox from './components/Utils/InfoBox';
 
 const defaultEdgeOptions = { animated: false };
 
 function App() {
   const { edges, setEdges, nodes, setNodes, workflow, colorMode, setColorMode} = useWorkflowContext();
-  const [editType, setEditType] = useState(null)
+  const [editType, setEditType] = useState("Functions")
   const [ isDragging, setIsDragging] = useState(false);
   const [ dots, setDots ] = useState(false)
   const [visibleObjects, setVisibleObjects] = useState({workflow: false, graph: false})
-  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId, undo, redo, canUndo, canRedo } = useUndo();
+  const { updateLayout, updateWorkflow, updateWorkflowAndLayout, selectedFunctionId, updateSelectedFunctionId, undo, redo, canUndo, canRedo } = useUndo();
   const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge, createEdge, add_edge, createNewEdge} = useFunctionUtils ();
   const { fitView } = useReactFlow()
   const { cycleDetection } = useUtils()
@@ -171,8 +172,8 @@ const getLayoutedElements = (nodes, edges, options) => {
       {/* </header> */}
 
       <div id="mid-panel" >
-        <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
-        <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
+        {/* <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
+        <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow> */}
         <EditorPanel id="editor-panel-component" addEdge={(eds, newEdge) => addEdge(eds, newEdge)} createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
         
           <div id="workflow-panel">
@@ -199,7 +200,7 @@ const getLayoutedElements = (nodes, edges, options) => {
               fitView
             > <Controls/>
 
-              <Panel position="top-center">
+              <Panel style={ { right : "30vw", top : "-.5vw" } }position="fixed">
                 <button onClick={() => { onLayout('TB'); fitView()}}>vertical layout</button>
                 <button onClick={() => { onLayout('LR'); fitView()}  }>horizontal layout</button>
                 <button onClick={undo} disabled={!canUndo}><IoMdUndo /></button>
@@ -207,44 +208,24 @@ const getLayoutedElements = (nodes, edges, options) => {
                 <button onClick={() => setDots(!dots)}><TbGridDots /></button>
                 <button onClick={() => setColorMode(colorMode === "dark" ? "light": "dark")}>{colorMode === "dark" ? <MdOutlineDarkMode/> : <MdDarkMode />}</button>
               </Panel>
-              <Panel position="top-left">
-                    <select onChange={ e =>  setSelectedServer(e.target.value)} defaultValue={"nmone"} id="compute-server-select">
-                      {Object.entries(workflow.ComputeServers).map(([key, val]) => (
-                        <option value={key}>{key}</option>
-                        ))}
-                    </select>
-                    <div className="info-panel">
-                    <div style={{backgroundColor : "var(--background)", flex: "1", borderRadius : "10px", padding: "5px"}}>
 
-                        {workflow.ComputeServers[selectedServer] ? 
-                          Object.entries(workflow.ComputeServers[selectedServer]).map(([key, val]) => (
-                            <div key={key} style={{ marginBottom: "4px" }}>
-                              <strong>{key}:</strong> {val}
-                            </div>
-                          ))
-                        : null}
-                    </div>
-                  </div>
+              <Panel style={ { left : "2vw", top : "1vw" } } position="fixed">
+                <InfoBox object={workflow.ComputeServers}></InfoBox>
               </Panel>
-              <Panel position="top-right">
-                    <select style={{ right: 200 }} onChange={ e =>  setSelectedDataStore(e.target.value)} defaultValue={"nmone"} id="compute-server-select">
-                      {Object.entries(workflow.DataStores).map(([key, val]) => (
-                        <option value={key}>{key}</option>
-                        ))}
-                    </select>
-                    <div className="info-panel">
-                    <div style={{ right : 50, backgroundColor : "var(--background)", flex: "1", borderRadius : "10px", padding: "5px"}}>
 
-                        {workflow.DataStores[selectedDataStore] ? 
-                          Object.entries(workflow.DataStores[selectedDataStore]).map(([key, val]) => (
-                            <div key={key} style={{ marginBottom: "4px" }}>
-                              <strong>{key}:</strong> {val}
-                            </div>
-                          ))
-                        : null}
-                    </div>
-                  </div>
+              <Panel style={ { right : "2vw", top : "1vw" } } position='fixed'>
+                <InfoBox object={workflow.DataStores} properties={["FaaSType", "Region", "Writable"]}></InfoBox>
               </Panel>
+
+              <Panel style={ { left : "2vw", bottom : "1vw"} } position='fixed'>
+                <InfoBox object={{workflow}} properties={["WorkflowName", "FunctionInvoke", "FaaSrLog"]}></InfoBox>
+              </Panel>
+
+              <Panel style={ { right : "2vw", bottom : "1vw"} } position='fixed'>
+                <InfoBox object={ workflow.ActionList } forceKey={selectedFunctionId} properties={["FunctionName", "Arguments"]}></InfoBox>
+              </Panel>
+              
+
               {dots && <Background variant="dots" gap={12} size={1} />}
             </ReactFlow>
           </div>
