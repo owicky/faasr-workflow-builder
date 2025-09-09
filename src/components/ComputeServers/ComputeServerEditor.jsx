@@ -13,57 +13,6 @@ export default function ComputeServerEditor(props){
         updateWorkflow(workflow);
     };
 
-    const handleSwitchComputeServer = (e) => {
-            const newType = e.target.value
-                switch (newType){
-                    case "Lambda":
-                        updateWorkflow({
-                            ...workflow,
-                            ComputeServers: {
-                                ...workflow.ComputeServers,
-                                [server]: {
-                                ...workflow.ComputeServers[server],
-                                
-                                    FaaSType: e.target.value,
-                                    Region: workflow.ComputeServers[server].Region ? workflow.ComputeServers[server].Region : "" 
-                                }
-                            }
-                        })
-                        break;
-                    case "OpenWhisk": 
-                        updateWorkflow({
-                            ...workflow,
-                            ComputeServers: {
-                                ...workflow.ComputeServers,
-                                [server]: {
-                                ...workflow.ComputeServers[server],
-                                
-                                    FaaSType: e.target.value,
-                                    Endpoint: workflow.ComputeServers[server].Endpoint ? workflow.ComputeServers[server].Endpoint : "",
-                                    Namespace: workflow.ComputeServers[server].Namespace ? workflow.ComputeServers[server].Namespace : ""
-                                }
-                            }
-                        })
-                        break;
-                    case "GitHubActions":
-                        updateWorkflow({
-                            ...workflow,
-                            ComputeServers: {
-                                ...workflow.ComputeServers,
-                                [server]: {
-                                ...workflow.ComputeServers[server],
-                                
-                                    FaaSType: e.target.value,
-                                    UserName: workflow.ComputeServers[server].UserName ? workflow.ComputeServers[server].UserName : "",
-                                    ActionRepoName: workflow.ComputeServers[server].ActionRepoName ? workflow.ComputeServers[server].ActionRepoName : ""
-                                }
-                            }
-                        })
-                        break;
-
-                }
-        }
-
     if(server in workflow.ComputeServers){
         const type = workflow.ComputeServers[server].FaaSType
         return (
@@ -93,12 +42,12 @@ export default function ComputeServerEditor(props){
 
                 {/* UserName */}
                 {["SLURM", "GitHubActions"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="UserName" />
+                    <ComputeServerPropertyEditor type={type} server={server} property="UserName" required={true}/>
                 ) : null}  
                 
                 {/* ActionRepoName */}
                 {["GitHubActions"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="ActionRepoName" />
+                    <ComputeServerPropertyEditor type={type} server={server} property="ActionRepoName" required={true}/>
                 ) : null}                  
                 
                 {/* Branch */}
@@ -108,17 +57,17 @@ export default function ComputeServerEditor(props){
                 
                 {/* Endpoint */}
                 {["SLURM", "OpenWhisk"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="Endpoint" />
+                    <ComputeServerPropertyEditor type={type} server={server} property="Endpoint" required={true} />
                 ) : null}
 
                 {/* NameSpace */}
                 {["GoogleCloud","OpenWhisk"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="NameSpace" />
+                    <ComputeServerPropertyEditor type={type} server={server} property="NameSpace" required={true}/>
                 ) : null}
                 
                 {/* Region */}
                 {["Lambda", "GoogleCloud", "OpenWhisk"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="Region" />
+                    <ComputeServerPropertyEditor type={type} server={server} property="Region" required={true} />
                 ) : null}  
 
                 {/* Delete Compute Server Button */}

@@ -2,7 +2,7 @@ import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
 
-export default function ComputeServerPropertyEditor( { server, property, type}){
+export default function ComputeServerPropertyEditor( { server, property, type, required}){
     const {workflow} = useWorkflowContext();
     const { applyWorkflowChanges } = useWorkflowUtils()
     const { updateWorkflow } = useUndo();
@@ -20,9 +20,14 @@ export default function ComputeServerPropertyEditor( { server, property, type}){
         Region : "us-west"
     }
 
+
+
     return (
             <div>
-                <button>{property}</button>
+                <button>
+                    {required ? <span style={{ color: 'red' }}>* </span>:<></>}
+                    {property}
+                </button>
                 <input key={server+"-username"} type="text" placeholder={placeHolders[property]} defaultValue="" onChange={(e)=>applyWorkflowChanges({
                     ComputeServers: {
                         [server]: {

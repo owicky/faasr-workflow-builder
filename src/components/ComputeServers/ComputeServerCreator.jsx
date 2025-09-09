@@ -6,16 +6,22 @@ import useUndo from "../Utils/Undo";
 
 export default function ComputeServerCreator(props){
     const {workflow, setWorkflow} = useWorkflowContext();
-    const [newName, setNewName] = useState("")
     const [newType, setNewType] = useState("")
     const [ popupEnabled, setPopupEnabled] = useState(false)
     const { updateWorkflow } = useUndo();
+
+    const computeServerPrefixes = {
+        "GitHubActions": "GH",
+        "OpenWhisk": "OW",
+        "Lambda": "AWS",
+        "SLURM": "SLURM",
+        "GoogleCloud": "GCP"
+    }
 
     return(
         <>
             <button onClick={() => setPopupEnabled(true)}>Add New Compute Server</button>
             <Popup enabled={popupEnabled} setEnabled={() => setPopupEnabled()}>
-                <input type="text"  placeholder="Compute-server-name" onChange={(e) => setNewName(e.target.value)}/>
                 <select defaultValue={"GitHubActions"} onChange={
                     (e)=>{
                         setNewType(e.target.value)
@@ -28,7 +34,9 @@ export default function ComputeServerCreator(props){
                 </select>
                 <button onClick={() => {
 
-                    if (!/\s/.test(newName) && newName !== ""){
+                    const newName = computeServerPrefixes[newType];
+
+                    if (newName){
                         updateWorkflow({
                         ...workflow,
                         ComputeServers: {
@@ -44,7 +52,7 @@ export default function ComputeServerCreator(props){
                         setPopupEnabled(false);
                     }
                     else{
-                        alert("FaaS server name must neither be empty nor contain whitespaces.")
+                        alert(`Compute server type ${newType} wasn't recognized`);
                     }
                 }
             }>Create New Compute Server</button>
