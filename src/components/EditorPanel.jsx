@@ -34,7 +34,7 @@ export default function EditorPanel(props) {
             default:
                 return(
                     <div className="editor-panel-outer">
-                        <h1 style={{color: 'red'}}>No Edit Mode Selected</h1>
+                        <h1 sty style={{color: 'red'}}>No Edit Mode Selected</h1>
                     </div>
                 )
         }

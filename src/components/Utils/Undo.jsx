@@ -119,6 +119,7 @@ const useUndo = () => {
         updateWorkflow,
         updateLayout,
         updateWorkflowAndLayout,
+        selectedFunctionId,
         updateSelectedFunctionId,
         undo,
         redo,

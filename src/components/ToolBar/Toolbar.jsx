@@ -41,7 +41,7 @@ export default function Toolbar(props) {
             return
         }
 
-        if (!validate(cleanedWorkflow, { verbose: true})){ // If violates Schema
+        if (!validate(strippedWorkflow, { verbose: true})){ // If violates Schema
             const errorMsg = validate.errors.map((error, i) => {
                 const fieldName = error.field;
                 return `• ${fieldName}: ${error.message}`;
@@ -171,8 +171,8 @@ export default function Toolbar(props) {
             <GenericButton icon={<FaSitemap/>} onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</GenericButton>
             <GenericButton icon={<IoMdSettings/>} onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</GenericButton>
 
-            <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
-            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton>
+            {/* <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
+            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton> */}
 
             {/* Workflow Name Banner */}
             <span style={{
