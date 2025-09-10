@@ -1,7 +1,7 @@
 import './App.css';
 import '@xyflow/react/dist/style.css';
 import Dagre from '@dagrejs/dagre';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { useReactFlow, ReactFlow, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Panel, MarkerType, Background, useUpdateNodeInternals} from '@xyflow/react';
 import Toolbar from './components/ToolBar/Toolbar';
 import FunctionNode from './components/FunctionNode';
@@ -35,6 +35,10 @@ function App() {
   const [selectedServer, setSelectedServer] = useState("My_GitHub_Account");
   const [selectedDataStore, setSelectedDataStore] = useState("My_S3_Bucket");
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
+  const panelRef = useRef(null);
+  const [panelResizing, setPanelResizing] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(400);
+
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -49,6 +53,38 @@ function App() {
     },
     [setEdges],
   );
+
+
+
+  const startResizing = useCallback((mouseDownEvent) => {
+    setPanelResizing(true);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setPanelResizing(false);
+  }, []);
+
+  const resize = useCallback(
+    (mouseMoveEvent) => {
+      if (panelResizing) {
+        let newWidth = mouseMoveEvent.clientX - 
+              panelRef.current.getBoundingClientRect().left
+        //if (newWidth < minPanelWidth) newWidth = minPanelWidth;
+        //if (newWidth > maxPanelWidth) newWidth = maxPanelWidth;
+        setPanelWidth(newWidth);
+      }
+    },
+    [panelResizing]
+  );
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+    };
+  }, [resize, stopResizing]);
 
 
   // Uses Dagre to apply layout
@@ -171,11 +207,11 @@ const getLayoutedElements = (nodes, edges, options) => {
         <Toolbar setLayout={() => onLayout("TB")} toggleGraphVisible={() => setVisibleObjects({...visibleObjects, graph : !visibleObjects.graph})} toggleWorkflowVisible={() => setVisibleObjects({...visibleObjects, workflow : !visibleObjects.workflow})} visibleObjects={visibleObjects}  setVisibleObjects={setVisibleObjects} setEditType={setEditType} createNode={ createNode} createNewNode={createNewNode} createEdge={ createEdge } createNewEdge={createNewEdge} updateWorkflowAndLayout={updateWorkflowAndLayout}></Toolbar>
       {/* </header> */}
 
-      <div id="mid-panel" >
+      <div id="mid-panel">
         {/* <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow> */}
-        <EditorPanel id="editor-panel-component" addEdge={(eds, newEdge) => addEdge(eds, newEdge)} createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
-        
+        <EditorPanel id="editor-panel-component" panelWidth={panelWidth} startResizing={startResizing} ref={panelRef} addEdge={(eds, newEdge) => addEdge(eds, newEdge)} createEdge={(a,b, c, d) => createEdge(a,b, c, d)} createNode={createNode} createNewEdge={createNewEdge} type={editType}/>
+       
           <div id="workflow-panel">
             <ReactFlow
               nodes={nodes}

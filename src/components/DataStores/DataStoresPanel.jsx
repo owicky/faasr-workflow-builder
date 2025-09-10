@@ -8,7 +8,7 @@ export default function DataStoresPanel(){
     const [dataStore, setDataStore] = useState(null);
 
     return(
-        <div style={{width: '30vw', height: '100%'}}>
+        <div style={{width: '100%', height: '100%'}}>
             <h1>DataStores</h1>
             {Object.entries(workflow.DataStores).map(([key, val], i) => (
                 <>
