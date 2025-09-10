@@ -38,6 +38,9 @@ function App() {
   const panelRef = useRef(null);
   const [panelResizing, setPanelResizing] = useState(false);
   const [panelWidth, setPanelWidth] = useState(400);
+  const debounceTimeoutRef = useRef(null);
+  const minPanelWidth = 200;
+  const maxPanelWidth = 800;
 
 
   const onNodesChange = useCallback(
@@ -60,21 +63,39 @@ function App() {
     setPanelResizing(true);
   }, []);
 
+  const debouncedUpdateWidth = useCallback((width) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      setPanelWidth(width);
+    }, 50);
+  }, []);
+
   const stopResizing = useCallback(() => {
     setPanelResizing(false);
-  }, []);
+    
+    // Apply the final width from the visual element to state
+    if (panelRef.current) {
+      const currentWidth = parseInt(panelRef.current.style.width) || panelWidth;
+      debouncedUpdateWidth(currentWidth);
+    }
+  }, [panelWidth, debouncedUpdateWidth]);
 
   const resize = useCallback(
     (mouseMoveEvent) => {
-      if (panelResizing) {
+      if (panelResizing && panelRef.current) {
         let newWidth = mouseMoveEvent.clientX - 
-              panelRef.current.getBoundingClientRect().left
-        //if (newWidth < minPanelWidth) newWidth = minPanelWidth;
-        //if (newWidth > maxPanelWidth) newWidth = maxPanelWidth;
-        setPanelWidth(newWidth);
+              panelRef.current.getBoundingClientRect().left;
+        if (newWidth < minPanelWidth) newWidth = minPanelWidth;
+        if (newWidth > maxPanelWidth) newWidth = maxPanelWidth;
+        
+        // Update visual width immediately without changing state
+        panelRef.current.style.width = `${newWidth}px`;
       }
     },
-    [panelResizing]
+    [panelResizing, minPanelWidth, maxPanelWidth]
   );
 
   useEffect(() => {
@@ -83,6 +104,9 @@ function App() {
     return () => {
       window.removeEventListener("mousemove", resize);
       window.removeEventListener("mouseup", stopResizing);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
     };
   }, [resize, stopResizing]);
 

@@ -50,6 +50,9 @@
 
   color: var(--text-primary);
   background-color: var(--background);
+  flex: 1;
+  min-width: 0;
+  contain: layout size;
 }
 
 .App{
@@ -70,13 +73,13 @@
 }
 
 .editor-panel-outer{
-  flex-grow: 0;
-  flex-shrink: 0;
   display: flex;
   flex-direction: row;
   z-index: 2;
   min-width: 200px;
   max-width: 800px;
+  will-change: width;
+  flex-shrink: 0;
 }
 
 #jsonview-panel{
@@ -150,7 +153,7 @@
   height: 40vh;
   color: var(--text-primary);
   background-color: var(--background);
-  bo000000adius: 10px;
+  border-radius: 10px;
   border-style: ridge;
   border-color: var(--border-color);
   padding: 5px;
@@ -186,7 +189,20 @@
   min-width: 3px;
   width: 3px;
   height: 100%;
-  cursor: col-resize;
+
   background-color: var(--border-color);
-  transition: background-color 0.15s ease;
+
+}
+
+.editor-panel-outer .drag-handle {
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 6px;
+  justify-self: flex-end;
+  cursor: col-resize;
+  resize: horizontal;
+}
+
+.editor-panel-outer .editor-panel {
+    flex: 1;
 }
