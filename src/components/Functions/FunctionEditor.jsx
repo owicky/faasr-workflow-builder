@@ -113,7 +113,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Function Name Input */}
-                <GenericLabel size={"20px"} value={"Type"}></GenericLabel>
+                <GenericLabel size={"20px"} value={"Type"} required={true}></GenericLabel>
                 {/* set workflow onChange, but only update history on blur*/}
                 <select value={workflow.ActionList[id].Type} onChange={(e) => updateAction(id, { Type : e.target.value})} onBlur={handleBlur}>
                     <option value={"None"}>None</option>
