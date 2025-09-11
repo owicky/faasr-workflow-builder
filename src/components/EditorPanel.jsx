@@ -39,7 +39,6 @@ export default function EditorPanel(props) {
                 className="editor-panel-outer"
                 ref={props.ref}
                 style={{ width: props.panelWidth }}
-                onMouseDown={(e) => e.preventDefault()}
             >
                 {getEditor(props)}
                 {/* Drag handle*/}
