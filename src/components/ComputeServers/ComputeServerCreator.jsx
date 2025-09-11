@@ -6,7 +6,7 @@ import useUndo from "../Utils/Undo";
 
 export default function ComputeServerCreator(props){
     const {workflow, setWorkflow} = useWorkflowContext();
-    const [newType, setNewType] = useState("")
+    const [newType, setNewType] = useState("GitHubActions")
     const [ popupEnabled, setPopupEnabled] = useState(false)
     const { updateWorkflow } = useUndo();
 
@@ -18,10 +18,15 @@ export default function ComputeServerCreator(props){
         "GoogleCloud": "GCP"
     }
 
+    const setPopupEnabledAndRestoreDefaultComputeServer = (enabled) => {
+        if (!enabled) setNewType('GitHubActions');
+        setPopupEnabled(enabled);
+    }
+
     return(
         <>
             <button onClick={() => setPopupEnabled(true)}>Add New Compute Server</button>
-            <Popup enabled={popupEnabled} setEnabled={() => setPopupEnabled()}>
+            <Popup enabled={popupEnabled} setEnabled={() => setPopupEnabledAndRestoreDefaultComputeServer()}>
                 <select defaultValue={"GitHubActions"} onChange={
                     (e)=>{
                         setNewType(e.target.value)
@@ -42,9 +47,7 @@ export default function ComputeServerCreator(props){
                         ComputeServers: {
                             ...workflow.ComputeServers,
                             [newName]: {
-                                FaaSType: newType || "GitHubActions",
-                                    ActionRepoName:"FaaSr-Workflows",
-                                    Branch: "main",
+                                FaaSType: newType || "GitHubActions"
                                 }
                             }
                         })

@@ -66,7 +66,7 @@ export default function ComputeServerEditor(props){
                 ) : null}
                 
                 {/* Region */}
-                {["Lambda", "GoogleCloud", "OpenWhisk"].includes(type) ? (
+                {["Lambda", "GoogleCloud"].includes(type) ? (
                     <ComputeServerPropertyEditor type={type} server={server} property="Region" required={true} />
                 ) : null}  
 

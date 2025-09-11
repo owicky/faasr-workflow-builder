@@ -197,7 +197,7 @@
 .editor-panel-outer .drag-handle {
   flex-grow: 0;
   flex-shrink: 0;
-  flex-basis: 6px;
+  flex-basis: 3px;
   justify-self: flex-end;
   cursor: col-resize;
   resize: horizontal;
@@ -206,3 +206,15 @@
 .editor-panel-outer .editor-panel {
     flex: 1;
 }
+
+.error-text {
+    padding: 0;
+    margin: 0;
+    color: red;
+    white-space: pre-wrap;
+}
+
+.error-text li {
+    margin-left: 15px;
+}
+

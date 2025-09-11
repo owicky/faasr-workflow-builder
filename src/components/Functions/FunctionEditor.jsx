@@ -149,7 +149,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 <div>
-                    <GenericLabel size={"20px"} value={"Function's Action Container"}></GenericLabel>
+                    <GenericLabel size={"20px"} value={"Function's Action Container"} required={true}></GenericLabel>
                     <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
                         onChange={(e)=>applyWorkflowChanges({
                             ActionContainers: {

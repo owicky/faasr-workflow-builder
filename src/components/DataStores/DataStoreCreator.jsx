@@ -26,7 +26,7 @@ export default function DataStoreCreator(props){
                                     Endpoint: "",
                                     Bucket: "",
                                     Region: "",
-                                    Writable: ""
+                                    Writable: "TRUE"
                                 }
                             }
                         })
