@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 import ComputeServerPropertyEditor from "./ComputeServerPropertyEditor";
@@ -12,6 +13,13 @@ export default function ComputeServerEditor(props){
     const handleBlur = (e) => {
         updateWorkflow(workflow);
     };
+
+    useEffect(() => {
+        if (!(server in workflow.ComputeServers)) {
+            props.setServer(null);
+        }
+    }, [server, workflow.ComputeServers, props.setServer]);
+
 
     if(server in workflow.ComputeServers){
         const type = workflow.ComputeServers[server].FaaSType
@@ -96,8 +104,6 @@ export default function ComputeServerEditor(props){
                 
             </div> 
         )
-    }else{
-        props.setServer(null);
     }
     return(
         <h1>NO COMPUTE SERVER SELECTED</h1>

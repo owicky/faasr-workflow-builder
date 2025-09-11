@@ -70,7 +70,6 @@ export default function Toolbar(props) {
                     return [`${objectType} ${objectId}: ${errorField} ${errorMsg}`];
                 }else{
                     // handle other JSON error type
-                    alert(e);
                     const errorPair = errorPathList[1].split(':');
                     const errorField = errorPair[0];
                     let msgs = []
@@ -97,6 +96,10 @@ export default function Toolbar(props) {
                         } else {
                             msgs.push(`WorkflowName: ${errorPair[1]}`);
                         }
+                    } else if (errorField.includes('DefaultDataStore')) {
+                        msgs.push('DefaultDataStore cannot be empty');
+                    } else {
+                        msgs.push(errorPair[1]);
                     }
                     return msgs;
                 }
