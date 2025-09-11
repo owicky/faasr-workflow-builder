@@ -12,23 +12,24 @@ export default function ComputeServerSelector( props ){
 
     return (
         <div id="compute-server-selector">
-                    <GenericLabel size={"20px"} value={"Compute Server"} required={true}></GenericLabel>
+            <GenericLabel size={"20px"} value={"Compute Server"} required={true}>
 
-                    <select placeholder="FaaSServer" onChange={(e)=>updateWorkflow({
-                        ...workflow,
-                        ActionList: {
-                            ...workflow.ActionList,
-                            [id]: {
-                                ...workflow.ActionList[id],
-                                FaaSServer: e.target.value
-                            }
-                        }
-                    })} type="text" value={workflow.ActionList[id].FaaSServer}>
-                        <option value={""}> NONE </option>
-                        {Object.entries(workflow.ComputeServers).map(([key, val], i) => (
-                            <option key={key} value={key}>{key}</option>
-                        ))}
-                    </select>
+            <select placeholder="FaaSServer" onChange={(e)=>updateWorkflow({
+                ...workflow,
+                ActionList: {
+                    ...workflow.ActionList,
+                    [id]: {
+                        ...workflow.ActionList[id],
+                        FaaSServer: e.target.value
+                    }
+                }
+            })} type="text" value={workflow.ActionList[id].FaaSServer}>
+                <option value={""}> NONE </option>
+                {Object.entries(workflow.ComputeServers).map(([key, val], i) => (
+                    <option key={key} value={key}>{key}</option>
+                ))}
+            </select>
+            </GenericLabel>
         </div>
     )
 }

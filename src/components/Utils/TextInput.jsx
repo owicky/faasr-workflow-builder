@@ -1,5 +1,3 @@
-import GenericLabel from "./GenericLabel";
-
 export default function TextInput({ value, onChange, placeholder, ...otherProps }) {
     return (
         <div>

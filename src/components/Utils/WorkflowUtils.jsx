@@ -57,14 +57,19 @@ const useWorkflowUtils = () => {
      * @param {object} options ex { FunctionName : "function1", Type : "Python"} 
      * If modifying array in options, provide entire new array
      */
-    const addAction = ( id, options = {}) => {
+    const addAction = (id, options = {}) => {
+
         const newAction = {
-            Arguments : {},
-            InvokeNext : [{ True : [], False : []}],
+            Arguments: {},
+            InvokeNext: [{ True: [], False: [] }],
+            FaaSServer: Object.keys(workflow.ComputeServers ?? {})[0] ?? "",
+            Type: "R",
             ...options
-        }
-        applyWorkflowChanges( { ActionList : { [id] : newAction} })
-    }
+        };
+
+        applyWorkflowChanges({ ActionList: { [id]: newAction } });
+    };
+
 
 
     /**

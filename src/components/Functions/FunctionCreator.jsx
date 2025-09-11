@@ -130,7 +130,7 @@ export const useCreateNewFunction = () => {
                 id: edge.source+"-"+newActionId
             }));
         }
-       
+    
         const newEdges = [...outgoingEdges, ...incomingEdges];
         const newNodeId = newActionId ? newActionId : functionId;
         const newNode = createNewNode(newNodeId, rank);
@@ -188,11 +188,11 @@ export function FunctionCreator(props){
                             ...workflow.ActionList,
                             [newId]: {
                                 FunctionName: "",
-                                FaaSServer: "",
+                                FaaSServer: "GH",
                                 Arguments: {
                                 },
                                 InvokeNext: [{}],
-                                Type : "None"
+                                Type : "R"
                             }
                         }
                     })

@@ -2,6 +2,7 @@ import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 import ComputeServerPropertyEditor from "./ComputeServerPropertyEditor";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
+import GenericLabel from "../Utils/GenericLabel";
 
 export default function ComputeServerEditor(props){
     const {workflow, setWorkflow, setNodes, nodes} = useWorkflowContext();
@@ -20,7 +21,7 @@ export default function ComputeServerEditor(props){
                 <h1>Function ID: {server}</h1>
 
                 <div>
-                    <button>FaaSType</button>
+                    <GenericLabel required={true} value={"FaaSType"} size={"20px"}>
                     <select key={server+"-FaasType-input"} value={workflow.ComputeServers[server].FaaSType} onChange={
                         (e)=>{
                             applyWorkflowChanges({
@@ -38,6 +39,7 @@ export default function ComputeServerEditor(props){
                         <option value={"SLURM"}>SLURM</option>
                         <option value={"GoogleCloud"}>GoogleCloud</option>
                     </select>
+                    </GenericLabel>
                 </div>
 
                 {/* UserName */}
@@ -70,6 +72,7 @@ export default function ComputeServerEditor(props){
                     <ComputeServerPropertyEditor type={type} server={server} property="Region" required={true} />
                 ) : null}  
 
+                <br></br>
                 {/* Delete Compute Server Button */}
                 <button style={{color:"red"}} onClick={() => {
                     const serverToDelete = server

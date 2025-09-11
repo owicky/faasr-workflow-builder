@@ -179,11 +179,11 @@ export function UploadWorkflow(props) {
 
     return (
         <>
-            <button onClick={openFileDialog}>Load Workflow File</button>
+            <button onClick={openFileDialog}>Upload workflow file</button>
             <div>
 
-                <input type="text" id="workflowUrlInput" placeholder="https://github.com/nolcut/workflow-json-test/blob/main/new-with-r.json"></input>
-                <button onClick={() => uploadFromURL(document.getElementById("workflowUrlInput").value)}>Load Workflow File From Github URL</button>
+                <input type="text" id="workflowUrlInput" placeholder="https://github.com/FaaSr/FaaSr-workflow/tutorial.json"></input>
+                <button onClick={() => uploadFromURL(document.getElementById("workflowUrlInput").value)}>Import from GitHub URL</button>
             </div>
             <input
                 type="file"

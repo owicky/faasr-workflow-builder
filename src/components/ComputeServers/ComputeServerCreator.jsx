@@ -10,12 +10,12 @@ export default function ComputeServerCreator(props){
     const [ popupEnabled, setPopupEnabled] = useState(false)
     const { updateWorkflow } = useUndo();
 
-    const computeServerPrefixes = {
-        "GitHubActions": "GH",
-        "OpenWhisk": "OW",
-        "Lambda": "AWS",
-        "SLURM": "SLURM",
-        "GoogleCloud": "GCP"
+    const computeServerDefaults = {
+        "GitHubActions": { prefix : "GH", UseSecretStore : true },
+        "OpenWhisk": { prefix : "OW", UseSecretStore : false },
+        "Lambda": { prefix : "AWS", UseSecretStore : true },
+        "SLURM": { prefix : "SLURM", UseSecretStore : false },
+        "GoogleCloud": { prefix : "GCP", UseSecretStore : true },
     }
 
     return(
@@ -34,7 +34,7 @@ export default function ComputeServerCreator(props){
                 </select>
                 <button onClick={() => {
 
-                    const newName = computeServerPrefixes[newType];
+                    const newName = computeServerDefaults[newType].prefix;
 
                     if (newName){
                         updateWorkflow({
@@ -45,6 +45,7 @@ export default function ComputeServerCreator(props){
                                 FaaSType: newType || "GitHubActions",
                                     ActionRepoName:"FaaSr-Workflows",
                                     Branch: "main",
+                                    UseSecretStore : computeServerDefaults[newType].UseSecretStore
                                 }
                             }
                         })

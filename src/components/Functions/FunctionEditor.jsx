@@ -73,7 +73,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Duplicate Action Div */}
-                <GenericLabel value={"Duplicate Action"} size={"20px"}></GenericLabel>
+                <GenericLabel value={"Duplicate Action"} size={"20px"}>
                 <div style={{display : "flex"}}>
                     <TextInput value={newActionId} onChange={(e) => {
                         const newName = e.target.value
@@ -92,9 +92,10 @@ export default function FunctionEditor(props){
                     }
                     }> Duplicate Action</button>
                 </div>
+                </GenericLabel>
 
                 {/* Function Name Input */}
-                <GenericLabel size={"20px"} value={"Function Name"} required={true}></GenericLabel>
+                <GenericLabel size={"20px"} value={"Function Name"} required={true}>
                 {/* set workflow onChange, but only update history on blur*/}
                 <TextInput 
                     value={workflow.ActionList[id].FunctionName} 
@@ -109,17 +110,18 @@ export default function FunctionEditor(props){
                     }
                     onBlur={handleBlur}
                 />
-                
+                </GenericLabel>
                 <br></br>
 
                 {/* Function Name Input */}
-                <GenericLabel size={"20px"} value={"Type"}></GenericLabel>
+                <GenericLabel size={"20px"} value={"Language"}>
                 {/* set workflow onChange, but only update history on blur*/}
                 <select value={workflow.ActionList[id].Type} onChange={(e) => updateAction(id, { Type : e.target.value})} onBlur={handleBlur}>
                     <option value={"None"}>None</option>
                     <option value={"R"}>R</option>
                     <option value={"Python"}>Python</option>
                 </select>
+                </GenericLabel>
                 
                 <br></br>
 
@@ -149,7 +151,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 <div>
-                    <GenericLabel size={"20px"} value={"Function's Action Container"}></GenericLabel>
+                    <GenericLabel size={"20px"} value={"Function's Action Container"}>
                     <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
                         onChange={(e)=>applyWorkflowChanges({
                             ActionContainers: {
@@ -159,6 +161,7 @@ export default function FunctionEditor(props){
                         value={workflow.ActionContainers[id] || ""}
                         onBlur={handleBlur}
                     />
+                    </GenericLabel>
                 </div>
                 <br></br>
                 <GitPackageEditor onBlur={handleBlur} id={id} ></GitPackageEditor>

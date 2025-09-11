@@ -1,5 +1,6 @@
 import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
+import GenericLabel from "../Utils/GenericLabel";
 
 export default function DataStoreEditor(props){
     const {workflow, setWorkflow } = useWorkflowContext();
@@ -12,12 +13,11 @@ export default function DataStoreEditor(props){
 
     if(id in workflow.DataStores){
         return(
-            <div style={{ }}>
+            <div id="test-css">
                 <h1>Function ID: {id}</h1>
 
-                <div>
-                    <button>Endpoint</button>
-                    <input type="text" placeholder="Endpoint" onChange={(e)=>setWorkflow({
+                <GenericLabel value={"Endpoint"} size={"20px"}>
+                    <input type="text" placeholder="https://play.min.io" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -30,14 +30,11 @@ export default function DataStoreEditor(props){
                         onBlur={handleBlur}
                         value={workflow.DataStores[id].Endpoint}
                     />
-                </div>
+                </GenericLabel>
 
-                <div>
-                    <button>
-                        <span style={{ color: 'red' }}>*</span>
-                         Bucket
-                    </button>
-                    <input type="text" placeholder="Bucket" onChange={(e)=>setWorkflow({
+
+                <GenericLabel value={"Bucket"} size={"20px"} required={true}>
+                    <input type="text" placeholder="my_bucket" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -50,11 +47,10 @@ export default function DataStoreEditor(props){
                         onBlur={handleBlur}
                         value={workflow.DataStores[id].Bucket}
                     />
-                </div>
+                </GenericLabel>
 
-                <div>
-                    <button>Region</button>
-                    <input type="text" placeholder="Region" onChange={(e)=>setWorkflow({
+                <GenericLabel value={"Region"} size={"20px"}>
+                    <input type="text" placeholder="us-east-1" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {
                             ...workflow.DataStores,
@@ -67,10 +63,10 @@ export default function DataStoreEditor(props){
                         onBlur={handleBlur}
                         value={workflow.DataStores[id].Region}
                     />
-                </div>
+                </GenericLabel>
 
-                <div>
-                    <button>Writable</button>
+
+                <GenericLabel value={"Writable"} size={"20px"}>
                     <select 
                         value={workflow.DataStores[id].Writable}
                         onChange={(e)=>updateWorkflow({
@@ -86,7 +82,8 @@ export default function DataStoreEditor(props){
                         <option value={"TRUE"}>TRUE</option>
                         <option value={"FALSE"}>FALSE</option>
                     </select>
-                </div>
+                </GenericLabel>
+
                 <br></br>
                 <button style={{color:"red"}} onClick={() => {
                     const dataStoreToDelete = id

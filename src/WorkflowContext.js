@@ -18,8 +18,20 @@ export const WorkflowProvider = ( {children} ) => {
 
     const [workflow, setWorkflow] = useState({
         ActionList : {},
-        ComputeServers : {},
-        DataStores : {},
+        ComputeServers : {
+            "GH": {
+                FaaSType: "GitHubActions",
+                UseSecretStore: false,
+                ActionRepoName: "FaaSr-workflow",
+                Branch: "main",
+                UseSecretStore : true,
+            }
+        },
+        DataStores : {
+            "S3": {
+                Writable: "TRUE"
+            }
+        },
         ActionContainers : {},
         FunctionInvoke : "None",
         DefaultDataStore : "None",
@@ -29,7 +41,9 @@ export const WorkflowProvider = ( {children} ) => {
         FaaSrLog : "FaaSrLog",
         LoggingDataStore : "",
         InvocationID : "",
-        WorkflowName : "unnamed-workflow"
+        WorkflowName : "unnamed-workflow",
+        DefaultDataStore : "S3",
+        LoggingDataStore : "S3"
     });
 
     const [history, setHistory] = useState([{

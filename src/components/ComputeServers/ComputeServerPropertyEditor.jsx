@@ -1,6 +1,7 @@
 import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
+import GenericLabel from "../Utils/GenericLabel";
 
 export default function ComputeServerPropertyEditor( { server, property, type, required}){
     const {workflow} = useWorkflowContext();
@@ -24,10 +25,7 @@ export default function ComputeServerPropertyEditor( { server, property, type, r
 
     return (
             <div>
-                <button>
-                    {required ? <span style={{ color: 'red' }}>* </span>:<></>}
-                    {property}
-                </button>
+                <GenericLabel required={required} value={property} size={"20px"}>
                 <input key={server+"-username"} type="text" placeholder={placeHolders[property]} defaultValue="" onChange={(e)=>applyWorkflowChanges({
                     ComputeServers: {
                         [server]: {
@@ -38,6 +36,7 @@ export default function ComputeServerPropertyEditor( { server, property, type, r
                     onBlur={handleBlur}
                     value={workflow.ComputeServers[server][property]}
                 />
+                </GenericLabel>
             </div>
     )
 }

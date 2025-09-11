@@ -176,3 +176,10 @@
 .generic-label{
   color: var(--text-primary);
 }
+
+#test-css {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;  /* smaller than 10px */
+  align-items: flex-start;
+}
