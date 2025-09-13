@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { useWorkflowContext } from "../../WorkflowContext"
 import useUndo from "../Utils/Undo";
 import ComputeServerPropertyEditor from "./ComputeServerPropertyEditor";
@@ -13,6 +14,13 @@ export default function ComputeServerEditor(props){
     const handleBlur = (e) => {
         updateWorkflow(workflow);
     };
+
+    useEffect(() => {
+        if (!(server in workflow.ComputeServers)) {
+            props.setServer(null);
+        }
+    }, [server, workflow.ComputeServers, props.setServer]);
+
 
     if(server in workflow.ComputeServers){
         const type = workflow.ComputeServers[server].FaaSType
@@ -68,11 +76,40 @@ export default function ComputeServerEditor(props){
                 ) : null}
                 
                 {/* Region */}
-                {["Lambda", "GoogleCloud", "OpenWhisk"].includes(type) ? (
+                {["Lambda", "GoogleCloud"].includes(type) ? (
                     <ComputeServerPropertyEditor type={type} server={server} property="Region" required={true} />
                 ) : null}  
 
-                <br></br>
+                {/* ClientEmail */}
+                {["GoogleCloud"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="ClientEmail" required={true}/>
+                ) : null}
+
+                {/* APIVersion */}
+                {["SLURM"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="APIVersion" required={true}/>
+                ) : null}
+
+                {/* Partition */}
+                {["SLURM"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="Partition" required={true}/>
+                ) : null}
+
+                {/* ClientEmail */}
+                {["GoogleCloud"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="ClientEmail" required={true}/>
+                ) : null}
+
+                {/* APIVersion */}
+                {["SLURM"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="APIVersion" required={true}/>
+                ) : null}
+
+                {/* Partition */}
+                {["SLURM"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="Partition" required={true}/>
+                ) : null}
+
                 {/* Delete Compute Server Button */}
                 <button style={{color:"red"}} onClick={() => {
                     const serverToDelete = server
@@ -84,8 +121,6 @@ export default function ComputeServerEditor(props){
                 
             </div> 
         )
-    }else{
-        props.setServer(null);
     }
     return(
         <h1>NO COMPUTE SERVER SELECTED</h1>

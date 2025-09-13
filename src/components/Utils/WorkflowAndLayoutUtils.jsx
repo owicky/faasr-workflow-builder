@@ -10,6 +10,7 @@ const useWorkflowAndLayoutUtils = () => {
     const {  
         nodes,
         edges,
+        workflow
     } = useWorkflowContext();
     
     const {
@@ -36,6 +37,7 @@ const useWorkflowAndLayoutUtils = () => {
         deleteInvoke,
         updateInvoke,
         parseInvoke,
+        applyWorkflowChanges
     } = useWorkflowUtils()
 
     /**
@@ -47,6 +49,9 @@ const useWorkflowAndLayoutUtils = () => {
     const createActionAndNode = ( actionId, actionOptions = {}, nodeOptions = {}) => {
         addAction( actionId, actionOptions)
         addNode( actionId, nodeOptions)
+        if (Object.keys(workflow.ActionList).length === 1){
+            applyWorkflowChanges({ FunctionInvoke : actionId})
+        }
     }
 
     const deleteActionAndNode = ( id ) => {

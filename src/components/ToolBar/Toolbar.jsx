@@ -23,6 +23,93 @@ export default function Toolbar(props) {
     const { addEdge, deleteEdge, updateEdge, addNode, deleteNode, updateNode } = useLayoutUtils()
     const { applyWorkflowChanges, deleteAction, addInvoke, updateAction, addAction, updateInvoke} = useWorkflowUtils()
     const { createActionAndNode, deleteActionAndNode, createInvokeAndEdge} = useWorkflowAndLayoutUtils()
+    const [ downloadError, setDownloadError ] = useState(false);
+    const [ downloadErrorMessages, setDownloadErrorMessages ] = useState([]);
+
+    const showDownloadError = (errors) => {
+        setDownloadError(true);
+        setDownloadErrorMessages(errors);
+    }
+
+    const setDownloadPopupEnabledAndClearError = (enabled) => {
+        if (!enabled) setDownloadError(false);
+        setDownloadPopupEnabled(enabled);
+    }
+
+    const convertJSONErrorsToReadable = (errors) => {
+        try{
+            const errorMessages = errors.flatMap(e => {
+                const errorPathList = e.split('.');
+                if (errorPathList.length >= 4) {
+                    // Handle first JSON error type
+                    let objectType = ''
+                    const fullObjectType = errorPathList[1].split('[')[0];
+                    if (errorPathList[1].startsWith('ActionList')) {
+                        objectType = 'Action';
+                    } else if (errorPathList[1].startsWith('DataStore')) {
+                        objectType = 'DataStore';
+                    } else if (errorPathList[1].startsWith('ComputeServer')) {
+                        objectType = 'ComputeServer';
+                    }
+                    const index = parseInt(errorPathList[2].substring(0,1));
+                    const objectId = Object.keys(workflow[fullObjectType])[index]
+                    const errorMsgAndField = errorPathList[3].split(':');
+                    let errorField = errorMsgAndField[0];
+                    let errorMsg = errorMsgAndField[1];
+                    if (errorMsg.includes('has less length than allowed')){
+                        errorMsg = 'is required'
+                    } else if (errorMsg.includes('pattern mismatch')) {
+                        // skip duplicate message on empty field
+                        const fieldLen = workflow[fullObjectType][objectId][errorField].length
+                        if (fieldLen !== undefined && fieldLen < 1) return [];
+                    } else if (errorField.includes('Type')) {
+                        errorMsg = 'must be R or Python';
+                    }
+                    // Match displayed field name
+                    errorField = errorField.replace('FaaSServer','ComputeServer');
+                    return [`${objectType} ${objectId}: ${errorField} ${errorMsg}`];
+                }else{
+                    // handle other JSON error type
+                    const errorPair = errorPathList[1].split(':');
+                    const errorField = errorPair[0];
+                    let msgs = []
+                    if (errorField.includes('FunctionGitRepo')) {
+                        Object.keys(workflow.ActionList).forEach((key) => {
+                            const actionName = workflow.ActionList[key].FunctionName
+                            if (!( actionName in workflow.FunctionGitRepo) ||
+                                workflow.FunctionGitRepo[actionName] === ""
+                            ) {
+                                msgs.push(`Action ${key}: FunctionGitRepo is required`);
+                            }
+                        });
+                    }else if (errorField.includes('ActionContainers')) {
+                        Object.keys(workflow.ActionList).forEach((key) => {
+                            if (!( key in workflow.FunctionGitRepo) ||
+                                workflow.FunctionGitRepo[key] === ""
+                            ) {
+                                msgs.push(`Action ${key}: ActionContainer is required`);
+                            }
+                        });
+                    } else if (errorField.includes('WorkflowName')) {
+                        if (errorPair[1].includes('less length than allowed')) {
+                            msgs.push('WorkflowName cannot be empty')
+                        } else {
+                            msgs.push(`WorkflowName: ${errorPair[1]}`);
+                        }
+                    } else if (errorField.includes('DefaultDataStore')) {
+                        msgs.push('DefaultDataStore cannot be empty');
+                    } else {
+                        msgs.push(errorPair[1]);
+                    }
+                    return msgs;
+                }
+            });
+            return errorMessages;
+        } catch(error) {
+            alert(`Error parsing JSON error: ${error}\n${JSON.stringify(errors)}`);
+        }
+
+    }
 
     const downloadWorkflowJson = (name) => {
 
@@ -33,23 +120,47 @@ export default function Toolbar(props) {
 
         const strippedWorkflow = stripRemovedActions(workflow)
         const cleanedWorkflow = cleanObject({...strippedWorkflow})
-        // console.log(cleanedWorkflow)
+
+
+        if (!cleanedWorkflow ||
+            !cleanedWorkflow.ActionList ||
+            Object.keys(cleanedWorkflow.ActionList).length < 1 
+        ) {
+            showDownloadError(['Workflow must have at least one action']);
+            return
+        }
+
 
 
         if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.ActionList)) {
-            alert(`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`);
+            showDownloadError([`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`]);
             return
         }
+
+        // Schema doesn't verify that each action has an entry in functionGitRepo
+        let errorMsg = [];
+        if (
+            Object.keys(cleanedWorkflow.FunctionGitRepo).length > 0 &&
+            Object.keys(cleanedWorkflow.FunctionGitRepo).length < Object.keys(workflow.ActionList).length) {
+
+            errorMsg.push('data.FunctionGitRepo: has less properties than allowed'); 
+        }
+
 
         if (!validate(strippedWorkflow, { verbose: true})){ // If violates Schema
-            const errorMsg = validate.errors.map((error, i) => {
+            errorMsg = [...errorMsg, ...validate.errors.map((error, i) => {
                 const fieldName = error.field;
-                return `• ${fieldName}: ${error.message}`;
-            }).join('\n');
-
-            alert("The workflow is incomplete:\n\n" + errorMsg);
+                return `${fieldName}: ${error.message}`;
+            })];
+        }
+        if (errorMsg.length > 0) {
+            
+            const readableErrorMessages = convertJSONErrorsToReadable(errorMsg)
+            showDownloadError(readableErrorMessages);
             return
         }
+
+        setDownloadError(false);
     
 
         const blob = new Blob([JSON.stringify(cleanedWorkflow, null, 2)], {
@@ -67,14 +178,25 @@ export default function Toolbar(props) {
 
     function stripRemovedActions(workflow) {
         let newWorkflow = structuredClone(workflow)
-        Object.values(newWorkflow.ActionList).forEach( (key, value) => {
+        Object.keys(newWorkflow.ActionList).forEach( (key) => {
 
             if (!nodes.some( (node) => node.id === key)) {
                 delete newWorkflow.ActionList[key];
-            }else{
+
+            } else {
                 // remove edges to nodes not in layout
                 newWorkflow.ActionList[key].InvokeNext = newWorkflow.ActionList[key].InvokeNext.filter(
-                    ( (id) => nodes.some( (node) => node.id === id))
+                     (invokeNext) => {
+                        // conditionals
+                        if (typeof invokeNext === 'object' && invokeNext !== null) {
+                            return Object.values(invokeNext)[0] !== key;
+                        } else {
+                            //unconditionals
+                            return invokeNext !== key;
+
+                        }
+
+                    }
                 );
             }
 
@@ -160,10 +282,22 @@ export default function Toolbar(props) {
                 setUploadPopupEnabled(false);
             }}>Download</GenericButton>
             
-            <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabled()}>
+            <Popup enabled={downloadPopupEnabled} setEnabled={() => setDownloadPopupEnabledAndClearError()}>
                 <GenericLabel value={"Download Options for Workflow: "+workflow.WorkflowName} size="20px"></GenericLabel>
                 <button onClick={() => downloadWorkflowJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}.json</button>
                 <button onClick={() => downloadLayoutJson(workflow.WorkflowName)}>Download {workflow.WorkflowName}-layout.json</button>
+                { downloadError ?  
+                    <div className="error-text">
+                        <p >The workflow has the following issues:</p>
+                        <ul>
+                            { downloadErrorMessages.map(e => ( 
+                                <li>{e}</li>
+                            ))}
+                        </ul>
+                    </div>
+                    
+                    : <></>
+                }
             </Popup>
             <GenericButton icon={<FaDatabase/>} onClick={() => props.setEditType("DataStores")}>Edit Data Stores</GenericButton>
             <GenericButton icon={<FaServer/>} onClick={() => props.setEditType("ComputeServers")}>Edit Compute Servers</GenericButton>

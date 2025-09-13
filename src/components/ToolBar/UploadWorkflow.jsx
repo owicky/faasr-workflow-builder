@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import useUndo from "../Utils/Undo";
 import { flushSync } from 'react-dom';
 import { useReactFlow } from "@xyflow/react";
@@ -14,11 +14,21 @@ export function UploadWorkflow(props) {
     const { getLayoutedElements } = useWorkflowContext()
     const { parseInvoke, listInvokeNext} = useFunctionUtils()
     const { createActionAndNode } = useWorkflowAndLayoutUtils()
+    const [urlError, setUrlError] = useState(false);
+    const [uploadError, setUploadError] = useState("");
     
     // NEW: This ref tracks whether we want to run the effect
     const shouldBuildGraphRef = useRef(false);
 
     const setUploadPopupEnabled = props.setUploadPopupEnabled;
+
+    const clearUrlError = () => {
+        setUrlError(false);
+    }
+
+    const clearUploadError = () => {
+        setUploadError("");
+    }
 
     const uploadFromURL = async (url) => {
         let rawURL;
@@ -32,7 +42,7 @@ export function UploadWorkflow(props) {
                 .replace("/blob/", "/refs/heads/");
         } else {
             console.error("Invalid GitHub URL");
-            alert("Please provide a valid GitHub URL");
+            setUrlError(true);
             return;
         }
 
@@ -98,7 +108,7 @@ export function UploadWorkflow(props) {
                 setUploadPopupEnabled(false)
             } catch (err) {
                 console.error("Invalid JSON file", err);
-                alert(`Failed to load workflow: Invalid JSON ${err}`);
+                setUploadError(`Unable to parse the file as JSON:\n\n ${err}`);
             }
         };
 
@@ -106,6 +116,7 @@ export function UploadWorkflow(props) {
     };
 
     const openFileDialog = () => {
+        setUploadError("");
         fileInputRef.current.click();
     };
 
@@ -179,11 +190,21 @@ export function UploadWorkflow(props) {
 
     return (
         <>
-            <button onClick={openFileDialog}>Upload workflow file</button>
+            { uploadError !== "" ? 
+                <p className="error-text">{uploadError}</p> :
+                <></>
+            }
+            <button onClick={openFileDialog}>Load Workflow File</button>
             <div>
-
-                <input type="text" id="workflowUrlInput" placeholder="https://github.com/FaaSr/FaaSr-workflow/tutorial.json"></input>
-                <button onClick={() => uploadFromURL(document.getElementById("workflowUrlInput").value)}>Import from GitHub URL</button>
+                { urlError ? <p className="error-text">Invalid GitHub URL</p>:<></> }
+                <input type="text" 
+                    id="workflowUrlInput" 
+                    placeholder="https://github.com/nolcut/workflow-json-test/blob/main/new-with-r.json"
+                    onChange={clearUrlError}
+                    onBlur={clearUrlError}
+                    onClick={clearUrlError}
+                ></input>
+                <button onClick={() => uploadFromURL(document.getElementById("workflowUrlInput").value)}>Load Workflow File From Github URL</button>
             </div>
             <input
                 type="file"

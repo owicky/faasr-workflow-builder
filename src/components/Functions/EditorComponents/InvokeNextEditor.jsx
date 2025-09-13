@@ -46,7 +46,6 @@ export default function InvokeNextEditor( props ){
                     }}
                             type="text" value={invId}>
                             
-                            <option value={""}> NONE </option>
                             
                             {Object.entries(workflow.ActionList).map(([key]) => (
                             

@@ -50,7 +50,6 @@ export default function FunctionsPanel(props){
                 styles={{
                     control: (baseStyles, state) => ({
                         ...baseStyles,
-                        borderColor: state.isFocused ? 'var(--border-color)' : 'red',
                         backgroundColor: "var(--background)",
                         color: "var(--text-primary)",
                         width: "90%",

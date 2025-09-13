@@ -114,7 +114,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Function Name Input */}
-                <GenericLabel size={"20px"} value={"Language"}>
+                <GenericLabel size={"20px"} value={"Type"} required={true}>
                 {/* set workflow onChange, but only update history on blur*/}
                 <select value={workflow.ActionList[id].Type} onChange={(e) => updateAction(id, { Type : e.target.value})} onBlur={handleBlur}>
                     <option value={"None"}>None</option>
@@ -151,7 +151,7 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 <div>
-                    <GenericLabel size={"20px"} value={"Function's Action Container"}>
+                    <GenericLabel size={"20px"} value={"Function's Action Container"} required={true}>
                     <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
                         onChange={(e)=>applyWorkflowChanges({
                             ActionContainers: {

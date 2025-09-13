@@ -1,7 +1,7 @@
 import './App.css';
 import '@xyflow/react/dist/style.css';
 import Dagre from '@dagrejs/dagre';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useRef, useEffect } from 'react';
 import { useReactFlow, ReactFlow, Controls, applyEdgeChanges, applyNodeChanges, addEdge, Panel, MarkerType, Background, useUpdateNodeInternals} from '@xyflow/react';
 import Toolbar from './components/ToolBar/Toolbar';
 import FunctionNode from './components/FunctionNode';
@@ -35,6 +35,13 @@ function App() {
   const [selectedServer, setSelectedServer] = useState("My_GitHub_Account");
   const [selectedDataStore, setSelectedDataStore] = useState("My_S3_Bucket");
   const nodeTypes = useMemo(() => ({ functionNode: FunctionNode }), []);
+  const panelRef = useRef(null);
+  const [panelResizing, setPanelResizing] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(400);
+  const debounceTimeoutRef = useRef(null);
+  const minPanelWidth = 200;
+  const maxPanelWidth = 800;
+
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -49,6 +56,59 @@ function App() {
     },
     [setEdges],
   );
+
+
+
+  const startResizing = useCallback((mouseDownEvent) => {
+    setPanelResizing(true);
+  }, []);
+
+  const debouncedUpdateWidth = useCallback((width) => {
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    
+    debounceTimeoutRef.current = setTimeout(() => {
+      setPanelWidth(width);
+    }, 50);
+  }, []);
+
+  const stopResizing = useCallback(() => {
+    setPanelResizing(false);
+    
+    // Apply the final width from the visual element to state
+    if (panelRef.current) {
+      const currentWidth = parseInt(panelRef.current.style.width) || panelWidth;
+      debouncedUpdateWidth(currentWidth);
+    }
+  }, [panelWidth, debouncedUpdateWidth]);
+
+  const resize = useCallback(
+    (mouseMoveEvent) => {
+      if (panelResizing && panelRef.current) {
+        let newWidth = mouseMoveEvent.clientX - 
+              panelRef.current.getBoundingClientRect().left;
+        if (newWidth < minPanelWidth) newWidth = minPanelWidth;
+        if (newWidth > maxPanelWidth) newWidth = maxPanelWidth;
+        
+        // Update visual width immediately without changing state
+        panelRef.current.style.width = `${newWidth}px`;
+      }
+    },
+    [panelResizing, minPanelWidth, maxPanelWidth]
+  );
+
+  useEffect(() => {
+    window.addEventListener("mousemove", resize);
+    window.addEventListener("mouseup", stopResizing);
+    return () => {
+      window.removeEventListener("mousemove", resize);
+      window.removeEventListener("mouseup", stopResizing);
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, [resize, stopResizing]);
 
 
   // Uses Dagre to apply layout

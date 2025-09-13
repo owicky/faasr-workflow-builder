@@ -9,7 +9,7 @@ export default function ComputeServersPanel(){
 
 
     return(
-        <div className="editor-panel" style={{width: '30vw', height: '100%'}}>
+        <div className="editor-panel" style={{width: '100%', height: '100%'}}>
             <h1>ComputeServers</h1>
             {Object.entries(workflow.ComputeServers).map(([key, val], i) => (
                 <>

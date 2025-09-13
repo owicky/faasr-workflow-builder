@@ -38,7 +38,7 @@
 
 
 .editor-panel{
-  width: 30vw;
+  width: 100%;
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
@@ -50,7 +50,9 @@
 
   color: var(--text-primary);
   background-color: var(--background);
-  width: 70vw;
+  flex: 1;
+  min-width: 0;
+  contain: layout size;
 }
 
 .App{
@@ -71,8 +73,13 @@
 }
 
 .editor-panel-outer{
-  border-right: 2px solid black;
-  border-color: var(--border-color);
+  display: flex;
+  flex-direction: row;
+  z-index: 2;
+  min-width: 200px;
+  max-width: 800px;
+  will-change: width;
+  flex-shrink: 0;
 }
 
 #jsonview-panel{
@@ -168,18 +175,50 @@
   width: 30%;
 }
 
-#test{
-  background-color: var(--background);
-  border-color: var(--border-color);
-}
 
 .generic-label{
   color: var(--text-primary);
 }
 
-#test-css {
+#datastore-editor{
   display: flex;
   flex-direction: column;
   gap: 4px;  /* smaller than 10px */
   align-items: flex-start;
 }
+
+
+.drag-handle {
+
+  min-width: 3px;
+  width: 3px;
+  height: 100%;
+
+  background-color: var(--border-color);
+
+}
+
+.editor-panel-outer .drag-handle {
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 3px;
+  justify-self: flex-end;
+  cursor: col-resize;
+  resize: horizontal;
+}
+
+.editor-panel-outer .editor-panel {
+    flex: 1;
+}
+
+.error-text {
+    padding: 0;
+    margin: 0;
+    color: red;
+    white-space: pre-wrap;
+}
+
+.error-text li {
+    margin-left: 15px;
+}
+

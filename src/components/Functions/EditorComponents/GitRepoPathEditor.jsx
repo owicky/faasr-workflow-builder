@@ -12,7 +12,7 @@ export default function GitRepoPathEditor( props ){
     const functionName = workflow.ActionList[id].FunctionName
     return(
         <div id="git-repo-path-editor">
-            <GenericLabel size={"20px"} value={"Function's Git Repo/Path"}>
+            <GenericLabel size={"20px"} value={"Function's Git Repo/Path"} required={true}>
             <input id={id+"-gitpath"} style={{ width:"300px" }} type="text" placeholder="GitPath" 
                 onChange={(e)=> applyWorkflowChanges({
                     FunctionGitRepo: {

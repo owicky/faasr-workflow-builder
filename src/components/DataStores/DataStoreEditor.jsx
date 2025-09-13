@@ -13,7 +13,7 @@ export default function DataStoreEditor(props){
 
     if(id in workflow.DataStores){
         return(
-            <div id="test-css">
+            <div id="datastore-editor">
                 <h1>Function ID: {id}</h1>
 
                 <GenericLabel value={"Endpoint"} size={"20px"}>
