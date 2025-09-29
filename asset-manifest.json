@@ -1,7 +1,7 @@
 {
   "files": {
-    "main.css": "/faasr-workflow-builder/static/css/main.8afcbfe7.css",
-    "main.js": "/faasr-workflow-builder/static/js/main.92b02395.js",
+    "main.css": "/faasr-workflow-builder/static/css/main.2a15f774.css",
+    "main.js": "/faasr-workflow-builder/static/js/main.4b89b08a.js",
     "static/media/awsLambda.png": "/faasr-workflow-builder/static/media/awsLambda.7005e54783990f2b26bd.png",
     "static/media/R_logo.png": "/faasr-workflow-builder/static/media/R_logo.56ae4454c59e10d9748c.png",
     "static/media/SLURMLogo.png": "/faasr-workflow-builder/static/media/SLURMLogo.99f79f144b6922bb1c19.png",
@@ -11,11 +11,11 @@
     "static/media/github-mark-white.svg": "/faasr-workflow-builder/static/media/github-mark-white.97ed8e7eef60d61ca469881dd6f34511.svg",
     "index.html": "/faasr-workflow-builder/index.html",
     "static/media/openWhiskIcon.svg": "/faasr-workflow-builder/static/media/openWhiskIcon.15463709823141a7ee4c761d0b24e0d1.svg",
-    "main.8afcbfe7.css.map": "/faasr-workflow-builder/static/css/main.8afcbfe7.css.map",
-    "main.92b02395.js.map": "/faasr-workflow-builder/static/js/main.92b02395.js.map"
+    "main.2a15f774.css.map": "/faasr-workflow-builder/static/css/main.2a15f774.css.map",
+    "main.4b89b08a.js.map": "/faasr-workflow-builder/static/js/main.4b89b08a.js.map"
   },
   "entrypoints": [
-    "static/css/main.8afcbfe7.css",
-    "static/js/main.92b02395.js"
+    "static/css/main.2a15f774.css",
+    "static/js/main.4b89b08a.js"
   ]
 }
