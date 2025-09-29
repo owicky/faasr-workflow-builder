@@ -4,7 +4,7 @@ import GenericLabel from "../Utils/GenericLabel";
 
 export default function DataStoreEditor(props){
     const {workflow, setWorkflow } = useWorkflowContext();
-    const id = props.id
+    const id = props.id || Object.keys(workflow.DataStores)[0]
     const { updateWorkflow } = useUndo();
 
     const handleBlur = (e) => {
@@ -14,7 +14,7 @@ export default function DataStoreEditor(props){
     if(id in workflow.DataStores){
         return(
             <div id="datastore-editor">
-                <h1>Function ID: {id}</h1>
+                <h1>{id}</h1>
 
                 <GenericLabel value={"Endpoint"} size={"20px"}>
                     <input type="text" placeholder="https://play.min.io" onChange={(e)=>setWorkflow({

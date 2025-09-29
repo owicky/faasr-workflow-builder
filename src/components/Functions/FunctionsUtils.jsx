@@ -228,7 +228,8 @@ const useFunctionUtils = () => {
         
         return newEdge;  
     }
-      // creates a new edge given rank and condition 
+
+    // creates a new edge given rank and condition 
     const createEdge = (id1, id2, rank, condition) => {
         
         let colorc = ""

@@ -3,7 +3,6 @@ import { useWorkflowContext } from "../../WorkflowContext";
 import useUndo from "../Utils/Undo";
 
 export function UploadLayout(props) {
-    const { setEdges, setNodes, edges, nodes} = useWorkflowContext();
     const fileInputRef = useRef(null);
     const { updateLayout } = useUndo();
     
@@ -36,53 +35,10 @@ export function UploadLayout(props) {
         fileInputRef.current.click();
     };
 
-    /*
-    useEffect(() => {
-
-        if (shouldBuildGraphRef.current) {
-            shouldBuildGraphRef.current = false;
-
-        // const functions = workflow.ActionList || {};
-        // let offset = 0;
-
-
-        // const updatedActionList = {};
-        // for (const key in functions) {
-        //     const fn = functions[key];
-        //     updatedActionList[key] = {
-        //         ...fn,
-        //         InvokeNext: Array.isArray(fn.InvokeNext) ? fn.InvokeNext : [fn.InvokeNext]
-        //     };
-        // }
-
-
-        // const updatedWorkflow = {
-        //     ...workflow,
-        //     ActionList: updatedActionList
-        // };
-
-        // setWorkflow(updatedWorkflow);
-
-        //     //Create Nodes
-        //     for (let i in updatedActionList) {
-        //         props.createNode(100 + offset * 100, 100 + offset * 50, updatedActionList[i].FunctionName, i);
-        //         offset++;
-        //     }
-        //     //Connect Edges
-        //     for (let i in updatedActionList) {
-        //         if (updatedActionList[i].InvokeNext !== null) {
-        //             for (let j of updatedActionList[i].InvokeNext) {
-        //                 props.createEdge(i, j);
-        //             }
-        //         }
-        //     }
-        }
-    }, [edges, nodes]); 
-    */
 
     return (
         <>
-            <button onClick={openFileDialog}>Optional: Load Layout File</button>
+            <button onClick={openFileDialog}>Optional: Upload Layout File</button>
             <input
                 type="file"
                 accept=".json"

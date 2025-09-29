@@ -1,10 +1,10 @@
 import { useRef, useState } from "react";
 import useUndo from "../Utils/Undo";
-import { flushSync } from 'react-dom';
 import { useReactFlow } from "@xyflow/react";
 import { useWorkflowContext } from "../../WorkflowContext";
-import useFunctionUtils from "../Functions/FunctionsUtils";
 import useWorkflowAndLayoutUtils from "../Utils/WorkflowAndLayoutUtils";
+import useWorkflowUtils from "../Utils/WorkflowUtils";
+import useLayoutUtils from "../Utils/LayoutUtils";
 import axios from "axios";
 
 export function UploadWorkflow(props) {
@@ -12,8 +12,8 @@ export function UploadWorkflow(props) {
     const fileInputRef = useRef(null);
     const { fitView } = useReactFlow()
     const { getLayoutedElements } = useWorkflowContext()
-    const { parseInvoke, listInvokeNext} = useFunctionUtils()
-    const { createActionAndNode } = useWorkflowAndLayoutUtils()
+    const { parseInvoke } = useWorkflowUtils()
+    const { createNodeObject, createEdgeObject} = useLayoutUtils()
     const [urlError, setUrlError] = useState(false);
     const [uploadError, setUploadError] = useState("");
     
@@ -150,18 +150,18 @@ export function UploadWorkflow(props) {
             let newNodes = [];
             let newEdges = [];
             for (let action in updatedActionList) {
-                newNodes.push(props.createNewNode(100 + offset * 100, 100 + offset * 50, updatedActionList[action].FunctionName, action));
+                newNodes.push(createNodeObject(action))
                 updatedActionList[action].InvokeNext[0].True.forEach( (invoke) => {
                     const {id, rank} = parseInvoke(invoke)
-                    newEdges.push({...props.createNewEdge(action, id, rank, "True")});
+                    newEdges.push({...createEdgeObject(action, id, { color : "var(--edge-true-color)", thickness : rank > 1 ? 2 : 1, label : rank > 1 ? rank : ""})});
                 });
                 updatedActionList[action].InvokeNext[0].False.forEach( (invoke) => {
                     const {id, rank} = parseInvoke(invoke)
-                    newEdges.push(props.createNewEdge(action, id, rank, "False"));
+                    newEdges.push(createEdgeObject(action, id, { color : "var(--edge-false-color)", thickness : rank > 1 ? 2 : 1, label : rank > 1 ? rank : ""}));
                 });
                 updatedActionList[action].InvokeNext.slice(1).forEach( (invoke) => {
                     const {id, rank} = parseInvoke(invoke)
-                    newEdges.push(props.createNewEdge(action, id, rank, "Unconditional"));
+                    newEdges.push(createEdgeObject(action, id, { color : "var(--edge-color)", thickness : rank > 1 ? 2 : 1, label : rank > 1 ? rank : ""}));
                 });
                 offset++;
             }
@@ -194,17 +194,17 @@ export function UploadWorkflow(props) {
                 <p className="error-text">{uploadError}</p> :
                 <></>
             }
-            <button onClick={openFileDialog}>Load Workflow File</button>
+            <button onClick={openFileDialog}>Upload workflow file</button>
             <div>
                 { urlError ? <p className="error-text">Invalid GitHub URL</p>:<></> }
                 <input type="text" 
                     id="workflowUrlInput" 
-                    placeholder="https://github.com/nolcut/workflow-json-test/blob/main/new-with-r.json"
+                    placeholder="https://github.com/FaaSr/FaaSr-workflow/tutorial.json"
                     onChange={clearUrlError}
                     onBlur={clearUrlError}
                     onClick={clearUrlError}
                 ></input>
-                <button onClick={() => uploadFromURL(document.getElementById("workflowUrlInput").value)}>Load Workflow File From Github URL</button>
+                <button onClick={() => uploadFromURL(document.getElementById("workflowUrlInput").value)}>Import from Github URL</button>
             </div>
             <input
                 type="file"

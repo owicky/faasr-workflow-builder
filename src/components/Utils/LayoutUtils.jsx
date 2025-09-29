@@ -166,6 +166,42 @@ const useLayoutUtils = () => {
         }), edges)
     }
 
+    const createNodeObject = ( nodeId, rank = undefined, xPos = 0, yPos = 0 ) => {
+        const newNode = {
+            id : nodeId,
+            type: 'functionNode',
+            position: ({
+                x: xPos,
+                y: yPos
+            }),
+            data: { id: nodeId, rank : rank},
+            origin: [0.5, 0.0],
+        };
+        return newNode;
+    }
+
+    const createEdgeObject = ( sourceNodeId, targetNodeId, { color = "var(--edge-color)", thickness = 1, label = "" } = {}) => {
+        const newEdge = {
+            animated : false,
+            source : sourceNodeId,
+            target : targetNodeId,
+            markerEnd: {
+                width: 10,
+                height: 10,
+                type: MarkerType.ArrowClosed,
+                color: color,
+            },
+            style: {
+                stroke: color,
+                strokeWidth : 2 * thickness
+            }, 
+            id : sourceNodeId+"-"+targetNodeId,
+            label: label
+        };
+        
+        return newEdge;
+    }
+
     return {
         addEdge,
         deleteEdge,
@@ -173,6 +209,8 @@ const useLayoutUtils = () => {
         addNode,
         deleteNode,
         updateNode,
+        createNodeObject,
+        createEdgeObject,
     };
 
 }
