@@ -39,6 +39,7 @@ export default function Toolbar(props) {
     const convertJSONErrorsToReadable = (errors) => {
         try{
             const errorMessages = errors.flatMap(e => {
+                console.log(e);
                 const errorPathList = e.split('.');
                 if (errorPathList.length >= 4) {
                     // Handle first JSON error type
@@ -79,7 +80,7 @@ export default function Toolbar(props) {
                             if (!( actionName in workflow.FunctionGitRepo) ||
                                 workflow.FunctionGitRepo[actionName] === ""
                             ) {
-                                msgs.push(`Action ${key}: FunctionGitRepo is required`);
+                                msgs.push(`Action ${key}: FunctionName ${actionName} must specify its FunctionGitRepo`);
                             }
                         });
                     }else if (errorField.includes('ActionContainers')) {
@@ -98,8 +99,15 @@ export default function Toolbar(props) {
                         }
                     } else if (errorField.includes('DefaultDataStore')) {
                         msgs.push('DefaultDataStore cannot be empty');
-                    } else {
-                        msgs.push(errorPair[1]);
+                    } else if (errorField.includes('DataStores')) {
+                        msgs.push('Must have at least one Data Store');
+                    } else if (errorField.includes('ComputeServers')) {
+                        msgs.push('Must have at least one Compute Server');
+                    }
+
+
+                    else {
+                        msgs.push(errorPathList[1]);
                     }
                     return msgs;
                 }
@@ -137,14 +145,26 @@ export default function Toolbar(props) {
             return
         }
 
-        // Schema doesn't verify that each action has an entry in functionGitRepo
+        // Verify each action has an entry in ActionContainers
         let errorMsg = [];
         if (
-            Object.keys(cleanedWorkflow.FunctionGitRepo).length > 0 &&
-            Object.keys(cleanedWorkflow.FunctionGitRepo).length < Object.keys(workflow.ActionList).length) {
+            Object.keys(cleanedWorkflow.ActionContainers).length > 0 &&
+            Object.keys(cleanedWorkflow.ActionContainers).length < Object.keys(workflow.ActionList).length) {
 
-            errorMsg.push('data.FunctionGitRepo: has less properties than allowed'); 
+            errorMsg.push('data.ActionContainers: has less properties than allowed'); 
         }
+
+        // Verify each action's FunctionName is an entry in FunctionGitRepo
+        if (
+            !cleanedWorkflow.FunctionGitRepo ||
+            Object.values(cleanedWorkflow.ActionList).some(action => 
+                !(action.FunctionName in cleanedWorkflow.FunctionGitRepo)
+            )
+        ) {
+            errorMsg.push('data.FunctionGitRepo: has less properties than allowed');    
+        }
+
+
 
 
         if (!validate(strippedWorkflow, { verbose: true})){ // If violates Schema

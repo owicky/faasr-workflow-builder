@@ -32,8 +32,6 @@ export default function InfoBox({ object, properties, forceKey }) {
             )
         }
     }
-    console.log(object)
-    console.log(selectKey)
     return (!selectKey && !Object.keys(object)[0]) ? <div>INVALID</div> : (
     <>
         <div className="info-panel">

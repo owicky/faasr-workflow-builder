@@ -28,27 +28,6 @@ export default function ComputeServerEditor(props){
             <div style={{ }}>
                 <h1>Function ID: {server}</h1>
 
-                <div>
-                    <GenericLabel required={true} value={"FaaSType"} size={"20px"}>
-                    <select key={server+"-FaasType-input"} value={workflow.ComputeServers[server].FaaSType} onChange={
-                        (e)=>{
-                            applyWorkflowChanges({
-                                ComputeServers: {
-                                    [server]: {
-                                        ["FaaSType"]: e.target.value
-                                    }
-                                }
-                            })
-                        }}>
-                        <option value={"None"}>None</option>
-                        <option value={"GitHubActions"}>GitHubActions</option>
-                        <option value={"OpenWhisk"}>OpenWhisk</option>
-                        <option value={"Lambda"}>Lambda</option>
-                        <option value={"SLURM"}>SLURM</option>
-                        <option value={"GoogleCloud"}>GoogleCloud</option>
-                    </select>
-                    </GenericLabel>
-                </div>
 
                 {/* UserName */}
                 {["SLURM", "GitHubActions"].includes(type) ? (
@@ -70,30 +49,15 @@ export default function ComputeServerEditor(props){
                     <ComputeServerPropertyEditor type={type} server={server} property="Endpoint" required={true} />
                 ) : null}
 
-                {/* NameSpace */}
+                {/* Namespace */}
                 {["GoogleCloud","OpenWhisk"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="NameSpace" required={true}/>
+                    <ComputeServerPropertyEditor type={type} server={server} property="Namespace" required={true}/>
                 ) : null}
                 
                 {/* Region */}
                 {["Lambda", "GoogleCloud"].includes(type) ? (
                     <ComputeServerPropertyEditor type={type} server={server} property="Region" required={true} />
                 ) : null}  
-
-                {/* ClientEmail */}
-                {["GoogleCloud"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="ClientEmail" required={true}/>
-                ) : null}
-
-                {/* APIVersion */}
-                {["SLURM"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="APIVersion" required={true}/>
-                ) : null}
-
-                {/* Partition */}
-                {["SLURM"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="Partition" required={true}/>
-                ) : null}
 
                 {/* ClientEmail */}
                 {["GoogleCloud"].includes(type) ? (

@@ -11,6 +11,7 @@ import CranPackageEditor from "./EditorComponents/CranPackageEditor";
 import GitPackageEditor from "./EditorComponents/GitPackageEditor";
 import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
+import { getActionContainer } from "./EditorComponents/ComputeServerSelector";  
 
 
 export default function FunctionEditor(props){
@@ -25,7 +26,6 @@ export default function FunctionEditor(props){
     const handleBlur = (e) => {
         updateWorkflow(workflow);
     };
-    
 
 
     if(id != null && workflow.ActionList?.[id]){
@@ -45,7 +45,7 @@ export default function FunctionEditor(props){
                             const {newNode, newEdges} = createNewFunctionNode(id);
                             updateLayout([...nodes, newNode], [...edges, ...newEdges]);
                         }   
-                    }}>Add Action to Graph</button>
+                    }}>Add Action to Layout</button>
                 </div>
 
                 {/* button to delete action from graph */}
@@ -55,7 +55,7 @@ export default function FunctionEditor(props){
                             nodes.filter( (node) =>node.id !== id),
                             edges.filter( (edge) => edge.source !== id && edge.target !== id)
                         ); 
-                    }}>Delete Action from Graph</button>
+                    }}>Delete Action from Layout</button>
                 </div>
 
                 {/* Button to delete action permanently */}
@@ -113,11 +113,34 @@ export default function FunctionEditor(props){
                 </GenericLabel>
                 <br></br>
 
-                {/* Function Name Input */}
+            
+                {/* Type */}
                 <GenericLabel size={"20px"} value={"Type"} required={true}>
-                {/* set workflow onChange, but only update history on blur*/}
-                <select value={workflow.ActionList[id].Type} onChange={(e) => updateAction(id, { Type : e.target.value})} onBlur={handleBlur}>
-                    <option value={"None"}>None</option>
+                <select value={workflow.ActionList[id].Type} onChange={(e) => {
+                    const type = e.target.value;
+                    const computeServer = workflow.ActionList[id].FaaSServer;
+                    const faasType = workflow.ComputeServers[computeServer].FaaSType;
+                    let containerName = getActionContainer(faasType, type);
+                    if (containerName == null) containerName = workflow.ActionContainers[id];
+
+
+                    applyWorkflowChanges({
+                        ...workflow,
+                        ActionList: {
+                            ...workflow.ActionList,
+                            [id]: {
+                                ...workflow.ActionList[id],
+                                Type : type
+                            }
+                        },
+                        ActionContainers: {
+                            ...workflow.ActionContainers,
+                            [id]: containerName
+                        }
+                    })   
+                }}
+                onBlur={handleBlur}>
+                    <option value={"NONE"}>NONE</option>
                     <option value={"R"}>R</option>
                     <option value={"Python"}>Python</option>
                 </select>
