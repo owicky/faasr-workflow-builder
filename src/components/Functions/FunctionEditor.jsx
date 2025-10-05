@@ -23,11 +23,21 @@ export default function FunctionEditor(props){
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
     const { duplicateFunction, createNewFunctionNode } = useCreateNewFunction();
     const { updateAction, applyWorkflowChanges } = useWorkflowUtils()
+    const [ addToLayoutError, setAddToLayoutError ] = useState(false)
+    const [ duplicateError, setDuplicateError ] = useState('')
+
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);
     };
 
+    const clearAddToLayoutError = () => {
+        setAddToLayoutError(false);  
+    }
+
+    const clearDuplicateError = () => {
+        setDuplicateError('');  
+    }
 
     if(id in workflow.ActionList){
         return(
@@ -39,14 +49,20 @@ export default function FunctionEditor(props){
                 <br></br>
                 {/* Add/remove from graph & delete permanently*/}
                 <div>
+                    {addToLayoutError ? 
+                        <p className="error-text">That action is already in the graph.</p>:
+                        <></>
+                    }
                     <button onClick={ () => {
                         if(nodes.some( (node) => node?.id === id )) {
-                            alert("That action is already in the graph. Duplicate it instead to make a copy.");
+                            setAddToLayoutError(true);
                         } else {
                             const {newNode, newEdges} = createNewFunctionNode(id);
                             updateLayout([...nodes, newNode], [...edges, ...newEdges]);
                         }   
-                    }}>Add Action to Layout</button>
+                    }}
+                    onBlur={clearAddToLayoutError}
+                    >Add Action to Layout</button>
                 </div>
 
                 {/* button to delete action from graph */}
@@ -75,6 +91,10 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Duplicate Action Div */}
+                { duplicateError !== '' ? 
+                    <p className="error-text">{duplicateError}</p>:
+                    <></>
+                }
                 <GenericLabel value={"Duplicate Action"} size={"20px"}>
                     <TextInput value={newActionId} onChange={(e) => {
                         const newName = e.target.value
@@ -83,15 +103,19 @@ export default function FunctionEditor(props){
                     }} placeholder={"New Action Id"}></TextInput>
                     <button onClick={ () => {
                         // Add new action to workflow
-                        if (!(newActionId in Object.keys(workflow.ActionList)) && (newActionId !== "")){
-                            duplicateFunction(id, newActionId, `${workflow.ActionList[id].FunctionName}_copy`);   
+                        if (newActionId === "") {
+                            setDuplicateError('The new Action\'s ID can\'t be empty.');
+                        }
+                        else if (!(newActionId in workflow.ActionList)){
+                            duplicateFunction(id, newActionId, `${workflow.ActionList[id].FunctionName}`);   
                             setNewActionId("");
                         }else{
-                            console.log("Already Exists")
-                            console.log(newActionId + " in " + Object.keys(workflow.ActionList))
+                            setDuplicateError('An action with that ID already exists');
                         }
                     }
-                    }> Duplicate Action</button>
+                    }
+                        onBlur={clearDuplicateError}
+                    > Duplicate Action</button>
                 </GenericLabel>
 
                 {/* Function Name Input */}

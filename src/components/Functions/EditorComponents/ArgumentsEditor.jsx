@@ -26,6 +26,7 @@ export default function ArgumentsEditor( props ){
     const [newActionName, setNewActionName] = useState("")
     const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
     const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
+    const [ argumentError, setArgumentError ] = useState('');
 
     const updateFunction = (updates) => {
         updateWorkflow({
@@ -46,6 +47,10 @@ export default function ArgumentsEditor( props ){
             [key] : value
         }})
     };
+
+    const clearArgumentError = () => {
+        setArgumentError('');
+    }
 
     return (
         <div id="arguments-editor">
@@ -73,8 +78,8 @@ export default function ArgumentsEditor( props ){
                     ))}
                 <button onClick={() => setNewArgPopupEnabled(true)}>Add New Arguments</button>
                 </div>
-                <Popup enabled={newArgPopupEnabled} setEnabled={() => setNewArgPopupEnabled()}>
-                    <input value={newArg} placeholder="argument-name" onChange={ (e) => setNewArg(e.target.value)}></input>
+                <Popup enabled={newArgPopupEnabled} setEnabled={() => setNewArgPopupEnabled()} onClose={clearArgumentError}>
+                    <input value={newArg} placeholder="argument-name" onChange={ (e) => setNewArg(e.target.value)} onFocus={clearArgumentError}></input>
                     <input value={newArgVal} placeholder="argument-value" onChange={ (e) => setNewArgVal(e.target.value)}></input>
                     <button onClick={() => {
                         if (!/\s/.test(newArg) && newArg !== "" && !/\s/.test(newArgVal) && newArgVal !== ""){
@@ -91,10 +96,14 @@ export default function ArgumentsEditor( props ){
                                 }
                                 }
                             })}else{
-                                alert("New argument name and value must neither be empty nor contain whitespaces.")
+                                setArgumentError('The argument name can\'t be empty or have any whitespaces.');
                             }
                         }
                         }>Add New Argument</button>
+                { argumentError !== '' ?
+                    <p className="error-text">{argumentError}</p>:
+                    <></>
+                }
                 </Popup>
         </div>
     )
