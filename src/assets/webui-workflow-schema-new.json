@@ -554,7 +554,6 @@
       "description": "User PyPI packages",
       "type": "object",
       "propertyNames": {
-        "minLength": 1
       },
       "patternProperties": {
         "": {

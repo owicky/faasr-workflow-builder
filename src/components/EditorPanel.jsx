@@ -16,7 +16,7 @@ function getEditor(props) {
                 )
             case 'Functions':
                 return(
-                    <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} createEdge={(a,b, c, d) => props.createEdge(a,b,c, d) } createNode={props.createNode} createNewEdge={props.createNewEdge}/>
+                    <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} createEdge={(a,b, c, d) => props.createEdge(a,b,c, d) } createNewEdge={props.createNewEdge}/>
                 )
             case 'GeneralConfig':
                 return(

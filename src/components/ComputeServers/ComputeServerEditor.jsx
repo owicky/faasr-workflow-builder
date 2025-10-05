@@ -7,7 +7,7 @@ import GenericLabel from "../Utils/GenericLabel";
 
 export default function ComputeServerEditor(props){
     const {workflow, setWorkflow, setNodes, nodes} = useWorkflowContext();
-    const server = props.server
+    const server = props.server || Object.keys(workflow.ComputeServers)[0]
     const { updateWorkflow } = useUndo();
     const { applyWorkflowChanges } = useWorkflowUtils()
 
@@ -26,7 +26,7 @@ export default function ComputeServerEditor(props){
         const type = workflow.ComputeServers[server].FaaSType
         return (
             <div style={{ }}>
-                <h1>Function ID: {server}</h1>
+                <h1>{server}</h1>
 
 
                 {/* UserName */}
@@ -72,6 +72,11 @@ export default function ComputeServerEditor(props){
                 {/* Partition */}
                 {["SLURM"].includes(type) ? (
                     <ComputeServerPropertyEditor type={type} server={server} property="Partition" required={true}/>
+                ) : null}
+
+                {/* ClientEmail */}
+                {["GoogleCloud"].includes(type) ? (
+                    <ComputeServerPropertyEditor type={type} server={server} property="ClientEmail" required={true}/>
                 ) : null}
 
                 {/* Delete Compute Server Button */}

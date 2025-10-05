@@ -1,5 +1,5 @@
 import { useWorkflowContext } from "../../WorkflowContext"
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import TextInput from "../Utils/TextInput";
 import GenericLabel from "../Utils/GenericLabel";
 import useUndo from "../Utils/Undo";
@@ -12,11 +12,12 @@ import GitPackageEditor from "./EditorComponents/GitPackageEditor";
 import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
 import { getActionContainer } from "./EditorComponents/ComputeServerSelector";  
+import PyPIPackageEditor from "./EditorComponents/PyPIPackageEditor";
 
 
 export default function FunctionEditor(props){
     const {workflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
-    const id = selectedFunctionId
+    const id = selectedFunctionId || (Object.keys(workflow.ActionList)[0] || null)
 
     const [newActionId, setNewActionId] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
@@ -28,12 +29,12 @@ export default function FunctionEditor(props){
     };
 
 
-    if(id != null && workflow.ActionList?.[id]){
+    if(id in workflow.ActionList){
         return(
 
             // Function Edit Box
             <div >
-                <h1>Action Name : {id}</h1>
+                <h1>{id}</h1>
 
                 <br></br>
                 {/* Add/remove from graph & delete permanently*/}
@@ -59,6 +60,7 @@ export default function FunctionEditor(props){
                 </div>
 
                 {/* Button to delete action permanently */}
+
                 <div>
                     <button onClick={ () => {
                         const newWorkflow = structuredClone(workflow);
@@ -74,7 +76,6 @@ export default function FunctionEditor(props){
 
                 {/* Duplicate Action Div */}
                 <GenericLabel value={"Duplicate Action"} size={"20px"}>
-                <div style={{display : "flex"}}>
                     <TextInput value={newActionId} onChange={(e) => {
                         const newName = e.target.value
                         const actionNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\\([0-9]+\\))?$/
@@ -91,7 +92,6 @@ export default function FunctionEditor(props){
                         }
                     }
                     }> Duplicate Action</button>
-                </div>
                 </GenericLabel>
 
                 {/* Function Name Input */}
@@ -190,8 +190,11 @@ export default function FunctionEditor(props){
                 <GitPackageEditor onBlur={handleBlur} id={id} ></GitPackageEditor>
                 <br></br>
                 
-                {/* Cran Package Handling */}
-                <CranPackageEditor onBlur={handleBlur} id={id} ></CranPackageEditor>
+                {/* Cran Package Handling */}   
+                {workflow.ActionList[id].Type === "R" ? <CranPackageEditor onBlur={handleBlur} id={id} ></CranPackageEditor> : null}
+                <br></br>
+
+                {workflow.ActionList[id].Type === "Python" ? <PyPIPackageEditor onBlur={handleBlur} id={id}></PyPIPackageEditor> : null}
                 <br></br>
             </div>
 

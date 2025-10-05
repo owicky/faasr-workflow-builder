@@ -73,9 +73,9 @@ const useWorkflowUtils = () => {
 
 
     /**
-     * Returns a list of all invokes within actions InvokeNext
+     * Returns a list of actions in invokenext
      * @param {string} id 
-     * @returns list of all invokes [ invokeId(rank) || invokeId...]
+     * @returns list of all invokes [ invokeId(rank) || invokeId, ...]
      */
     const listInvokeNext = (id) => {
         const invokes = []

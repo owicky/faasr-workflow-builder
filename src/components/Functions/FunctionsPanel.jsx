@@ -80,7 +80,7 @@ export default function FunctionsPanel(props){
                 }}
             />
             
-            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNewEdge={props.createNewEdge} createNode={props.createNode} id={selectedFunctionId}/>  
+            <FunctionEditor addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} createEdge={(a,b, c, d) => props.createEdge(a,b, c, d)} createNewEdge={props.createNewEdge} id={selectedFunctionId}/>  
 
         </div>     
     )

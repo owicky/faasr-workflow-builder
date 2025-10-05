@@ -11,18 +11,11 @@ import { FaDownload, FaUpload } from "react-icons/fa6";
 import { FaDatabase  } from "react-icons/fa";
 import { FaServer  } from "react-icons/fa6";
 import { FaSitemap } from "react-icons/fa"
-import useLayoutUtils from "../Utils/LayoutUtils";
-import useWorkflowUtils from "../Utils/WorkflowUtils";
-import useWorkflowAndLayoutUtils from "../Utils/WorkflowAndLayoutUtils";
-import axios from "axios";
 
 export default function Toolbar(props) {
     const {workflow, edges, nodes, } = useWorkflowContext();
     const [ downloadPopupEnabled, setDownloadPopupEnabled ] = useState(false)
     const [ uploadPopupEnabled, setUploadPopupEnabled ] = useState(false)
-    const { addEdge, deleteEdge, updateEdge, addNode, deleteNode, updateNode } = useLayoutUtils()
-    const { applyWorkflowChanges, deleteAction, addInvoke, updateAction, addAction, updateInvoke} = useWorkflowUtils()
-    const { createActionAndNode, deleteActionAndNode, createInvokeAndEdge} = useWorkflowAndLayoutUtils()
     const [ downloadError, setDownloadError ] = useState(false);
     const [ downloadErrorMessages, setDownloadErrorMessages ] = useState([]);
 
@@ -126,10 +119,11 @@ export default function Toolbar(props) {
             greedy : true
         })
 
-        const strippedWorkflow = stripRemovedActions(workflow)
-        const cleanedWorkflow = cleanObject({...strippedWorkflow})
+        const strippedWorkflow = stripRemovedActions(workflow) // removes actions from workflow that arent in graph
+        const cleanedWorkflow = cleanObject({...strippedWorkflow}) // removes empty items from workflow
 
 
+        // Check if workflow has any actions
         if (!cleanedWorkflow ||
             !cleanedWorkflow.ActionList ||
             Object.keys(cleanedWorkflow.ActionList).length < 1 
@@ -139,7 +133,7 @@ export default function Toolbar(props) {
         }
 
 
-
+        // Check for valid starting point
         if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.ActionList)) {
             showDownloadError([`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`]);
             return
@@ -168,6 +162,7 @@ export default function Toolbar(props) {
 
 
         if (!validate(strippedWorkflow, { verbose: true})){ // If violates Schema
+
             errorMsg = [...errorMsg, ...validate.errors.map((error, i) => {
                 const fieldName = error.field;
                 return `${fieldName}: ${error.message}`;
@@ -177,13 +172,19 @@ export default function Toolbar(props) {
             
             const readableErrorMessages = convertJSONErrorsToReadable(errorMsg)
             showDownloadError(readableErrorMessages);
-            return
+            return 
         }
 
         setDownloadError(false);
     
 
-        const blob = new Blob([JSON.stringify(cleanedWorkflow, null, 2)], {
+        download(name, cleanedWorkflow)
+
+    };
+
+
+    const download = ( name, content ) => {
+        const blob = new Blob([JSON.stringify(content, null, 2)], {
             type: 'application/json',
         });
 
@@ -193,8 +194,7 @@ export default function Toolbar(props) {
         a.download = name;
         a.click();
         URL.revokeObjectURL(url);
-
-    };
+    }
 
     function stripRemovedActions(workflow) {
         let newWorkflow = structuredClone(workflow)
@@ -206,7 +206,7 @@ export default function Toolbar(props) {
             } else {
                 // remove edges to nodes not in layout
                 newWorkflow.ActionList[key].InvokeNext = newWorkflow.ActionList[key].InvokeNext.filter(
-                     (invokeNext) => {
+                    (invokeNext) => {
                         // conditionals
                         if (typeof invokeNext === 'object' && invokeNext !== null) {
                             return Object.values(invokeNext)[0] !== key;
@@ -277,12 +277,8 @@ export default function Toolbar(props) {
         URL.revokeObjectURL(url);
     };
 
-    const testFunc = async () => {
-        (async() => {
-            const res = await axios.get("https://raw.githubusercontent.com/nolcut/workflow-json-test/refs/heads/main/new-with-r.json")
-            console.log(res.data)
-        })()
-    }
+    // const testFunc = () => {
+    // }
 
 
     return(
@@ -294,7 +290,7 @@ export default function Toolbar(props) {
             }}>Upload</GenericButton>
             <Popup enabled={uploadPopupEnabled} setEnabled={() => setUploadPopupEnabled()} >
                 <UploadWorkflow setLayout={() => props.setLayout()} createNewEdge={ props.createNewEdge } createNewNode={props.createNewNode} workflow_template={props.workflow_template} updateWorkflowAndLayout={props.updateWorkflowAndLayout} setUploadPopupEnabled={setUploadPopupEnabled}/>
-                <UploadLayout createEdge={ props.createEdge } createNode={props.createNode} workflow_template={props.workflow_template} setUploadPopupEnabled={setUploadPopupEnabled} />
+                <UploadLayout workflow_template={props.workflow_template} setUploadPopupEnabled={setUploadPopupEnabled} />
             </Popup>
 
             <GenericButton icon={<FaDownload/>} onClick={() => {
@@ -314,6 +310,7 @@ export default function Toolbar(props) {
                                 <li>{e}</li>
                             ))}
                         </ul>
+                        <button onClick={() => download(workflow.WorkflowName+"-unfinished", cleanObject({...stripRemovedActions({...workflow})}))}>Download Anyway</button>
                     </div>
                     
                     : <></>
@@ -325,8 +322,8 @@ export default function Toolbar(props) {
             <GenericButton icon={<FaSitemap/>} onClick={() => props.setEditType("Functions")}>Edit Actions/Functions</GenericButton>
             <GenericButton icon={<IoMdSettings/>} onClick={() => props.setEditType("GeneralConfig")}>Workflow Settings</GenericButton>
 
-            <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
-            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton>
+            {/* <GenericButton onClick={() => props.toggleWorkflowVisible()}>Toggle Workflow</GenericButton>
+            <GenericButton onClick={() => props.toggleGraphVisible()}>Toggle Graph</GenericButton> */}
 
             {/* Workflow Name Banner */}
             <span style={{
