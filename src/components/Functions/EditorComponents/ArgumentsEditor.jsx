@@ -2,30 +2,20 @@ import { useWorkflowContext } from "../../../WorkflowContext"
 import useUndo from "../../Utils/Undo";
 import GenericLabel from "../../Utils/GenericLabel"
 import { useState } from "react";
-import useFunctionUtils from "../FunctionsUtils"
-import useCreateNewFunction from "../FunctionCreator"
 import Popup from "../../Utils/Popup"
 
 
 
 export default function ArgumentsEditor( props ){
-    const {workflow, setWorkflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
-    const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
+    const {workflow} = useWorkflowContext();
+    const { updateWorkflow } = useUndo();
 
     // Id of Action we are editing
     const id = props.id
 
     const [newArg, setNewArg] = useState("")
     const [newArgVal, setNewArgVal] = useState("")
-    const [newGitPackage, setNewGitPackage] = useState("")
-    const [newCranPackage, setNewCranPackage] = useState("")
-
     const [newArgPopupEnabled, setNewArgPopupEnabled] = useState(false)
-
-    const [newInvoke, setNewInvoke] = useState("NONE")
-    const [newActionName, setNewActionName] = useState("")
-    const { listInvokeNext, parseInvoke, getInvokeCondition, deleteInvoke, updateInvoke, isValidNewRankedEdge} = useFunctionUtils ();
-    const { createNewFunction, createNewFunctionNode } = useCreateNewFunction();
 
     const updateFunction = (updates) => {
         updateWorkflow({

@@ -2,7 +2,7 @@ import ComputeServersPanel from "./ComputeServers/ComputeServersPanel"
 import DataStoresPanel from "./DataStores/DataStoresPanel"
 import FunctionsPanel from "./Functions/FunctionsPanel"
 import { useWorkflowContext } from "../WorkflowContext"
-import GeneralConfig from "./GeneralConfig";
+import WorkflowSettings from "./WorkflowSettings";
 
 function getEditor(props) {
     switch(props.type) {
@@ -18,9 +18,9 @@ function getEditor(props) {
                 return(
                     <FunctionsPanel addEdge={(eds, newEdge) => props.addEdge(eds, newEdge)} createEdge={(a,b, c, d) => props.createEdge(a,b,c, d) } createNewEdge={props.createNewEdge}/>
                 )
-            case 'GeneralConfig':
+            case 'WorkflowSettings':
                 return(
-                    <GeneralConfig/>
+                    <WorkflowSettings/>
                 )
             default:
                 return(

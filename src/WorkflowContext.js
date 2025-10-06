@@ -38,6 +38,7 @@ export const WorkflowProvider = ( {children} ) => {
         FunctionGitRepo : {},
         FunctionCRANPackage : {},
         FunctionGitHubPackage : {},
+        PyPIPackageDownloads : {},
         FaaSrLog : "FaaSrLog",
         LoggingDataStore : "",
         InvocationID : "",

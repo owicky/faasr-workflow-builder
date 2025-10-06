@@ -5,7 +5,7 @@ import useUndo from "../Utils/Undo";
 
 
 export default function DataStoreCreator(props){
-    const {workflow, setWorkflow} = useWorkflowContext();
+    const {workflow} = useWorkflowContext();
     const [newName, setNewName] = useState("")
     const [ popupEnabled, setPopupEnabled] = useState(false)
     const { updateWorkflow } = useUndo();

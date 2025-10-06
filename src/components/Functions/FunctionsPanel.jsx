@@ -15,8 +15,7 @@ export default function FunctionsPanel(props){
     const { createActionAndNode} = useWorkflowAndLayoutUtils()
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";
-    const {updateWorkflow, updateWorkflowAndLayout, updateSelectedFunctionId } = useUndo();
-    const { createNewFunction } = useCreateNewFunction();
+    const { updateSelectedFunctionId } = useUndo();
     const onCreateOption = (newActionId) => createActionAndNode(newActionId);
     const actionNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\\([0-9]+\\))?$/
     const [ inputValue, setInputValue ] = useState("")

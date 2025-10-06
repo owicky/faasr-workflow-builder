@@ -5,7 +5,7 @@ import useUndo from "../Utils/Undo";
 
 
 export default function ComputeServerCreator(props){
-    const {workflow, setWorkflow} = useWorkflowContext();
+    const {workflow} = useWorkflowContext();
     const [newType, setNewType] = useState("GitHubActions")
     const [ popupEnabled, setPopupEnabled] = useState(false)
     const { updateWorkflow } = useUndo();

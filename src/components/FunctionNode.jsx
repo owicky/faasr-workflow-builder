@@ -8,7 +8,6 @@ import rLogo  from '../assets/R_logo.png'
 import pythonLogo  from '../assets/pythonLogo.svg'
 import googleCloudLogo from '../assets/googleCloudLogo.svg'
 import SLURMLogo from '../assets/SLURMLogo.png'
-import SLURMLogoLight from '../assets/SLURMLogoWhite.png'
 import { useWorkflowContext } from '../WorkflowContext';
 
 

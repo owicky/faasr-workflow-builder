@@ -1,5 +1,4 @@
 import { useWorkflowContext } from "../../WorkflowContext";
-import { useState } from "react";
 
 {/* History entry: {
     nodes,

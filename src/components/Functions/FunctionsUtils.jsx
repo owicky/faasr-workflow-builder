@@ -1,6 +1,6 @@
 import { useWorkflowContext } from "../../WorkflowContext";
 import useUndo from "../Utils/Undo";
-import { addEdge, MarkerType} from '@xyflow/react';
+import { MarkerType} from '@xyflow/react';
 
 // Utilities for working with functions
 
@@ -251,7 +251,7 @@ const useFunctionUtils = () => {
         // If edge has a rank (skip if it hasn't been added to layout yet)
         if ( rank !== "" ) {
             const nodeIndex = nodes.findIndex( (node) => node.id === (id2)) // Get target node index
-            if ( nodeIndex != -1) {
+            if ( nodeIndex !== -1) {
                 updatedNodes[nodeIndex] = {...updatedNodes[nodeIndex], data : {...updatedNodes[nodeIndex].data, rank : rank}} // Update nodes rank 
             }
         }

@@ -6,7 +6,7 @@ import useWorkflowUtils from "./Utils/WorkflowUtils";
 import GenericLabel from "./Utils/GenericLabel";
 
 
-export default function GeneralConfig(props){
+export default function WorkflowSettings(props){
     const {workflow, setWorkflow} = useWorkflowContext();
     const { updateWorkflow } = useUndo();
     const { applyWorkflowChanges } = useWorkflowUtils()

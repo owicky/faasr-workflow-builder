@@ -6,10 +6,9 @@ import useWorkflowUtils from "../Utils/WorkflowUtils";
 import GenericLabel from "../Utils/GenericLabel";
 
 export default function ComputeServerEditor(props){
-    const {workflow, setWorkflow, setNodes, nodes} = useWorkflowContext();
+    const {workflow} = useWorkflowContext();
     const server = props.server || Object.keys(workflow.ComputeServers)[0]
     const { updateWorkflow } = useUndo();
-    const { applyWorkflowChanges } = useWorkflowUtils()
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);

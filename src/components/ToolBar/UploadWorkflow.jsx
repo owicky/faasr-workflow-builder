@@ -8,7 +8,6 @@ import useLayoutUtils from "../Utils/LayoutUtils";
 import axios from "axios";
 
 export function UploadWorkflow(props) {
-    const { updateWorkflowAndLayout } = useUndo()
     const fileInputRef = useRef(null);
     const { fitView } = useReactFlow()
     const { getLayoutedElements } = useWorkflowContext()

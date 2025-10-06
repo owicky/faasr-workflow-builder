@@ -7,8 +7,8 @@ import useFunctionUtils from "./FunctionsUtils";
 
 
 export const useCreateNewFunction = () => {
-    const { workflow, nodes, setNodes, edges} = useWorkflowContext();
-    const { updateLayout, updateWorkflowAndLayout } = useUndo();
+    const { workflow, nodes, edges} = useWorkflowContext();
+    const { updateWorkflowAndLayout } = useUndo();
     const { createEdge } = useFunctionUtils();
     const FaaSServerList = Object.keys(workflow.ComputeServers);
     const defaultFaaSServer = FaaSServerList.length > 0 ? FaaSServerList[0] : "";

@@ -1,5 +1,4 @@
-import { useRef, useEffect } from "react";
-import { useWorkflowContext } from "../../WorkflowContext";
+import { useRef } from "react";
 import useUndo from "../Utils/Undo";
 
 export function UploadLayout(props) {
