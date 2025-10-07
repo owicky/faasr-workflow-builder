@@ -16,7 +16,7 @@ export default function DataStoreEditor(props){
             <div id="datastore-editor">
                 <h1>{id}</h1>
 
-                <GenericLabel value={"Endpoint"} size={"20px"}>
+                <GenericLabel value={"Endpoint"} size={"20px"} required={true}>
                     <input type="text" placeholder="https://play.min.io" onChange={(e)=>setWorkflow({
                         ...workflow,
                         DataStores: {

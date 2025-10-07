@@ -23,7 +23,7 @@ export default function GitPackageEditor( props ){
                 {/* Entries for each GitHubPackage */}
                 { workflow.FunctionGitHubPackage[functionName] ? 
                     Object.entries(workflow.FunctionGitHubPackage[functionName]).map(([key, val]) => (
-                        <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
+                        <div style={{ display : "flex", marginBottom: "1px"}}>
                             <input
                             type="text"
                             placeholder={key+" value"}

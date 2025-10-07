@@ -11,6 +11,7 @@ import CranPackageEditor from "./EditorComponents/CranPackageEditor";
 import GitPackageEditor from "./EditorComponents/GitPackageEditor";
 import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
+import { getActionContainer } from "./EditorComponents/ComputeServerSelector";  
 import PyPIPackageEditor from "./EditorComponents/PyPIPackageEditor";
 
 
@@ -22,12 +23,21 @@ export default function FunctionEditor(props){
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
     const { duplicateFunction, createNewFunctionNode } = useCreateNewFunction();
     const { updateAction, applyWorkflowChanges } = useWorkflowUtils()
+    const [ addToLayoutError, setAddToLayoutError ] = useState(false)
+    const [ duplicateError, setDuplicateError ] = useState('')
+
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);
     };
-    
 
+    const clearAddToLayoutError = () => {
+        setAddToLayoutError(false);  
+    }
+
+    const clearDuplicateError = () => {
+        setDuplicateError('');  
+    }
 
     if(id in workflow.ActionList){
         return(
@@ -39,14 +49,20 @@ export default function FunctionEditor(props){
                 <br></br>
                 {/* Add/remove from graph & delete permanently*/}
                 <div>
+                    {addToLayoutError ? 
+                        <p className="error-text">That action is already in the graph.</p>:
+                        <></>
+                    }
                     <button onClick={ () => {
                         if(nodes.some( (node) => node?.id === id )) {
-                            alert("That action is already in the graph. Duplicate it instead to make a copy.");
+                            setAddToLayoutError(true);
                         } else {
                             const {newNode, newEdges} = createNewFunctionNode(id);
                             updateLayout([...nodes, newNode], [...edges, ...newEdges]);
                         }   
-                    }}>Add Action to Graph</button>
+                    }}
+                    onBlur={clearAddToLayoutError}
+                    >Add Action to Layout</button>
                 </div>
 
                 {/* button to delete action from graph */}
@@ -56,7 +72,7 @@ export default function FunctionEditor(props){
                             nodes.filter( (node) =>node.id !== id),
                             edges.filter( (edge) => edge.source !== id && edge.target !== id)
                         ); 
-                    }}>Delete Action from Graph</button>
+                    }}>Delete Action from Layout</button>
                 </div>
 
                 {/* Button to delete action permanently */}
@@ -75,31 +91,39 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 {/* Duplicate Action Div */}
+                { duplicateError !== '' ? 
+                    <p className="error-text">{duplicateError}</p>:
+                    <></>
+                }
                 <GenericLabel value={"Duplicate Action"} size={"20px"}>
-                    <TextInput value={newActionId} onChange={(e) => {
+                    <TextInput id={"dupename-"+{id}} key={`dupename-${id}`}value={newActionId} onChange={(e) => {
                         const newName = e.target.value
                         const actionNameRegex = /^[a-zA-Z_][a-zA-Z0-9_]*(?:\\([0-9]+\\))?$/
                         if (newName === "" || actionNameRegex.test(newName)) setNewActionId( e.target.value)
                     }} placeholder={"New Action Id"}></TextInput>
-                    <button onClick={ () => {
+                    <button style={{ display: "inline-flex", flex: "0 0 auto"}} onClick={ () => {
                         // Add new action to workflow
-                        if (!(newActionId in Object.keys(workflow.ActionList)) && (newActionId !== "")){
-                            duplicateFunction(id, newActionId, `${workflow.ActionList[id].FunctionName}_copy`);   
+                        if (newActionId === "") {
+                            setDuplicateError('The new Action\'s ID can\'t be empty.');
+                        }
+                        else if (!(newActionId in workflow.ActionList)){
+                            duplicateFunction(id, newActionId, `${workflow.ActionList[id].FunctionName}`);   
                             setNewActionId("");
                         }else{
-                            console.log("Already Exists")
-                            console.log(newActionId + " in " + Object.keys(workflow.ActionList))
+                            setDuplicateError('An action with that ID already exists');
                         }
                     }
-                    }> Duplicate Action</button>
+                    }
+                        onBlur={clearDuplicateError}
+                    > Duplicate Action</button>
                 </GenericLabel>
 
                 {/* Function Name Input */}
                 <GenericLabel size={"20px"} value={"Function Name"} required={true}>
                 {/* set workflow onChange, but only update history on blur*/}
                 <TextInput 
-                    value={workflow.ActionList[id].FunctionName} 
-                    placeholder={"FunctionName"} 
+                    value={workflow.ActionList[id].FunctionName}
+                    key={`fname-input-${id}`}
                     onChange={(e) => 
                         {
                             const newName = e.target.value
@@ -113,11 +137,34 @@ export default function FunctionEditor(props){
                 </GenericLabel>
                 <br></br>
 
-                {/* Function Name Input */}
+            
+                {/* Type */}
                 <GenericLabel size={"20px"} value={"Language"} required={true}>
-                {/* set workflow onChange, but only update history on blur*/}
-                <select value={workflow.ActionList[id].Type} onChange={(e) => updateAction(id, { Type : e.target.value})} onBlur={handleBlur}>
-                    <option value={"None"}>None</option>
+                <select value={workflow.ActionList[id].Type} onChange={(e) => {
+                    const type = e.target.value;
+                    const computeServer = workflow.ActionList[id].FaaSServer;
+                    const faasType = workflow.ComputeServers[computeServer].FaaSType;
+                    let containerName = getActionContainer(faasType, type);
+                    if (containerName == null) containerName = workflow.ActionContainers[id];
+
+
+                    applyWorkflowChanges({
+                        ...workflow,
+                        ActionList: {
+                            ...workflow.ActionList,
+                            [id]: {
+                                ...workflow.ActionList[id],
+                                Type : type
+                            }
+                        },
+                        ActionContainers: {
+                            ...workflow.ActionContainers,
+                            [id]: containerName
+                        }
+                    })   
+                }}
+                onBlur={handleBlur}>
+                    <option value={"NONE"}>NONE</option>
                     <option value={"R"}>R</option>
                     <option value={"Python"}>Python</option>
                 </select>
@@ -152,7 +199,7 @@ export default function FunctionEditor(props){
 
                 <div>
                     <GenericLabel size={"20px"} value={"Function's Action Container"} required={true}>
-                    <input id={id+"-actioncontainer"} style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
+                    <input id={id+"-actioncontainer"} key={`action-container-${id}`}style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
                         onChange={(e)=>applyWorkflowChanges({
                             ActionContainers: {
                                 [id] : e.target.value

@@ -32,8 +32,6 @@ export default function InfoBox({ object, properties, forceKey }) {
             )
         }
     }
-    console.log(object)
-    console.log(selectKey)
     return (!selectKey && !Object.keys(object)[0]) ? <div>INVALID</div> : (
     <>
         <div className="info-panel">
@@ -55,12 +53,16 @@ export default function InfoBox({ object, properties, forceKey }) {
                 { properties ? properties.map((key) => {
                     return getJSX(key, object[selectKey??Object.keys(object)[0]]?.[key])
                     
-            }) : 
-                    Object.keys(object[selectKey??Object.keys(object)[0]]).map( key => (
+            }) :
+                Object.keys(object[
+                        selectKey in object ?
+                            selectKey:
+                            Object.keys(object)[0]
+                        ]).map( key => (
                         <div key={key} style={{ marginBottom: "4px" }}>
                             <strong>{key}:</strong> {JSON.stringify(object[selectKey??Object.keys(object)[0]]?.[key])}
                         </div>
-                    ))
+                    )) 
                 }
             </div>
         </div>

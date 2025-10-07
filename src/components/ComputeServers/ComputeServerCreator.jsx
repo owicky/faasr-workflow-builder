@@ -47,10 +47,7 @@ export default function ComputeServerCreator(props){
                         ComputeServers: {
                             ...workflow.ComputeServers,
                             [newName]: {
-                                FaaSType: newType || "GitHubActions",
-                                    ActionRepoName:"FaaSr-Workflows",
-                                    Branch: "main",
-                                    UseSecretStore : computeServerDefaults[newType].UseSecretStore
+                                FaaSType: newType || "GitHubActions"
                                 }
                             }
                         })

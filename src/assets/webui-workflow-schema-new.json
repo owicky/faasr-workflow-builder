@@ -523,7 +523,6 @@
     "FunctionCRANPackage": {
       "description": "User CRAN packages",
       "type": "object",
-      "minProperties": 1,
       "propertyNames": {
         "minLength": 1
       },
@@ -539,7 +538,6 @@
     "FunctionGitHubPackage": {
       "description": "User packages from github Repository",
       "type": "object",
-      "minProperties": 1,
       "propertyNames": {
         "minLength": 1
       },
@@ -555,7 +553,6 @@
     "PyPIPackageDownloads": {
       "description": "User PyPI packages",
       "type": "object",
-      "minProperties": 1,
       "propertyNames": {
       },
       "patternProperties": {

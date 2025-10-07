@@ -20,7 +20,7 @@ export default function CranPackageEditor( props ){
                 {/* Entries for each CRANPackage */}
                 { workflow.FunctionCRANPackage[functionName] ? 
                     Object.entries(workflow.FunctionCRANPackage[functionName]).map(([key, val]) => (
-                        <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
+                        <div style={{ display : "flex", marginBottom: "1px"}}>
                             <input
                             type="text"
                             placeholder={key+" value"}

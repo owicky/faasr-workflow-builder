@@ -27,9 +27,6 @@ export default function ComputeServerEditor(props){
             <div style={{ }}>
                 <h1>{server}</h1>
 
-                <div>
-                    <GenericLabel value={"FaaSType: " + type} size={"20px"}></GenericLabel>
-                </div>
 
                 {/* UserName */}
                 {["SLURM", "GitHubActions"].includes(type) ? (
@@ -51,9 +48,9 @@ export default function ComputeServerEditor(props){
                     <ComputeServerPropertyEditor type={type} server={server} property="Endpoint" required={true} />
                 ) : null}
 
-                {/* NameSpace */}
+                {/* Namespace */}
                 {["GoogleCloud","OpenWhisk"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="NameSpace" required={true}/>
+                    <ComputeServerPropertyEditor type={type} server={server} property="Namespace" required={true}/>
                 ) : null}
                 
                 {/* Region */}

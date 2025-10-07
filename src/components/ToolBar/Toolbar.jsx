@@ -11,6 +11,7 @@ import { FaDownload, FaUpload } from "react-icons/fa6";
 import { FaDatabase  } from "react-icons/fa";
 import { FaServer  } from "react-icons/fa6";
 import { FaSitemap } from "react-icons/fa"
+import Ajv2020 from "ajv/dist/2020.js";
 
 export default function Toolbar(props) {
     const {workflow, edges, nodes, } = useWorkflowContext();
@@ -32,6 +33,7 @@ export default function Toolbar(props) {
     const convertJSONErrorsToReadable = (errors) => {
         try{
             const errorMessages = errors.flatMap(e => {
+                console.log(e);
                 const errorPathList = e.split('.');
                 if (errorPathList.length >= 4) {
                     // Handle first JSON error type
@@ -72,7 +74,7 @@ export default function Toolbar(props) {
                             if (!( actionName in workflow.FunctionGitRepo) ||
                                 workflow.FunctionGitRepo[actionName] === ""
                             ) {
-                                msgs.push(`Action ${key}: FunctionGitRepo is required`);
+                                msgs.push(`Action ${key}: FunctionName ${actionName} must specify its FunctionGitRepo`);
                             }
                         });
                     }else if (errorField.includes('ActionContainers')) {
@@ -91,8 +93,15 @@ export default function Toolbar(props) {
                         }
                     } else if (errorField.includes('DefaultDataStore')) {
                         msgs.push('DefaultDataStore cannot be empty');
-                    } else {
-                        msgs.push(errorPair[1]);
+                    } else if (errorField.includes('DataStores')) {
+                        msgs.push('Must have at least one Data Store');
+                    } else if (errorField.includes('ComputeServers')) {
+                        msgs.push('Must have at least one Compute Server');
+                    }
+
+
+                    else {
+                        msgs.push(errorPathList[1]);
                     }
                     return msgs;
                 }
@@ -105,52 +114,67 @@ export default function Toolbar(props) {
     }
 
     const downloadWorkflowJson = (name) => {
+        const ajv = new Ajv2020({ allErrors: true})
 
-        const validator = require('is-my-json-valid')
-            const validate = validator(schemaNew, {
-            greedy : true
-        })
+        const validate = ajv.compile(schemaNew)
 
         const strippedWorkflow = stripRemovedActions(workflow) // removes actions from workflow that arent in graph
         const cleanedWorkflow = cleanObject({...strippedWorkflow}) // removes empty items from workflow
 
 
-        // Check if workflow has any actions
-        if (!cleanedWorkflow ||
-            !cleanedWorkflow.ActionList ||
-            Object.keys(cleanedWorkflow.ActionList).length < 1 
-        ) {
-            showDownloadError(['Workflow must have at least one action']);
-            return
-        }
+        // // Check if workflow has any actions
+        // if (!cleanedWorkflow ||
+        //     !cleanedWorkflow.ActionList ||
+        //     Object.keys(cleanedWorkflow.ActionList).length < 1 
+        // ) {
+        //     showDownloadError(['Workflow must have at least one action']);
+        //     return
+        // }
 
 
-        // Check for valid starting point
-        if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.ActionList)) {
-            showDownloadError([`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`]);
-            return
-        }
+        // // Check for valid starting point
+        // if (!(cleanedWorkflow.FunctionInvoke in cleanedWorkflow.ActionList)) {
+        //     showDownloadError([`The workflow's starting point (${cleanedWorkflow.FunctionInvoke}) must be in the graph`]);
+        //     return
+        // }
 
-        // Schema doesn't verify that each action has an entry in functionGitRepo
+        // // Verify each action has an entry in ActionContainers
         let errorMsg = [];
-        if (
-            Object.keys(cleanedWorkflow.FunctionGitRepo).length > 0 &&
-            Object.keys(cleanedWorkflow.FunctionGitRepo).length < Object.keys(workflow.ActionList).length) {
+        // if (
+        //     Object.keys(cleanedWorkflow.ActionContainers).length > 0 &&
+        //     Object.keys(cleanedWorkflow.ActionContainers).length < Object.keys(workflow.ActionList).length) {
 
-            errorMsg.push('data.FunctionGitRepo: has less properties than allowed'); 
-        }
+        //     errorMsg.push('data.ActionContainers: has less properties than allowed'); 
+        // }
 
-        // Check if workflow(without unused actions) violates schema file
-        if (!validate(cleanedWorkflow, { verbose: true})){
-            errorMsg = [...errorMsg, ...validate.errors.map((error, i) => {
-                const fieldName = error.field;
-                return `${fieldName}: ${error.message}`;
-            })];
+        // // Verify each action's FunctionName is an entry in FunctionGitRepo
+        // if (
+        //     !cleanedWorkflow.FunctionGitRepo ||
+        //     Object.values(cleanedWorkflow.ActionList).some(action => 
+        //         !(action.FunctionName in cleanedWorkflow.FunctionGitRepo)
+        //     )
+        // ) {
+        //     errorMsg.push('data.FunctionGitRepo: has less properties than allowed');    
+        // }
+
+
+
+
+        if (!validate(strippedWorkflow)){ // If violates Schema
+            validate.errors.forEach(element => {
+                console.log(validate.errors)
+                errorMsg.push(element.instancePath + element.message);
+            });
+
+            // errorMsg = [...errorMsg, ...validate.errors.map((error, i) => {
+            //     const fieldName = error.field;
+            //     return `${fieldName}: ${error.message}`;
+            // })];
         }
         if (errorMsg.length > 0) {
             
-            const readableErrorMessages = convertJSONErrorsToReadable(errorMsg)
-            showDownloadError(readableErrorMessages);
+            // const readableErrorMessages = convertJSONErrorsToReadable(errorMsg)
+            showDownloadError(errorMsg); //readableErrorMessages
             return 
         }
 

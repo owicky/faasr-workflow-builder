@@ -20,7 +20,7 @@ export default function PyPIPackageEditor( props ){
                 {/* Entries for each PyPIPackage */}
                 { workflow.PyPIPackageDownloads[functionName] ? 
                     Object.entries(workflow.PyPIPackageDownloads[functionName]).map(([key, val]) => (
-                        <div style={{ display : "flex", marginBottom: "1px",  backgroundColor: "#d5e8ee"}}>
+                        <div style={{ display : "flex", marginBottom: "1px"}}>
                             <input
                             type="text"
                             placeholder={key+" value"}
