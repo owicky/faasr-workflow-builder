@@ -182,7 +182,6 @@ function App() {
     (deleted) => {
       deleteInvokeAndEdge(deleted[0].source, deleted[0].target)
     };
-
   document.addEventListener('keydown', function(event) {    
     if (event.ctrlKey && event.key === 'z') {
         undo();

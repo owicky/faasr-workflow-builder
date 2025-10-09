@@ -25,7 +25,7 @@ const useLayoutUtils = () => {
      * @param {string} targetNodeId ex "action2"
      * @param {object} options ex { color : "var(--edge-true-color)", thickness : "2", label "3"
      */
-    const addEdge = ( sourceNodeId, targetNodeId, { color = "var(--edge-color)", thickness = 1, label = "" } = {}) => {
+    const addEdge = ( sourceNodeId, targetNodeId, { color = "var(--edge-color)", thickness = 1, label = "" } = {}, returnDontMutate = false) => {
         const newEdge = {
             animated : false,
             source : sourceNodeId,
@@ -44,7 +44,9 @@ const useLayoutUtils = () => {
             label: label
         };
 
-        updateLayout(nodes, add_Edge(newEdge, edges))
+        if (returnDontMutate){
+            return { newNodes: nodes, newEdges : add_Edge(newEdge, edges)}
+        } else updateLayout(nodes, add_Edge(newEdge, edges))
     }
 
     /**
@@ -52,7 +54,7 @@ const useLayoutUtils = () => {
      * @param {string} sourceNodeId ex "action1"
      * @param {string} targetNodeId ex "action2"
      */
-    const deleteEdge = ( sourceNodeId, targetNodeId ) => {
+    const deleteEdge = ( sourceNodeId, targetNodeId, returnDontMutate = false) => {
         const newNodes = nodes.map( node => {
             if (node.id === targetNodeId) {
                 return {
@@ -65,7 +67,10 @@ const useLayoutUtils = () => {
             }
             return node
         })
-        updateLayout(newNodes , edges.filter( edge => !(edge.source === sourceNodeId && edge.target === targetNodeId)))
+        const newEdges = edges.filter( edge => !(edge.source === sourceNodeId && edge.target === targetNodeId))
+        if (returnDontMutate){
+            return { newNodes: newNodes, newEdges : newEdges}
+        } else updateLayout(newNodes , newEdges)
     }
 
     /**
@@ -74,8 +79,8 @@ const useLayoutUtils = () => {
      * @param {string} targetNodeId ex "action2"
      * @param {object} changes ex { label : "newLabel"} or { markerEnd { strokeWidth : "3"}}
      */
-    const updateEdge = ( sourceNodeId, targetNodeId, changes) => {
-        updateLayout(nodes, edges.map( edge => {
+    const updateEdge = ( sourceNodeId, targetNodeId, changes, returnDontMutate = false) => {
+        const newEdges = edges.map( edge => {
             if (edge.source === sourceNodeId && edge.target === targetNodeId){
                 return {
                     ...edge,
@@ -91,7 +96,10 @@ const useLayoutUtils = () => {
                 }    
             }
             return edge
-        }))
+        })
+        if (returnDontMutate){
+            return { newNodes: nodes, newEdges : newEdges}
+        } else updateLayout(nodes, newEdges)
     }
 
     /**
@@ -101,19 +109,21 @@ const useLayoutUtils = () => {
      * @param {number} xPos distance from left edge of ReactFlowPanel
      * @param {number} yPos distance from top edge of ReactFlowPanel
      */
-    const addNode = ( nodeId, rank = undefined, xPos = 0, yPos = 0 ) => {
+    const addNode = ( nodeId, options = {rank : undefined, xPos : 0, yPos : 0,}, returnDontMutate = false) => {
         const newNode = {
             id : nodeId,
             type: 'functionNode',
             position: ({
-                x: xPos,
-                y: yPos
+                x: options.xPos,
+                y: options.yPos
             }),
-            data: { id: nodeId, name : nodeId, rank : rank},
+            data: { id: nodeId, name : nodeId, rank : options.rank},
             origin: [0.5, 0.0],
         };
 
-        updateLayout([...nodes, newNode], edges)
+        if (returnDontMutate){
+            return { newNodes: [...nodes, newNode], newEdges : edges}
+        } else updateLayout([...nodes, newNode], edges)
     }
 
     /**
@@ -121,7 +131,7 @@ const useLayoutUtils = () => {
      * @param {string} nodeId ex "action1" 
      * @param { boolean } deleteReferences whether all connected edges should be deeted as well and their workflows invokeNext
      */
-    const deleteNode = ( nodeId, deleteReferences = false) => {
+    const deleteNode = ( nodeId, deleteReferences = false, returnDontMutate = false) => {
         let newNodes = nodes.filter( node => node.id !== nodeId)
         const newEdges = deleteReferences ? edges.filter( edge => {
             if (edge.target === nodeId){ // Remove from other actions InvokeNext
@@ -143,15 +153,17 @@ const useLayoutUtils = () => {
             }
             return !(edge.source === nodeId || edge.target === nodeId)
         }) : edges
-        updateLayout( newNodes, newEdges)
+        if (returnDontMutate){
+            return { newNodes : newNodes, newEdges: newEdges}
+        } else updateLayout( newNodes, newEdges)
     }
     /**
      * Updates a node in the layout/ReactFlowPanel with given object of changes
      * @param {string} nodeId ex "action1"
      * @param {object} changes ex { data : { rank : 5}
      */
-    const updateNode = ( nodeId, changes ) => {
-        updateLayout(nodes.map( node => {
+    const updateNode = ( nodeId, changes, returnDontMutate = false) => {
+        const newNodes = nodes.map( node => {
             if (node.id === nodeId){
                 return {
                     ...node,
@@ -163,7 +175,10 @@ const useLayoutUtils = () => {
                 }    
             }
             return node
-        }), edges)
+        })
+        if (returnDontMutate){
+            return { newNodes : newNodes, newEdges: edges}
+        } else updateLayout(newNodes, edges)
     }
 
     const createNodeObject = ( nodeId, rank = undefined, xPos = 0, yPos = 0 ) => {

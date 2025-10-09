@@ -17,7 +17,7 @@ import PyPIPackageEditor from "./EditorComponents/PyPIPackageEditor";
 
 export default function FunctionEditor(props){
     const {workflow, edges, selectedFunctionId,nodes} = useWorkflowContext();
-    const id = selectedFunctionId || (Object.keys(workflow.ActionList)[0] || null)
+    const id = (selectedFunctionId !== null && workflow.ActionList.hasOwnProperty(selectedFunctionId) ) ? selectedFunctionId : (Object.keys(workflow.ActionList)[0] || null)
 
     const [newActionId, setNewActionId] = useState("")
     const { updateWorkflow, updateLayout, updateWorkflowAndLayout } = useUndo();
@@ -25,7 +25,6 @@ export default function FunctionEditor(props){
     const { updateAction, applyWorkflowChanges } = useWorkflowUtils()
     const [ addToLayoutError, setAddToLayoutError ] = useState(false)
     const [ duplicateError, setDuplicateError ] = useState('')
-
 
     const handleBlur = (e) => {
         updateWorkflow(workflow);

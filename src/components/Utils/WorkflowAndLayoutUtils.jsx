@@ -14,7 +14,7 @@ const useWorkflowAndLayoutUtils = () => {
     } = useWorkflowContext();
     
     const {
-        
+        updateWorkflowAndLayout
     } = useUndo();
 
     const {
@@ -46,17 +46,20 @@ const useWorkflowAndLayoutUtils = () => {
      * @param {object} actionOptions starting values for action
      * @param {object} nodeOptions starting values for node
      */
+
     const createActionAndNode = ( actionId, actionOptions = {}, nodeOptions = {}) => {
-        addAction( actionId, actionOptions)
-        addNode( actionId, nodeOptions)
+        const newWorkflow = addAction( actionId, actionOptions, true)
+        const {newNodes : newNodes, newEdges : newEdges} = addNode( actionId, nodeOptions, true)
         if (Object.keys(workflow.ActionList).length === 1){
             applyWorkflowChanges({ FunctionInvoke : actionId})
         }
+        updateWorkflowAndLayout(newWorkflow, newNodes, newEdges)
     }
 
     const deleteActionAndNode = ( id ) => {
-        deleteAction( id)
-        deleteNode( id, true )
+        const newWorkflow = deleteAction( id, true)
+        const {newNodes, newEdges} = deleteNode( id, false, true )
+        updateWorkflowAndLayout(newWorkflow, newNodes, newEdges)
     }
 
 
@@ -95,23 +98,27 @@ const useWorkflowAndLayoutUtils = () => {
         if(!isValidNewRankedEdge(sourceId, targetId, rank)){
             return
         }
-        addInvoke( sourceId, targetId, condition, rank)
+        const newWorkflow = addInvoke( sourceId, targetId, condition, rank, true)
         
         const edgeColor = { "True" : "var(--edge-true-color)", "False" : "var(--edge-true-color)", "Unconditional" : "var(--edge-color)"}[condition]
-        addEdge( sourceId, targetId, { color : edgeColor, thickness : rank > 1 ? 2 : 1, label : rank > 1 ? rank : ""})
+        const {newNodes, newEdges} = addEdge( sourceId, targetId, { color : edgeColor, thickness : rank > 1 ? 2 : 1, label : rank > 1 ? rank : ""}, true)
+        updateWorkflowAndLayout(newWorkflow, newNodes, newEdges)
     }
 
     const deleteInvokeAndEdge = ( source, target ) => {
-        deleteEdge( source, target)
-        deleteInvoke( source, target )
+        const {newNodes, newEdges} = deleteEdge( source, target, true)
+        const newWorkflow = deleteInvoke( source, target, true)
+        updateWorkflowAndLayout(newWorkflow, newNodes, newEdges)
     }
 
+    // Todo, finish edgeChanges
     const updateInvokeAndEdge = ( actionId, invoke, changes ) => {
         const { id } = parseInvoke( invoke )
         const edgeChanges = {
         };
-        updateEdge( actionId, id, {})
-        updateInvoke( actionId, invoke, changes)
+        const {newNodes, newEdges} = updateEdge( actionId, id, {}, true)
+        const newWorkflow = updateInvoke( actionId, invoke, changes, true)
+        updateWorkflowAndLayout(newWorkflow, newNodes, newEdges)
     }
 
 

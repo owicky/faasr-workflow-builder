@@ -1,7 +1,7 @@
 import { useWorkflowContext } from "../../WorkflowContext";
 import useUndo from "./Undo";
 
-// Utilities for modifying nodes and edges
+// Utilities for modifying the workflow object
 const useWorkflowUtils = () => {
 
     const {  
@@ -46,9 +46,11 @@ const useWorkflowUtils = () => {
      * @param {object} changes ex { WorkflowName : "new-workflow-name"}
      * If modifying array, provide entire new array 
      */
-    const applyWorkflowChanges = (changes) => {
+    const applyWorkflowChanges = (changes, returnDontMutate = false) => {
         const newWorkflow = applyDeepChanges( {...workflow}, changes)
-        updateWorkflow( newWorkflow )
+        if (returnDontMutate) {
+            return newWorkflow
+        } else updateWorkflow( newWorkflow )
     }
 
     /**
@@ -57,7 +59,7 @@ const useWorkflowUtils = () => {
      * @param {object} options ex { FunctionName : "function1", Type : "Python"} 
      * If modifying array in options, provide entire new array
      */
-    const addAction = (id, options = {}) => {
+    const addAction = (id, options = {}, returnDontMutate = false) => {
 
         const newAction = {
             Arguments: {},
@@ -67,10 +69,10 @@ const useWorkflowUtils = () => {
             ...options
         };
 
-        applyWorkflowChanges({ ActionList: { [id]: newAction } });
+        if (returnDontMutate) {
+            return applyWorkflowChanges({ ActionList: { [id]: newAction } }, true)
+        } else applyWorkflowChanges({ ActionList: { [id]: newAction } });
     };
-
-
 
     /**
      * Returns a list of actions in invokenext
@@ -92,8 +94,12 @@ const useWorkflowUtils = () => {
      * Deletes action from workflow
      * @param {string} id id of action to be deleted
      */
-    const deleteAction = ( id  ) => {
-        applyWorkflowChanges( { ActionList : { [id] : undefined}})
+    const deleteAction = ( id, returnDontMutate = false) => {
+        const newActionList = {...workflow.ActionList}
+        delete newActionList[id]
+        if (returnDontMutate){
+            return applyWorkflowChanges( { ActionList : newActionList}, true)
+        } else applyWorkflowChanges( { ActionList : newActionList})
     }
 
     /**
@@ -102,7 +108,17 @@ const useWorkflowUtils = () => {
      * @param {object} changes ex { Type : "Python"} 
      * If modifying array, provide entire new array
      */
-    const updateAction = ( id, changes) => {
+    const updateAction = ( id, changes, returnDontMutate = false) => {
+        if (returnDontMutate) {
+            return applyWorkflowChanges({
+                ActionList : {
+                        [id] : {
+                            ...changes
+                        }
+                    }
+                }, true
+            )
+        } else 
         applyWorkflowChanges(
             {
                 ActionList : {
@@ -114,11 +130,8 @@ const useWorkflowUtils = () => {
         )
     }
 
-    // Split invoke into id and rank (invoke) => {id, rank}
+    // Split invoke into id and rank i.e "invokeid(rank)" => {id, rank}
     const parseInvoke = (invoke) => {
-        if (!invoke){
-            alert("can not parse undefined invoke")
-        }
         const hasRank = invoke.includes("(")
         const id = hasRank ? invoke.substring(0, invoke.indexOf("(") ) : invoke
 
@@ -127,7 +140,8 @@ const useWorkflowUtils = () => {
         return { id : id, rank : rank}
     }
 
-    const deleteInvoke = ( actionId, invokeId ) => {
+    // Delete invoke from action
+    const deleteInvoke = ( actionId, invokeId, returnDontMutate = false) => {
         const oldInvokeNext = workflow.ActionList[actionId].InvokeNext
         let newInvokenext = [
             // Delete conditonals that match invoke Id
@@ -147,10 +161,14 @@ const useWorkflowUtils = () => {
                 return id !== invokeId
             })
         ]
-        updateAction( actionId, { InvokeNext : newInvokenext})
+
+        if (returnDontMutate){
+
+            return updateAction( actionId, { InvokeNext : newInvokenext}, true)
+        } else updateAction( actionId, { InvokeNext : newInvokenext})
     }
 
-    const addInvoke = ( actionId, invokeId, conditonal = "Unconditional ", rank = null) => {
+    const addInvoke = ( actionId, invokeId, conditonal = "Unconditional ", rank = null, returnDontMutate = false) => {
         
         const newInvoke = rank > 1 ? invokeId+"("+rank+")" : invokeId
         const oldInvokeNext = workflow.ActionList[actionId].InvokeNext
@@ -170,7 +188,9 @@ const useWorkflowUtils = () => {
             ...((conditonal === "Unconditional") ? [newInvoke] : [])
         ]
 
-        updateAction( actionId, { InvokeNext : newInvokenext})
+        if (returnDontMutate) {
+            return updateAction( actionId, { InvokeNext : newInvokenext}, true)
+        } else updateAction( actionId, { InvokeNext : newInvokenext})
     }
 
     const concatInvoke = (id, rank) => {
@@ -188,14 +208,13 @@ const useWorkflowUtils = () => {
         return ""
     }
 
-    const updateInvoke = (actionId, oldInvoke, { newCondition = undefined, newRank = undefined, newTarget = undefined } = {}) => {
+    const updateInvoke = (actionId, oldInvoke, { newCondition = undefined, newRank = undefined, newTarget = undefined } = {}, returnDontMutate = false) => {
         const { id: oldId, rank: oldRank } = parseInvoke(oldInvoke)
         const newInvoke = concatInvoke( newTarget ? newTarget : oldId, newRank ? newRank : oldRank)
 
         const oldCondition = getInvokeCondition(actionId, oldInvoke)
         const oldInvokeNext = workflow.ActionList[actionId].InvokeNext
 
-        alert( newRank)
         const newInvokenext = [
             // Delete conditionals that match invoke Id
             {
@@ -212,7 +231,9 @@ const useWorkflowUtils = () => {
             ...(((newCondition ? newCondition : oldCondition) === "Unconditional" ) ? [newInvoke] : [])
         ]
 
-        updateAction( actionId, { InvokeNext : newInvokenext})
+        if (returnDontMutate) {
+            return updateAction( actionId, { InvokeNext : newInvokenext}, true)
+        } else updateAction( actionId, { InvokeNext : newInvokenext})
     }
 
     return {
