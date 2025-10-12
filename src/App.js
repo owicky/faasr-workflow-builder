@@ -198,8 +198,9 @@ function App() {
       {/* </header> */}
 
       <div id="mid-panel" >
-        <VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
+      {/*<VisibleGraph nodes={nodes} edges={edges} visible={visibleObjects.graph}></VisibleGraph>
         <VisibleWorkflow visible={visibleObjects.workflow}></VisibleWorkflow>
+        */}
         <EditorPanel id="editor-panel-component" panelWidth={panelWidth} startResizing={startResizing} ref={panelRef} addEdge={(eds, newEdge) => addEdge(eds, newEdge)} createEdge={(a,b, c, d) => createEdge(a,b, c, d)}  createNewEdge={createNewEdge} type={editType}/>
 
           <div id="workflow-panel">

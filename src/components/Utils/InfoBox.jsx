@@ -53,8 +53,8 @@ export default function InfoBox({ object, properties, forceKey }) {
                 { properties ? properties.map((key) => {
                     return getJSX(key, object[selectKey??Object.keys(object)[0]]?.[key])
                     
-            }) :
-                Object.keys(object[
+            }) : 
+                    Object.keys(object[
                         selectKey in object ?
                             selectKey:
                             Object.keys(object)[0]
