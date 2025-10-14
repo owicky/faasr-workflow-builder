@@ -13,6 +13,7 @@ import { FaServer  } from "react-icons/fa6";
 import { FaSitemap } from "react-icons/fa"
 import Ajv2020 from "ajv/dist/2020.js";
 
+
 export default function Toolbar(props) {
     const {workflow, edges, nodes, } = useWorkflowContext();
     const [ downloadPopupEnabled, setDownloadPopupEnabled ] = useState(false)
@@ -30,95 +31,43 @@ export default function Toolbar(props) {
         setDownloadPopupEnabled(enabled);
     }
 
-    const convertJSONErrorsToReadable = (errors) => {
-        try{
-            const errorMessages = errors.flatMap(e => {
-                console.log(e);
-                const errorPathList = e.split('.');
-                if (errorPathList.length >= 4) {
-                    // Handle first JSON error type
-                    let objectType = ''
-                    const fullObjectType = errorPathList[1].split('[')[0];
-                    if (errorPathList[1].startsWith('ActionList')) {
-                        objectType = 'Action';
-                    } else if (errorPathList[1].startsWith('DataStore')) {
-                        objectType = 'DataStore';
-                    } else if (errorPathList[1].startsWith('ComputeServer')) {
-                        objectType = 'ComputeServer';
-                    }
-                    const index = parseInt(errorPathList[2].substring(0,1));
-                    const objectId = Object.keys(workflow[fullObjectType])[index]
-                    const errorMsgAndField = errorPathList[3].split(':');
-                    let errorField = errorMsgAndField[0];
-                    let errorMsg = errorMsgAndField[1];
-                    if (errorMsg.includes('has less length than allowed')){
-                        errorMsg = 'is required'
-                    } else if (errorMsg.includes('pattern mismatch')) {
-                        // skip duplicate message on empty field
-                        const fieldLen = workflow[fullObjectType][objectId][errorField].length
-                        if (fieldLen !== undefined && fieldLen < 1) return [];
-                    } else if (errorField.includes('Type')) {
-                        errorMsg = 'must be R or Python';
-                    }
-                    // Match displayed field name
-                    errorField = errorField.replace('FaaSServer','ComputeServer');
-                    return [`${objectType} ${objectId}: ${errorField} ${errorMsg}`];
-                }else{
-                    // handle other JSON error type
-                    const errorPair = errorPathList[1].split(':');
-                    const errorField = errorPair[0];
-                    let msgs = []
-                    if (errorField.includes('FunctionGitRepo')) {
-                        Object.keys(workflow.ActionList).forEach((key) => {
-                            const actionName = workflow.ActionList[key].FunctionName
-                            if (!( actionName in workflow.FunctionGitRepo) ||
-                                workflow.FunctionGitRepo[actionName] === ""
-                            ) {
-                                msgs.push(`Action ${key}: FunctionName ${actionName} must specify its FunctionGitRepo`);
-                            }
-                        });
-                    }else if (errorField.includes('ActionContainers')) {
-                        Object.keys(workflow.ActionList).forEach((key) => {
-                            if (!( key in workflow.FunctionGitRepo) ||
-                                workflow.FunctionGitRepo[key] === ""
-                            ) {
-                                msgs.push(`Action ${key}: ActionContainer is required`);
-                            }
-                        });
-                    } else if (errorField.includes('WorkflowName')) {
-                        if (errorPair[1].includes('less length than allowed')) {
-                            msgs.push('WorkflowName cannot be empty')
-                        } else {
-                            msgs.push(`WorkflowName: ${errorPair[1]}`);
-                        }
-                    } else if (errorField.includes('DefaultDataStore')) {
-                        msgs.push('DefaultDataStore cannot be empty');
-                    } else if (errorField.includes('DataStores')) {
-                        msgs.push('Must have at least one Data Store');
-                    } else if (errorField.includes('ComputeServers')) {
-                        msgs.push('Must have at least one Compute Server');
-                    }
+    const applyDefaultContainers = () => {
 
+        const containerPrefixes = {
+            "GitHubActions":"ghcr.io/faasr/github-actions-",
+            "OpenWhisk":"faasr/openwhisk-",
+            "Lambda":"145342739029.dkr.ecr.us-east-1.amazonaws.com/aws-lambda-",
+            "SLURM":"faasr/slurm-",
+            "GoogleCloud":"faasr/gcp-",
+        }        
 
-                    else {
-                        msgs.push(errorPathList[1]);
-                    }
-                    return msgs;
-                }
-            });
-            return errorMessages;
-        } catch(error) {
-            alert(`Error parsing JSON error: ${error}\n${JSON.stringify(errors)}`);
-        }
+        const newWorkflow = structuredClone(workflow);
+        
+        Object.keys(workflow.ActionList).forEach((actionId) => {
+            if (!(actionId in workflow.ActionContainers)
+                || workflow.ActionContainers[actionId] === ""
+                || workflow.ActionContainers[actionId] === undefined
+            ){
+                const computeServerId = workflow.ActionList[actionId].FaaSServer;
+                const faasType = workflow.ComputeServers[computeServerId].FaaSType;
+                const type = workflow.ActionList[actionId].Type;
+                const containerName = `${containerPrefixes[faasType]}${type.toLowerCase()}:latest`;
+                newWorkflow.ActionContainers[actionId] = containerName;
+                
+            }
+        })
 
+        return newWorkflow;
     }
 
     const downloadWorkflowJson = (name) => {
+        const readyToExportWorkflow = applyDefaultContainers();
+
         const ajv = new Ajv2020({ allErrors: true})
 
         const validate = ajv.compile(schemaNew)
 
-        const strippedWorkflow = stripRemovedActions(workflow) // removes actions from workflow that arent in graph
+        const strippedWorkflow = stripRemovedActions(readyToExportWorkflow) // removes actions from workflow that arent in graph
         const cleanedWorkflow = cleanObject({...strippedWorkflow}) // removes empty items from workflow
 
 

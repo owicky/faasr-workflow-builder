@@ -11,7 +11,6 @@ import CranPackageEditor from "./EditorComponents/CranPackageEditor";
 import GitPackageEditor from "./EditorComponents/GitPackageEditor";
 import GitRepoPathEditor from "./EditorComponents/GitRepoPathEditor";
 import useWorkflowUtils from "../Utils/WorkflowUtils";
-import { getActionContainer } from "./EditorComponents/ComputeServerSelector";  
 import PyPIPackageEditor from "./EditorComponents/PyPIPackageEditor";
 
 
@@ -141,10 +140,6 @@ export default function FunctionEditor(props){
                 <GenericLabel size={"20px"} value={"Language"} required={true}>
                 <select value={workflow.ActionList[id].Type} onChange={(e) => {
                     const type = e.target.value;
-                    const computeServer = workflow.ActionList[id].FaaSServer;
-                    const faasType = workflow.ComputeServers[computeServer].FaaSType;
-                    let containerName = getActionContainer(faasType, type);
-                    if (containerName == null) containerName = workflow.ActionContainers[id];
 
 
                     applyWorkflowChanges({
@@ -155,10 +150,6 @@ export default function FunctionEditor(props){
                                 ...workflow.ActionList[id],
                                 Type : type
                             }
-                        },
-                        ActionContainers: {
-                            ...workflow.ActionContainers,
-                            [id]: containerName
                         }
                     })   
                 }}
@@ -197,8 +188,8 @@ export default function FunctionEditor(props){
                 <br></br>
 
                 <div>
-                    <GenericLabel size={"20px"} value={"Function's Action Container"} required={true}>
-                    <input id={id+"-actioncontainer"} key={`action-container-${id}`}style={{ width:"300px" }} type="text" placeholder="ActionContainer" 
+                    <GenericLabel size={"20px"} value={"Function's Action Container"} >
+                    <input id={id+"-actioncontainer"} key={`action-container-${id}`}style={{ width:"300px" }} type="text" placeholder="Leave blank to use default" 
                         onChange={(e)=>applyWorkflowChanges({
                             ActionContainers: {
                                 [id] : e.target.value
