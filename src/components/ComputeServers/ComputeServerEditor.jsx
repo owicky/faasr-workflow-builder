@@ -73,11 +73,6 @@ export default function ComputeServerEditor(props){
                     <ComputeServerPropertyEditor type={type} server={server} property="Partition" required={true}/>
                 ) : null}
 
-                {/* ClientEmail */}
-                {["GoogleCloud"].includes(type) ? (
-                    <ComputeServerPropertyEditor type={type} server={server} property="ClientEmail" required={true}/>
-                ) : null}
-
                 {/* Delete Compute Server Button */}
                 <button style={{color:"red"}} onClick={() => {
                     const serverToDelete = server

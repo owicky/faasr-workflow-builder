@@ -27,7 +27,7 @@ export default function ComputeServerCreator(props){
         <>
             <button onClick={() => setPopupEnabled(true)}>Add New Compute Server</button>
             <Popup enabled={popupEnabled} setEnabled={() => setPopupEnabledAndRestoreDefaultComputeServer()}>
-                <select defaultValue={"GitHubActions"} onChange={
+                <select defaultValue={newType} onChange={
                     (e)=>{
                         setNewType(e.target.value)
                     }}>
@@ -41,7 +41,10 @@ export default function ComputeServerCreator(props){
 
                     const newName = computeServerDefaults[newType].prefix;
 
-                    if (newName){
+                    if (newName in workflow.ComputeServers) {
+                        console.log('Identical server already exists');
+                    }
+                    else if (newName){
                         updateWorkflow({
                         ...workflow,
                         ComputeServers: {
