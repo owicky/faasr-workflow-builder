@@ -167,7 +167,9 @@ export const useCreateNewFunction = () => {
             };
             const {newNode, newEdges} = createNewFunctionNode(existingId, newWorkflow, newActionId);
 
-            updateWorkflowAndLayout(newWorkflow, [...nodes, newNode], [...edges, ...newEdges])
+
+            // Only duplicate the node, not its edges
+            updateWorkflowAndLayout(newWorkflow, [...nodes, newNode], edges)
         }
     };
     return { duplicateFunction, createNewFunctionNode };
