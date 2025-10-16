@@ -4,7 +4,7 @@ import { useState } from "react";
 import Popup from "../Utils/Popup";
 import GenericLabel from "../Utils/GenericLabel";
 import { UploadLayout } from "./UploadLayout";
-import schemaNew from "../../assets/webui-workflow-schema-new.json"
+import schemaNew from "../../assets/webui-workflow-schema-webui-version.json"
 import GenericButton from "../Utils/GenericButton";
 import { IoMdSettings } from "react-icons/io";
 import { FaDownload, FaUpload } from "react-icons/fa6";
